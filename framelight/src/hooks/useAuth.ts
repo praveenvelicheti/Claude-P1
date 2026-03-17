@@ -42,6 +42,22 @@ export function useAuth() {
     if (error) throw error
   }
 
+  async function signInWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    })
+    if (error) throw error
+  }
+
+  async function signInWithApple() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    })
+    if (error) throw error
+  }
+
   async function signUp(email: string, password: string) {
     const { error } = await supabase.auth.signUp({ email, password })
     if (error) throw error
@@ -64,5 +80,5 @@ export function useAuth() {
     setProfile(data as Profile)
   }
 
-  return { user, session, profile, loading, signIn, signUp, signOut, updateProfile }
+  return { user, session, profile, loading, signIn, signInWithGoogle, signInWithApple, signUp, signOut, updateProfile }
 }
