@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Framelight — Client Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════
+   PREVIEW SHELL (the outer device switcher UI)
+   This wraps the gallery iframe for design review.
+   In production, only the gallery content exists.
+═══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --ink:      #1A3A3A;
+  --charcoal: #1E4040;
+  --mid:      #5A7A7A;
+  --muted:    #8AABAB;
+  --border:   #D8EBEA;
+  --sand:     #EDF6F5;
+  --cream:    #F4FAF9;
+  --white:    #FFFFFF;
+  --gold:     #4DBFB8;
+  --gold-l:   #7DD4CF;
+  --red:      #E07070;
+  --green:    #4DBFB8;
+  --font-d:   'Cormorant', Georgia, serif;
+  --font-ui:  'Outfit', sans-serif;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: #fbe3e8;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ── PREVIEW TOPBAR ── */
+.preview-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  height: 52px;
+  background: #1a3a3a;
+  display: flex; align-items: center; padding: 0 24px; gap: 0;
+}
+.preview-bar .pb-logo {
+  font-family: var(--font-d); font-size: 18px; font-weight: 500;
+  color: #fff; letter-spacing: 0.04em; margin-right: 28px;
+}
+.preview-bar .pb-logo span { color: #5cbdb9; font-style: italic; }
+
+.device-tabs { display: flex; gap: 2px; }
+.device-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 16px; border-radius: 7px; cursor: pointer;
+  font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,0.5);
+  border: none; background: none; font-family: var(--font-ui);
+  transition: all 0.15s; letter-spacing: 0.02em;
+}
+.device-tab svg { width: 15px; height: 15px; }
+.device-tab:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.07); }
+.device-tab.active { color: #fff; background: rgba(255,255,255,0.13); }
+
+.pb-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.pb-note { font-size: 11.5px; color: rgba(255,255,255,0.35); letter-spacing: 0.03em; }
+.pb-open-btn {
+  padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);
+  background: none; color: rgba(255,255,255,0.75); font-family: var(--font-ui);
+  font-size: 12px; cursor: pointer; transition: all 0.15s; font-weight: 500;
+}
+.pb-open-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* ── DEVICE FRAMES ── */
+.preview-stage {
+  padding-top: 52px;
+  min-height: 100vh;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-bottom: 40px;
+}
+
+.device-frame {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 28px;
+}
+.device-frame.active { display: flex; }
+
+/* Web: full width */
+.frame-web .device-shell {
+  width: min(1280px, calc(100vw - 48px));
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+  border: 1px solid rgba(0,0,0,0.1);
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+/* Tablet */
+.frame-tablet .device-chrome {
+  width: 820px;
+  background: #2A2A2A;
+  border-radius: 28px;
+  padding: 16px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.07);
+  position: relative;
+}
+.frame-tablet .device-chrome::before {
+  content: '';
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  width: 60px; height: 4px; background: #444; border-radius: 2px;
+}
+.frame-tablet .device-shell {
+  width: 100%; border-radius: 16px; overflow: hidden;
+  height: 600px; overflow-y: auto;
+}
+
+/* Mobile */
+.frame-mobile .device-chrome {
+  width: 390px;
+  background: #1C1C1E;
+  border-radius: 52px;
+  padding: 14px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.08);
+  position: relative;
+}
+.frame-mobile .device-chrome::before {
+  content: '';
+  position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 34px; background: #1C1C1E;
+  border-radius: 0 0 20px 20px; z-index: 10;
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.06);
+}
+.frame-mobile .device-chrome::after {
+  content: '';
+  position: absolute; top: 28px; left: 50%; transform: translateX(-50%);
+  width: 12px; height: 12px; background: #2A2A2A;
+  border-radius: 50%; z-index: 11;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.05);
+}
+.frame-mobile .device-shell {
+  width: 100%; border-radius: 42px; overflow: hidden;
+  height: 720px; overflow-y: auto;
+}
+.frame-mobile .device-shell::-webkit-scrollbar { display: none; }
+
+.device-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: rgba(255,255,255,0.3);
+  margin-top: 18px;
+}
+
+/* Hide scrollbar on shells but keep scroll */
+.device-shell::-webkit-scrollbar { width: 0; }
+
+/* ═══════════════════════════════════════════
+   THE ACTUAL GALLERY PAGE
+   (this is what gets built in production)
+═══════════════════════════════════════════ */
+.gallery-page {
+  --bg:       #FFFFFF;
+  --fg:       #1a3a3a;
+  --accent:   #5cbdb9;
+  --accent-l: #89d0cd;
+  --pale:     #ebf6f5;
+  --sub:      #6a9e9c;
+  --bdr:      #ceecea;
+  --sand:     #ebf6f5;
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+}
+
+/* ── PIN GATE ─────────────────────────────── */
+.pin-gate {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  background: var(--bg);
+}
+.pin-gate-hero {
+  flex: 1; position: relative; overflow: hidden;
+  min-height: 240px; max-height: 340px;
+}
+.pin-gate-hero img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.pin-gate-hero::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(23,22,15,0.15) 0%, rgba(23,22,15,0.55) 100%);
+}
+.pin-gate-hero-text {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 28px 28px 24px; z-index: 1;
+}
+.pin-gate-hero-text .studio {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; color: rgba(255,255,255,0.65); margin-bottom: 6px;
+}
+.pin-gate-hero-text h1 {
+  font-family: 'Cormorant', serif; font-size: clamp(24px, 5vw, 38px);
+  font-weight: 400; color: #fff; line-height: 1.1;
+}
+
+.pin-gate-body {
+  padding: 32px 24px 40px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.pin-gate-body .lock-icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--pale); border: 1px solid rgba(92,189,185,0.3);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+  color: var(--accent);
+}
+.pin-gate-body .lock-icon svg { width: 22px; height: 22px; }
+.pin-gate-body h2 {
+  font-family: 'Cormorant', serif; font-size: 22px; font-weight: 400;
+  color: var(--fg); margin-bottom: 6px; text-align: center;
+}
+.pin-gate-body p { font-size: 13px; color: var(--sub); text-align: center; margin-bottom: 28px; }
+
+.pin-inputs-row { display: flex; gap: 10px; margin-bottom: 24px; }
+.pin-box {
+  width: 52px; height: 60px; border: 2px solid var(--bdr);
+  border-radius: 12px; background: var(--sand);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant', serif; font-size: 26px; color: var(--fg);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.pin-box.filled { border-color: var(--fg); background: var(--bg); }
+.pin-box.active { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(92,189,185,0.18); }
+.pin-box.error { border-color: var(--red, #C0614A); animation: shake 0.35s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 260px; }
+.key {
+  height: 52px; border: 1px solid var(--bdr); border-radius: 10px;
+  background: var(--bg); font-family: 'Cormorant', serif;
+  font-size: 22px; color: var(--fg); cursor: pointer;
+  transition: all 0.12s; display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.key:active, .key:hover { background: var(--sand); border-color: var(--fg); }
+.key.del { font-family: 'Outfit', sans-serif; font-size: 14px; }
+
+/* ── GALLERY NAV ──────────────────────────── */
+.gal-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--bdr);
+  transition: box-shadow 0.2s;
+}
+.gal-nav.scrolled { box-shadow: 0 2px 20px rgba(26,58,58,0.08); }
+.gal-nav-inner {
+  display: flex; align-items: center;
+  padding: 0 clamp(16px, 4vw, 48px);
+  height: 56px; gap: 12px;
+}
+.gal-nav-brand {
+  display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
+}
+.gal-nav-logo {
+  width: 30px; height: 30px; border-radius: 50%; overflow: hidden;
+  flex-shrink: 0; border: 1.5px solid var(--bdr);
+}
+.gal-nav-logo img { width: 100%; height: 100%; object-fit: cover; }
+.gal-nav-name {
+  font-family: 'Cormorant', serif; font-size: 17px; font-weight: 500;
+  color: var(--fg); letter-spacing: 0.03em; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.gal-nav-divider { width: 1px; height: 18px; background: var(--bdr); flex-shrink: 0; }
+.gal-nav-title {
+  font-size: 12.5px; color: var(--sub); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; font-style: italic;
+}
+
+.gal-nav-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.nav-icon-btn {
+  width: 36px; height: 36px; border-radius: 8px;
+  border: 1px solid var(--bdr); background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--fg); transition: all 0.15s; position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-icon-btn svg { width: 16px; height: 16px; }
+.nav-icon-btn:hover { background: var(--sand); border-color: var(--fg); }
+.nav-badge {
+  position: absolute; top: -4px; right: -4px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-size: 9px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--bg);
+}
+.nav-dl-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 8px;
+  background: var(--fg); color: var(--bg);
+  border: none; cursor: pointer; font-family: 'Outfit', sans-serif;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.04em;
+  white-space: nowrap; transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-dl-btn:hover { background: #0E2828; }
+.nav-dl-btn svg { width: 14px; height: 14px; }
+.nav-dl-btn .dl-text { display: block; }
+
+/* ── HERO COVER ───────────────────────────── */
+.gal-hero {
+  position: relative; overflow: hidden;
+  height: clamp(320px, 55vw, 600px);
+  background: var(--fg);
+}
+.gal-hero-img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transform: scale(1.04);
+  animation: heroZoom 18s ease-in-out infinite alternate;
+}
+@keyframes heroZoom { from { transform: scale(1.04); } to { transform: scale(1.0); } }
+.gal-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom,
+    rgba(23,22,15,0.08) 0%,
+    rgba(23,22,15,0.02) 40%,
+    rgba(23,22,15,0.55) 100%);
+}
+.gal-hero-content {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: clamp(24px, 4vw, 56px);
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 20px;
+}
+.gal-hero-text .studio-tag {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.14em;
+  text-transform: uppercase; color: rgba(255,255,255,0.6);
+  margin-bottom: 8px;
+}
+.gal-hero-text h1 {
+  font-family: 'Cormorant', serif;
+  font-size: clamp(28px, 6vw, 64px);
+  font-weight: 400; color: #fff; line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+.gal-hero-text h1 em { font-style: italic; }
+.gal-hero-meta {
+  display: flex; align-items: center; gap: 14px; margin-top: 12px;
+}
+.gal-hero-meta span {
+  font-size: 12px; color: rgba(255,255,255,0.55);
+  display: flex; align-items: center; gap: 5px;
+}
+.gal-hero-meta span svg { width: 12px; height: 12px; }
+.gal-hero-scroll {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  color: rgba(255,255,255,0.4); font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; font-weight: 500; padding-bottom: 4px;
+  animation: bobble 2s ease-in-out infinite;
+}
+@keyframes bobble { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+.gal-hero-scroll svg { width: 18px; height: 18px; }
+
+/* ── FAVORITES BAR ────────────────────────── */
+.fav-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px clamp(16px, 4vw, 48px);
+  background: var(--pale);
+  border-bottom: 1px solid rgba(92,189,185,0.25);
+  flex-wrap: wrap;
+}
+.fav-bar-text { font-size: 13px; color: var(--charcoal, #2D2C26); flex: 1; }
+.fav-bar-text strong { color: var(--accent); }
+.fav-dl-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 7px;
+  background: var(--accent); color: #fff;
+  border: none; cursor: pointer; font-family: 'Outfit', sans-serif;
+  font-size: 12px; font-weight: 500; white-space: nowrap;
+  transition: all 0.15s;
+}
+.fav-dl-btn:hover { background: var(--accent-l); }
+.fav-dl-btn svg { width: 13px; height: 13px; }
+
+/* ── SECTION LABEL ────────────────────────── */
+.section-label {
+  padding: clamp(20px, 3vw, 36px) clamp(16px, 4vw, 48px) 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.section-label h2 {
+  font-family: 'Cormorant', serif; font-size: clamp(18px, 3vw, 26px);
+  font-weight: 400; color: var(--fg); letter-spacing: 0.01em;
+}
+.section-label h2 em { font-style: italic; }
+.section-label .photo-count { font-size: 12.5px; color: var(--sub); }
+
+/* ── MASONRY GRID ─────────────────────────── */
+.masonry-grid {
+  padding: clamp(16px, 3vw, 32px) clamp(12px, 3vw, 48px) clamp(40px, 5vw, 80px);
+  columns: var(--cols, 3);
+  column-gap: clamp(6px, 1vw, 10px);
+}
+.masonry-grid { --cols: 3; }
+
+.photo-item {
+  break-inside: avoid;
+  margin-bottom: clamp(6px, 1vw, 10px);
+  position: relative; cursor: pointer;
+  border-radius: clamp(6px, 1vw, 10px); overflow: hidden;
+  background: var(--sand);
+  display: block;
+}
+.photo-item img {
+  width: 100%; display: block;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.photo-item:hover img { transform: scale(1.04); }
+
+.photo-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(23,22,15,0.5) 0%, transparent 55%);
+  opacity: 0; transition: opacity 0.25s;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: clamp(8px, 1.5vw, 14px);
+}
+.photo-item:hover .photo-overlay { opacity: 1; }
+
+/* Touch-always-visible overlay for mobile */
+.photo-item.touch-show .photo-overlay { opacity: 1; }
+
+.photo-actions { display: flex; gap: 6px; }
+.photo-btn {
+  width: clamp(28px, 3.5vw, 34px); height: clamp(28px, 3.5vw, 34px);
+  border-radius: 50%; background: rgba(255,255,255,0.92);
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--fg); transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+.photo-btn:hover { background: #fff; transform: scale(1.1); }
+.photo-btn svg { width: clamp(12px, 1.5vw, 15px); height: clamp(12px, 1.5vw, 15px); }
+.photo-btn.fav-active { color: #E05454; }
+.photo-btn.fav-active svg { fill: currentColor; }
+
+/* ── LIGHTBOX ─────────────────────────────── */
+.lightbox {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(17,15,10,0.97);
+  display: none; flex-direction: column;
+  opacity: 0; transition: opacity 0.25s;
+}
+.lightbox.open { display: flex; }
+.lightbox.visible { opacity: 1; }
+
+.lb-topbar {
+  height: 56px; display: flex; align-items: center;
+  padding: 0 clamp(14px, 3vw, 28px); gap: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;
+}
+.lb-back {
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15); background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; color: #fff;
+  transition: background 0.15s;
+}
+.lb-back:hover { background: rgba(255,255,255,0.1); }
+.lb-back svg { width: 16px; height: 16px; }
+.lb-info { flex: 1; min-width: 0; }
+.lb-title { font-family: 'Cormorant', serif; font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.85); }
+.lb-counter { font-size: 11px; color: rgba(255,255,255,0.35); }
+.lb-actions { display: flex; gap: 6px; }
+.lb-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 12px; border-radius: 7px;
+  border: 1px solid rgba(255,255,255,0.15); background: none;
+  color: rgba(255,255,255,0.8); cursor: pointer; font-family: 'Outfit', sans-serif;
+  font-size: 12px; transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb-btn:hover { background: rgba(255,255,255,0.1); }
+.lb-btn svg { width: 14px; height: 14px; }
+.lb-btn.fav-active { color: #F07070; border-color: #F07070; }
+.lb-btn.fav-active svg { fill: currentColor; }
+.lb-btn .btn-label { display: block; }
+
+.lb-stage {
+  flex: 1; position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.lb-img {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain; border-radius: 4px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  animation: lbFade 0.3s ease;
+  padding: clamp(10px, 2vw, 28px) clamp(50px, 6vw, 80px);
+}
+@keyframes lbFade { from { opacity:0; transform: scale(0.97); } to { opacity:1; transform: scale(1); } }
+
+.lb-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(23,22,15,0.6); backdrop-filter: blur(8px);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: #fff; transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb-nav:hover { background: rgba(255,255,255,0.18); }
+.lb-nav svg { width: 17px; height: 17px; }
+.lb-prev { left: clamp(10px, 2vw, 20px); }
+.lb-next { right: clamp(10px, 2vw, 20px); }
+
+.lb-strip {
+  height: 76px; flex-shrink: 0;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 clamp(10px, 2vw, 20px);
+  overflow-x: auto;
+}
+.lb-strip::-webkit-scrollbar { display: none; }
+.lb-thumb {
+  width: 56px; height: 56px; flex-shrink: 0; border-radius: 6px;
+  overflow: hidden; cursor: pointer; opacity: 0.45;
+  border: 2px solid transparent; transition: all 0.2s;
+}
+.lb-thumb:hover { opacity: 0.75; }
+.lb-thumb.active { opacity: 1; border-color: #5cbdb9; }
+.lb-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ── FOOTER ───────────────────────────────── */
+.gal-footer {
+  padding: clamp(24px, 4vw, 40px) clamp(16px, 4vw, 48px);
+  border-top: 1px solid var(--bdr); text-align: center;
+}
+.powered-by {
+  font-size: 11.5px; color: var(--sub); letter-spacing: 0.04em;
+}
+.powered-by a { color: var(--accent); text-decoration: none; font-weight: 500; }
+.powered-by a:hover { text-decoration: underline; }
+
+/* ── TOAST ────────────────────────────────── */
+.gal-toast {
+  position: fixed; bottom: clamp(16px, 3vw, 28px);
+  left: 50%; transform: translateX(-50%) translateY(60px);
+  background: #1A3A3A; color: #fff;
+  padding: 12px 20px; border-radius: 10px;
+  font-size: 13.5px; display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  opacity: 0; transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 9999; white-space: nowrap;
+}
+.gal-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.gal-toast svg { width: 15px; height: 15px; color: #5cbdb9; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+═══════════════════════════════════════════ */
+
+/* Tablet: 2 columns, zero side padding */
+@media (max-width: 900px) {
+  .masonry-grid {
+    --cols: 2;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 10px;
+    column-gap: 3px;
+  }
+  .masonry-grid .photo-item { margin-bottom: 3px; border-radius: 4px; }
+  .section-label { padding-left: 12px; padding-right: 12px; }
+  .fav-bar { padding-left: 12px; padding-right: 12px; }
+  .gal-hero-scroll { display: none; }
+  .lb-btn .btn-label { display: none; }
+  .lb-btn { padding: 7px; }
+}
+
+/* Mobile: 2 columns, fully edge-to-edge */
+@media (max-width: 500px) {
+  .masonry-grid {
+    --cols: 2;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 8px;
+    column-gap: 2px;
+  }
+  .masonry-grid .photo-item { margin-bottom: 2px; border-radius: 3px; }
+  .section-label { padding-left: 12px; padding-right: 12px; }
+  .fav-bar { padding-left: 12px; padding-right: 12px; }
+  .gal-nav-divider { display: none; }
+  .gal-nav-title { display: none; }
+  .nav-dl-btn .dl-text { display: none; }
+  .nav-dl-btn { padding: 8px; }
+  .gal-hero-meta { display: none; }
+  .lb-strip { height: 64px; }
+  .lb-thumb { width: 48px; height: 48px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ═══ PREVIEW BAR ═══ -->
+<div class="preview-bar">
+  <div class="pb-logo">Frame<span>light</span></div>
+  <div class="device-tabs">
+    <button class="device-tab active" onclick="switchDevice('web',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Web
+    </button>
+    <button class="device-tab" onclick="switchDevice('tablet',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2.5" stroke-linecap="round"/></svg>
+      Tablet
+    </button>
+    <button class="device-tab" onclick="switchDevice('mobile',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2.5" stroke-linecap="round"/></svg>
+      Mobile
+    </button>
+  </div>
+  <div class="pb-right">
+    <span class="pb-note">Client gallery preview · Click photos to open lightbox</span>
+  </div>
+</div>
+
+<div class="preview-stage">
+
+  <!-- ── WEB FRAME ── -->
+  <div class="device-frame frame-web active" id="frame-web">
+    <div class="device-shell" id="shell-web">
+      <!-- GALLERY CONTENT INJECTED HERE -->
+    </div>
+    <div class="device-label">Desktop Web — 1280px</div>
+  </div>
+
+  <!-- ── TABLET FRAME ── -->
+  <div class="device-frame frame-tablet" id="frame-tablet">
+    <div class="device-chrome">
+      <div class="device-shell" id="shell-tablet"></div>
+    </div>
+    <div class="device-label">Tablet — 820px</div>
+  </div>
+
+  <!-- ── MOBILE FRAME ── -->
+  <div class="device-frame frame-mobile" id="frame-mobile">
+    <div class="device-chrome">
+      <div class="device-shell" id="shell-mobile"></div>
+    </div>
+    <div class="device-label">iPhone — 390px</div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+const photos = [
+  { id:1,  src:'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=300&q=75' },
+  { id:2,  src:'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=300&q=75' },
+  { id:3,  src:'https://images.unsplash.com/photo-1519741497674-611481863552?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1519741497674-611481863552?w=300&q=75' },
+  { id:4,  src:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300&q=75' },
+  { id:5,  src:'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=300&q=75' },
+  { id:6,  src:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=300&q=75' },
+  { id:7,  src:'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=300&q=75' },
+  { id:8,  src:'https://images.unsplash.com/photo-1529636798458-92182e662485?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1529636798458-92182e662485?w=300&q=75' },
+  { id:9,  src:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&q=75' },
+  { id:10, src:'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=300&q=75' },
+  { id:11, src:'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&q=75' },
+  { id:12, src:'https://images.unsplash.com/photo-1513278974582-3e1b4a4fa21e?w=900&q=80',  thumb:'https://images.unsplash.com/photo-1513278974582-3e1b4a4fa21e?w=300&q=75' },
+];
+
+// ══════════════════════════════════════════════
+//  GALLERY HTML BUILDER
+// ══════════════════════════════════════════════
+function buildGallery(shellId) {
+  const shell = document.getElementById(shellId);
+  const galleryId = 'gal-' + shellId;
+
+  shell.innerHTML = `
+<div class="gallery-page" id="${galleryId}">
+
+  <!-- PIN GATE -->
+  <div class="pin-gate" id="pin-gate-${shellId}" style="display:flex">
+    <div class="pin-gate-hero">
+      <img src="https://images.unsplash.com/photo-1606800052052-a08af7148866?w=900&q=80" alt=""/>
+      <div class="pin-gate-hero-text">
+        <div class="studio">Sarah Kim Photography</div>
+        <h1>Emma &amp; <em>James</em><br>Wedding</h1>
+      </div>
+    </div>
+    <div class="pin-gate-body">
+      <div class="lock-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </div>
+      <h2>Your gallery is ready</h2>
+      <p>Enter the 4-digit PIN shared by your photographer to view your photos.</p>
+      <div class="pin-inputs-row" id="pin-row-${shellId}">
+        <div class="pin-box" id="pb0-${shellId}"></div>
+        <div class="pin-box active" id="pb1-${shellId}"></div>
+        <div class="pin-box" id="pb2-${shellId}"></div>
+        <div class="pin-box" id="pb3-${shellId}"></div>
+      </div>
+      <div class="keypad">
+        ${[1,2,3,4,5,6,7,8,9,'','0','⌫'].map(k => `<button class="key${k==='⌫'?' del':''}" onclick="pinKey('${shellId}','${k}')">${k}</button>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN GALLERY (hidden until PIN entered) -->
+  <div id="main-gallery-${shellId}" style="display:none">
+
+    <!-- NAV -->
+    <nav class="gal-nav" id="nav-${shellId}">
+      <div class="gal-nav-inner">
+        <div class="gal-nav-brand">
+          <div class="gal-nav-logo">
+            <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=60&q=80" alt=""/>
+          </div>
+          <span class="gal-nav-name">Sarah Kim</span>
+          <div class="gal-nav-divider"></div>
+          <span class="gal-nav-title">Emma &amp; James Wedding</span>
+        </div>
+        <div class="gal-nav-actions">
+          <button class="nav-icon-btn" title="Favorites" onclick="showFavPanel('${shellId}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            <span class="nav-badge" id="fav-count-${shellId}">0</span>
+          </button>
+          <button class="nav-dl-btn" onclick="showToastIn('${shellId}','Preparing ZIP download…')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="dl-text">Download All</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <div class="gal-hero">
+      <img class="gal-hero-img" src="https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1400&q=85" alt=""/>
+      <div class="gal-hero-overlay"></div>
+      <div class="gal-hero-content">
+        <div class="gal-hero-text">
+          <div class="studio-tag">Sarah Kim Photography</div>
+          <h1>Emma &amp; <em>James</em><br>Wedding</h1>
+          <div class="gal-hero-meta">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>June 14, 2025</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>${photos.length} photos</span>
+          </div>
+        </div>
+        <div class="gal-hero-scroll">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          Scroll
+        </div>
+      </div>
+    </div>
+
+    <!-- FAVORITES BAR -->
+    <div class="fav-bar" id="fav-bar-${shellId}" style="display:none">
+      <span class="fav-bar-text">You've selected <strong id="fav-bar-count-${shellId}">0</strong> favorites</span>
+      <button class="fav-dl-btn" onclick="showToastIn('${shellId}','Downloading favorites as ZIP…')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Favorites
+      </button>
+    </div>
+
+    <!-- SECTION LABEL -->
+    <div class="section-label">
+      <h2>The <em>Gallery</em></h2>
+      <span class="photo-count">${photos.length} photos</span>
+    </div>
+
+    <!-- MASONRY GRID -->
+    <div class="masonry-grid" id="grid-${shellId}">
+      ${photos.map((p, i) => `
+      <div class="photo-item" data-id="${p.id}" data-idx="${i}" onclick="openLightbox('${shellId}',${i})">
+        <img src="${p.thumb}" alt="Photo ${p.id}" loading="lazy"/>
+        <div class="photo-overlay">
+          <div class="photo-actions">
+            <button class="photo-btn fav-btn" data-id="${p.id}" onclick="toggleFav('${shellId}',${p.id},event)"
+              title="Favorite">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+              </svg>
+            </button>
+            <button class="photo-btn" onclick="downloadPhoto('${shellId}',event)" title="Download">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>
+
+    <!-- FOOTER -->
+    <div class="gal-footer">
+      <div class="powered-by">
+        Delivered with <a href="#">Framelight</a> · Shared by Sarah Kim Photography
+      </div>
+    </div>
+
+  </div><!-- /main gallery -->
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lb-${shellId}">
+    <div class="lb-topbar">
+      <button class="lb-back" onclick="closeLightbox('${shellId}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="lb-info">
+        <div class="lb-title">Emma &amp; James Wedding</div>
+        <div class="lb-counter" id="lb-counter-${shellId}">1 / ${photos.length}</div>
+      </div>
+      <div class="lb-actions">
+        <button class="lb-btn" id="lb-fav-btn-${shellId}" onclick="toggleFavLb('${shellId}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+          </svg>
+          <span class="btn-label">Favorite</span>
+        </button>
+        <button class="lb-btn" onclick="showToastIn('${shellId}','Photo downloaded!')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span class="btn-label">Download</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="lb-stage">
+      <img class="lb-img" id="lb-img-${shellId}" src="" alt=""/>
+      <button class="lb-nav lb-prev" onclick="lbNav('${shellId}',-1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="lb-nav lb-next" onclick="lbNav('${shellId}',1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <div class="lb-strip" id="lb-strip-${shellId}">
+      ${photos.map((p,i) => `
+      <div class="lb-thumb" id="lt-${shellId}-${i}" onclick="lbGoTo('${shellId}',${i})">
+        <img src="${p.thumb}" alt=""/>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="gal-toast" id="toast-${shellId}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toast-msg-${shellId}"></span>
+  </div>
+
+</div><!-- /gallery-page -->
+  `;
+
+  // Wire up scroll for sticky nav shadow
+  shell.addEventListener('scroll', () => {
+    const nav = document.getElementById('nav-' + shellId);
+    if (nav) nav.classList.toggle('scrolled', shell.scrollTop > 10);
+  });
+}
+
+// ══════════════════════════════════════════════
+//  PIN LOGIC
+// ══════════════════════════════════════════════
+const pinState = {};
+function pinKey(sid, key) {
+  if (!pinState[sid]) pinState[sid] = [];
+  const arr = pinState[sid];
+  if (key === '⌫') {
+    arr.pop();
+  } else if (key !== '' && arr.length < 4) {
+    arr.push(key);
+  }
+  updatePinUI(sid);
+  if (arr.length === 4) {
+    setTimeout(() => {
+      if (arr.join('') === '4219') {
+        unlockGallery(sid);
+      } else {
+        // wrong PIN — shake + reset
+        [0,1,2,3].forEach(i => {
+          const b = document.getElementById(`pb${i}-${sid}`);
+          if (b) { b.classList.add('error'); setTimeout(()=>b.classList.remove('error'), 400); }
+        });
+        pinState[sid] = [];
+        setTimeout(() => updatePinUI(sid), 420);
+        showToastIn(sid, 'Incorrect PIN — try again');
+      }
+    }, 120);
+  }
+}
+function updatePinUI(sid) {
+  const arr = pinState[sid] || [];
+  for (let i = 0; i < 4; i++) {
+    const b = document.getElementById(`pb${i}-${sid}`);
+    if (!b) continue;
+    b.textContent = arr[i] ? '●' : '';
+    b.classList.toggle('filled', !!arr[i]);
+    b.classList.toggle('active', i === arr.length);
+  }
+}
+function unlockGallery(sid) {
+  const gate = document.getElementById('pin-gate-' + sid);
+  const main = document.getElementById('main-gallery-' + sid);
+  if (gate) gate.style.display = 'none';
+  if (main) main.style.display = 'block';
+  const shell = document.getElementById('shell-' + sid.replace('gal-',''));
+  if (shell) shell.scrollTop = 0;
+}
+
+// ══════════════════════════════════════════════
+//  FAVORITES
+// ══════════════════════════════════════════════
+const favState = {};
+function toggleFav(sid, photoId, e) {
+  if (e) e.stopPropagation();
+  if (!favState[sid]) favState[sid] = new Set();
+  const favs = favState[sid];
+  favs.has(photoId) ? favs.delete(photoId) : favs.add(photoId);
+  updateFavUI(sid, photoId);
+  updateFavCount(sid);
+  showToastIn(sid, favs.has(photoId) ? '❤️ Added to favorites' : 'Removed from favorites');
+}
+function toggleFavLb(sid) {
+  const idx = lbState[sid] || 0;
+  const photoId = photos[idx].id;
+  if (!favState[sid]) favState[sid] = new Set();
+  const favs = favState[sid];
+  favs.has(photoId) ? favs.delete(photoId) : favs.add(photoId);
+  updateFavUI(sid, photoId);
+  updateFavCount(sid);
+  const btn = document.getElementById('lb-fav-btn-' + sid);
+  if (btn) {
+    btn.classList.toggle('fav-active', favs.has(photoId));
+    btn.querySelector('.btn-label').textContent = favs.has(photoId) ? 'Favorited' : 'Favorite';
+  }
+  showToastIn(sid, favs.has(photoId) ? '❤️ Added to favorites' : 'Removed from favorites');
+}
+function updateFavUI(sid, photoId) {
+  const shell = document.getElementById('shell-' + sid.replace('gal-',''));
+  if (!shell) return;
+  const btns = shell.querySelectorAll(`.fav-btn[data-id="${photoId}"]`);
+  const active = favState[sid] && favState[sid].has(photoId);
+  btns.forEach(b => b.classList.toggle('fav-active', active));
+}
+function updateFavCount(sid) {
+  const count = favState[sid] ? favState[sid].size : 0;
+  const el = document.getElementById('fav-count-' + sid);
+  if (el) el.textContent = count;
+  const bar = document.getElementById('fav-bar-' + sid);
+  const barCount = document.getElementById('fav-bar-count-' + sid);
+  if (bar) bar.style.display = count > 0 ? 'flex' : 'none';
+  if (barCount) barCount.textContent = count;
+}
+function showFavPanel(sid) {
+  const count = favState[sid] ? favState[sid].size : 0;
+  showToastIn(sid, count > 0 ? `${count} favorites selected` : 'No favorites yet — tap ❤️ on photos');
+}
+
+// ══════════════════════════════════════════════
+//  LIGHTBOX
+// ══════════════════════════════════════════════
+const lbState = {};
+function openLightbox(sid, idx) {
+  lbState[sid] = idx;
+  const lb = document.getElementById('lb-' + sid);
+  if (!lb) return;
+  lb.style.display = 'flex';
+  setTimeout(() => lb.classList.add('visible'), 10);
+  lbGoTo(sid, idx);
+}
+function closeLightbox(sid) {
+  const lb = document.getElementById('lb-' + sid);
+  if (!lb) return;
+  lb.classList.remove('visible');
+  setTimeout(() => lb.style.display = 'none', 250);
+}
+function lbGoTo(sid, idx) {
+  if (idx < 0) idx = photos.length - 1;
+  if (idx >= photos.length) idx = 0;
+  lbState[sid] = idx;
+  const img = document.getElementById('lb-img-' + sid);
+  const counter = document.getElementById('lb-counter-' + sid);
+  if (img) { img.src = ''; img.src = photos[idx].src; }
+  if (counter) counter.textContent = `${idx + 1} / ${photos.length}`;
+  // update strip
+  document.querySelectorAll(`[id^="lt-${sid}-"]`).forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+    if (i === idx) t.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+  });
+  // update fav btn
+  const btn = document.getElementById('lb-fav-btn-' + sid);
+  if (btn) {
+    const active = favState[sid] && favState[sid].has(photos[idx].id);
+    btn.classList.toggle('fav-active', active);
+    btn.querySelector('.btn-label').textContent = active ? 'Favorited' : 'Favorite';
+  }
+}
+function lbNav(sid, dir) { lbGoTo(sid, (lbState[sid] || 0) + dir); }
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  const active = ['web','tablet','mobile'].find(d =>
+    document.getElementById('frame-' + d).classList.contains('active'));
+  if (!active) return;
+  const sid = 'gal-' + active;
+  if (e.key === 'ArrowRight') lbNav(sid, 1);
+  if (e.key === 'ArrowLeft')  lbNav(sid, -1);
+  if (e.key === 'Escape')     closeLightbox(sid);
+});
+
+// ══════════════════════════════════════════════
+//  DOWNLOAD (mock)
+// ══════════════════════════════════════════════
+function downloadPhoto(sid, e) {
+  if (e) e.stopPropagation();
+  showToastIn(sid, 'Photo downloaded!');
+}
+
+// ══════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════
+const toastTimers = {};
+function showToastIn(sid, msg) {
+  const t = document.getElementById('toast-' + sid);
+  const m = document.getElementById('toast-msg-' + sid);
+  if (!t || !m) return;
+  m.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimers[sid]);
+  toastTimers[sid] = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ══════════════════════════════════════════════
+//  DEVICE SWITCHER
+// ══════════════════════════════════════════════
+function switchDevice(device, btn) {
+  document.querySelectorAll('.device-frame').forEach(f => f.classList.remove('active'));
+  document.querySelectorAll('.device-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('frame-' + device).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+//  INIT — build gallery in all 3 shells
+// ══════════════════════════════════════════════
+['web','tablet','mobile'].forEach(d => {
+  buildGallery('shell-' + d);
+  // After build, init pin states pointing to the right gallery ids
+  pinState['gal-' + d] = [];
+});
+
+// Demo: auto-unlock the web view for a better first impression
+// (PIN: 4219 - shown in the UI)
+setTimeout(() => {
+  // Show PIN hint in web
+  const hint = document.createElement('div');
+  hint.style.cssText = `position:absolute;bottom:16px;right:16px;background:rgba(77,191,184,0.95);color:#1A3A3A;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;z-index:10;letter-spacing:0.04em;`;
+  hint.textContent = 'Demo PIN: 4219';
+  const gate = document.querySelector('#shell-web .pin-gate');
+  if (gate) { gate.style.position = 'relative'; gate.appendChild(hint); }
+}, 200);
+</script>
+</body>
+</html>

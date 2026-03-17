@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Framelight — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+/* ─── BRAND PALETTE ───────────────────────
+   Pink:       #fbe3e8
+   Teal:       #5cbdb9
+   Mint:       #ebf6f5
+   Dark teal:  #1a3a3a  (text / sidebar)
+   Mid teal:   #3d7a78  (muted text)
+   Light teal: #89d0cd  (hover/light accent)
+──────────────────────────────────────────── */
+:root {
+  --pink:       #fbe3e8;
+  --pink-d:     #f5c8d2;
+  --teal:       #5cbdb9;
+  --teal-l:     #89d0cd;
+  --teal-pale:  #ebf6f5;
+  --ink:        #1a3a3a;
+  --charcoal:   #2a5250;
+  --mid:        #3d7a78;
+  --muted:      #7aadab;
+  --border:     #ceecea;
+  --bg:         #f8fdfc;
+  --white:      #ffffff;
+  --red:        #e07878;
+  --font-d:     'Cormorant', Georgia, serif;
+  --font-ui:    'Outfit', sans-serif;
+  --sidebar-w:  232px;
+  --topbar-h:   58px;
+}
+
+html, body { height:100%; font-family:var(--font-ui); background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; }
+
+/* ═══════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════ */
+.app { display:flex; height:100vh; overflow:hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w); flex-shrink:0;
+  background: var(--ink);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.sidebar-logo {
+  height:var(--topbar-h); display:flex; align-items:center;
+  padding:0 22px; border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0;
+}
+.logo-mark { font-family:var(--font-d); font-size:22px; font-weight:500; color:#fff; letter-spacing:0.04em; }
+.logo-mark span { color:var(--teal-l); font-style:italic; }
+
+.sidebar-section { padding:20px 14px 8px; }
+.sidebar-section-label {
+  font-size:9px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
+  color:rgba(255,255,255,0.28); padding:0 8px; margin-bottom:6px;
+}
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 12px; border-radius:8px; cursor:pointer;
+  font-size:13.5px; font-weight:400; color:rgba(255,255,255,0.5);
+  transition:all 0.15s; user-select:none; margin-bottom:1px;
+}
+.nav-item svg { width:16px; height:16px; flex-shrink:0; opacity:0.6; }
+.nav-item:hover { background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.85); }
+.nav-item:hover svg { opacity:1; }
+.nav-item.active { background:rgba(92,189,185,0.18); color:#fff; font-weight:500; }
+.nav-item.active svg { opacity:1; color:var(--teal-l); }
+.nav-badge { margin-left:auto; background:var(--teal); color:var(--ink); font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px; }
+
+.sidebar-bottom { margin-top:auto; padding:16px 14px; border-top:1px solid rgba(255,255,255,0.07); }
+.storage-block { padding:14px; background:rgba(255,255,255,0.05); border-radius:10px; margin-bottom:14px; }
+.storage-label { font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:8px; display:flex; justify-content:space-between; }
+.storage-label span:last-child { color:rgba(255,255,255,0.7); }
+.storage-bar { height:3px; background:rgba(255,255,255,0.1); border-radius:2px; }
+.storage-fill { height:100%; border-radius:2px; background:linear-gradient(90deg, var(--teal), var(--teal-l)); width:34%; }
+.storage-upgrade { margin-top:10px; font-size:11px; color:var(--teal-l); cursor:pointer; font-weight:500; display:block; }
+
+.user-row { display:flex; align-items:center; gap:10px; padding:8px; border-radius:8px; cursor:pointer; transition:background 0.15s; }
+.user-row:hover { background:rgba(255,255,255,0.06); }
+.user-avatar { width:30px; height:30px; border-radius:50%; background:var(--teal); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--ink); flex-shrink:0; }
+.user-name { font-size:12.5px; color:rgba(255,255,255,0.75); }
+.user-plan { font-size:10px; color:rgba(255,255,255,0.35); margin-top:1px; }
+
+/* ── MAIN ── */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.topbar {
+  height:var(--topbar-h); flex-shrink:0;
+  background:var(--white); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 32px; gap:16px;
+}
+.topbar-title { font-family:var(--font-d); font-size:22px; font-weight:500; color:var(--ink); flex:1; }
+.topbar-title em { font-style:italic; color:var(--teal); }
+
+.topbar-search {
+  display:flex; align-items:center; gap:8px;
+  background:var(--teal-pale); border:1px solid var(--border);
+  border-radius:8px; padding:7px 14px; width:220px;
+}
+.topbar-search input { background:none; border:none; outline:none; font-family:var(--font-ui); font-size:13px; color:var(--ink); width:100%; }
+.topbar-search input::placeholder { color:var(--muted); }
+.topbar-search svg { width:14px; height:14px; color:var(--muted); flex-shrink:0; }
+
+.topbar-btn {
+  display:flex; align-items:center; gap:7px; padding:9px 18px;
+  border-radius:8px; border:none; cursor:pointer; font-family:var(--font-ui);
+  font-size:13px; font-weight:500; transition:all 0.2s; letter-spacing:0.02em;
+}
+.topbar-btn.primary { background:var(--teal); color:#fff; }
+.topbar-btn.primary:hover { background:var(--teal-l); transform:translateY(-1px); box-shadow:0 4px 16px rgba(92,189,185,0.35); }
+.topbar-btn svg { width:15px; height:15px; }
+
+.page { flex:1; overflow-y:auto; display:none; }
+.page.active { display:block; }
+.page-pad { padding:32px; }
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* ═══════════════════════════════════════
+   OVERVIEW
+═══════════════════════════════════════ */
+.overview-hero {
+  background:var(--ink); border-radius:16px; padding:36px 40px;
+  margin-bottom:28px; display:flex; align-items:center; justify-content:space-between;
+  overflow:hidden; position:relative;
+}
+.overview-hero::before {
+  content:''; position:absolute; top:-60px; right:-40px;
+  width:300px; height:300px; border-radius:50%;
+  background:radial-gradient(circle, rgba(92,189,185,0.2) 0%, transparent 70%);
+}
+.overview-hero::after {
+  content:''; position:absolute; bottom:-80px; right:140px;
+  width:200px; height:200px; border-radius:50%;
+  background:radial-gradient(circle, rgba(251,227,232,0.08) 0%, transparent 70%);
+}
+.hero-text h2 { font-family:var(--font-d); font-size:34px; font-weight:400; color:#fff; line-height:1.1; margin-bottom:8px; }
+.hero-text h2 em { font-style:italic; color:var(--teal-l); }
+.hero-text p { font-size:14px; color:rgba(255,255,255,0.45); font-weight:300; }
+.hero-actions { display:flex; gap:10px; position:relative; z-index:1; }
+.hero-btn {
+  padding:11px 22px; border-radius:9px; cursor:pointer; font-family:var(--font-ui);
+  font-size:13px; font-weight:500; transition:all 0.2s; border:none;
+  display:flex; align-items:center; gap:8px;
+}
+.hero-btn.teal { background:var(--teal); color:#fff; }
+.hero-btn.teal:hover { background:var(--teal-l); transform:translateY(-1px); box-shadow:0 4px 16px rgba(92,189,185,0.4); }
+.hero-btn.outline { background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.8); border:1px solid rgba(255,255,255,0.15); }
+.hero-btn.outline:hover { background:rgba(255,255,255,0.13); }
+.hero-btn svg { width:15px; height:15px; }
+
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+.stat-card {
+  background:var(--white); border:1px solid var(--border); border-radius:12px;
+  padding:22px 24px; transition:box-shadow 0.2s;
+}
+.stat-card:hover { box-shadow:0 4px 20px rgba(92,189,185,0.12); }
+.s-label { font-size:11px; font-weight:500; letter-spacing:0.09em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
+.s-label svg { width:14px; height:14px; }
+.s-val { font-family:var(--font-d); font-size:38px; font-weight:400; color:var(--ink); line-height:1; margin-bottom:4px; }
+.s-sub { font-size:12px; color:var(--muted); }
+.stat-card.accent { background:var(--teal-pale); border-color:rgba(92,189,185,0.3); }
+.stat-card.accent .s-val { color:var(--teal); }
+
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.section-header h3 { font-family:var(--font-d); font-size:20px; font-weight:500; color:var(--ink); }
+.see-all { font-size:13px; color:var(--teal); cursor:pointer; font-weight:500; }
+.see-all:hover { text-decoration:underline; }
+
+/* ═══════════════════════════════════════
+   GALLERY CARDS
+═══════════════════════════════════════ */
+.gallery-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+
+.g-card {
+  background:var(--white); border:1px solid var(--border); border-radius:14px;
+  overflow:hidden; cursor:pointer; transition:all 0.25s;
+}
+.g-card:hover { transform:translateY(-3px); box-shadow:0 12px 36px rgba(92,189,185,0.15); border-color:var(--teal-pale); }
+
+.g-thumb { height:185px; position:relative; overflow:hidden; background:var(--teal-pale); }
+.g-thumb img { width:100%; height:100%; object-fit:cover; transition:transform 0.5s; display:block; }
+.g-card:hover .g-thumb img { transform:scale(1.05); }
+.g-thumb-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(26,58,58,0.55) 0%, transparent 55%);
+  opacity:0; transition:opacity 0.25s;
+  display:flex; align-items:flex-end; padding:14px;
+}
+.g-card:hover .g-thumb-overlay { opacity:1; }
+.g-thumb-actions { display:flex; gap:6px; }
+.g-thumb-btn {
+  padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.3);
+  background:rgba(255,255,255,0.15); backdrop-filter:blur(8px);
+  color:#fff; font-size:11px; font-weight:500; cursor:pointer;
+  font-family:var(--font-ui); transition:background 0.15s; letter-spacing:0.04em;
+}
+.g-thumb-btn:hover { background:rgba(255,255,255,0.28); }
+
+.g-tags { position:absolute; top:12px; left:12px; display:flex; gap:5px; }
+.g-tag { font-size:10px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; padding:3px 9px; border-radius:20px; backdrop-filter:blur(6px); }
+.g-tag.public  { background:rgba(26,58,58,0.6); color:rgba(255,255,255,0.9); }
+.g-tag.locked  { background:rgba(92,189,185,0.9); color:var(--ink); }
+.g-tag.expired { background:rgba(224,120,120,0.85); color:#fff; }
+.g-tag.draft   { background:rgba(255,255,255,0.75); color:var(--mid); }
+
+.g-body { padding:16px 18px 18px; }
+.g-title { font-family:var(--font-d); font-size:17px; font-weight:500; color:var(--ink); margin-bottom:3px; }
+.g-meta { font-size:12px; color:var(--muted); margin-bottom:14px; }
+.g-footer { display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--teal-pale); padding-top:13px; }
+.g-footer-stat { font-size:12px; color:var(--mid); display:flex; align-items:center; gap:5px; }
+.g-footer-stat svg { width:13px; height:13px; }
+.g-footer-actions { display:flex; gap:5px; }
+.icon-btn {
+  width:28px; height:28px; border-radius:6px; border:1px solid var(--border);
+  background:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  color:var(--muted); transition:all 0.15s;
+}
+.icon-btn:hover { border-color:var(--teal); color:var(--teal); background:var(--teal-pale); }
+.icon-btn svg { width:13px; height:13px; }
+
+/* ═══════════════════════════════════════
+   GALLERIES PAGE
+═══════════════════════════════════════ */
+.galleries-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:24px; flex-wrap:wrap; }
+.filter-btn {
+  padding:7px 16px; border-radius:20px; border:1px solid var(--border);
+  background:var(--white); font-family:var(--font-ui); font-size:12.5px;
+  font-weight:500; color:var(--mid); cursor:pointer; transition:all 0.15s;
+}
+.filter-btn:hover { background:var(--teal-pale); border-color:var(--teal); color:var(--teal); }
+.filter-btn.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+.sort-select {
+  margin-left:auto; padding:7px 12px; border-radius:8px; border:1px solid var(--border);
+  background:var(--white); font-family:var(--font-ui); font-size:12.5px;
+  color:var(--charcoal); outline:none; cursor:pointer;
+}
+
+/* ═══════════════════════════════════════
+   NEW GALLERY FLOW
+═══════════════════════════════════════ */
+.flow-layout { display:grid; grid-template-columns:1fr 300px; gap:24px; align-items:start; }
+
+.flow-steps {
+  display:flex; margin-bottom:28px;
+  border-bottom:1px solid var(--border); padding-bottom:0;
+}
+.flow-step {
+  display:flex; align-items:center; gap:8px;
+  padding:12px 20px 13px; cursor:pointer;
+  font-size:13px; color:var(--muted); font-weight:400; transition:color 0.15s;
+  border-bottom:2px solid transparent; margin-bottom:-1px;
+}
+.flow-step:hover { color:var(--charcoal); }
+.flow-step.active { color:var(--ink); font-weight:500; border-bottom-color:var(--teal); }
+.flow-step.done { color:var(--teal); }
+.step-num {
+  width:20px; height:20px; border-radius:50%; border:1.5px solid currentColor;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:600; flex-shrink:0;
+}
+.flow-step.done .step-num { background:var(--teal); border-color:var(--teal); color:#fff; }
+
+.step-panel { display:none; }
+.step-panel.active { display:block; }
+
+.form-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:14px; padding:28px; margin-bottom:18px;
+}
+.form-card-title {
+  font-family:var(--font-d); font-size:17px; font-weight:500; color:var(--ink);
+  margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--teal-pale);
+}
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-group { margin-bottom:18px; }
+.form-group label {
+  display:block; font-size:11px; font-weight:600; letter-spacing:0.09em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:7px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:8px;
+  background:var(--teal-pale); font-family:var(--font-ui); font-size:13.5px; color:var(--ink);
+  outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color:var(--teal); box-shadow:0 0 0 3px rgba(92,189,185,0.15); background:var(--white);
+}
+.form-group input::placeholder, .form-group textarea::placeholder { color:var(--muted); }
+.form-group textarea { resize:vertical; min-height:80px; }
+
+.cover-upload {
+  border:2px dashed var(--border); border-radius:12px;
+  aspect-ratio:16/7; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; cursor:pointer;
+  background:var(--teal-pale); transition:all 0.2s; position:relative; overflow:hidden;
+}
+.cover-upload:hover { border-color:var(--teal); background:#e0f3f2; }
+.cover-upload .cu-icon { width:44px; height:44px; background:var(--white); border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
+.cover-upload .cu-icon svg { width:20px; height:20px; color:var(--teal); }
+.cover-upload h4 { font-family:var(--font-d); font-size:17px; font-weight:400; color:var(--charcoal); margin-bottom:4px; }
+.cover-upload p { font-size:12px; color:var(--muted); }
+.cover-upload.has-image img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
+.cover-upload.has-image .cover-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; }
+.cover-upload.has-image:hover .cover-overlay { opacity:1; }
+.cover-upload.has-image .cover-overlay span { color:#fff; font-size:13px; font-weight:500; }
+
+.drop-zone {
+  border:2px dashed var(--border); border-radius:14px;
+  padding:56px 40px; text-align:center; background:var(--white);
+  transition:all 0.2s; cursor:pointer; margin-bottom:20px;
+}
+.drop-zone:hover, .drop-zone.dragging { border-color:var(--teal); background:var(--teal-pale); }
+.drop-zone .dz-icon { width:60px; height:60px; margin:0 auto 16px; background:var(--teal-pale); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.drop-zone .dz-icon svg { width:26px; height:26px; color:var(--teal); }
+.drop-zone h3 { font-family:var(--font-d); font-size:22px; font-weight:400; color:var(--charcoal); margin-bottom:6px; }
+.drop-zone p { font-size:13px; color:var(--muted); }
+.drop-zone .browse { color:var(--teal); font-weight:500; text-decoration:underline; cursor:pointer; }
+
+.upload-list { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+.upload-item {
+  background:var(--white); border:1px solid var(--border); border-radius:10px;
+  padding:12px 14px; display:flex; align-items:center; gap:12px;
+  animation:slideIn 0.3s ease;
+}
+@keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.upload-thumb { width:42px; height:42px; border-radius:6px; object-fit:cover; background:var(--teal-pale); flex-shrink:0; }
+.upload-info { flex:1; min-width:0; }
+.upload-name { font-size:13px; font-weight:500; color:var(--charcoal); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:5px; }
+.upload-bar-wrap { display:flex; align-items:center; gap:8px; }
+.upload-bar { flex:1; height:3px; background:var(--teal-pale); border-radius:2px; }
+.upload-bar-fill { height:100%; border-radius:2px; background:linear-gradient(90deg, var(--teal), var(--teal-l)); transition:width 0.4s; }
+.upload-pct { font-size:11px; color:var(--muted); flex-shrink:0; min-width:30px; text-align:right; }
+.upload-status-done { color:var(--teal); font-size:13px; font-weight:500; }
+.upload-remove { width:24px; height:24px; border:none; background:none; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; border-radius:4px; transition:all 0.15s; flex-shrink:0; }
+.upload-remove:hover { color:var(--red); background:rgba(224,120,120,0.1); }
+.upload-remove svg { width:13px; height:13px; }
+
+.photo-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:8px; margin-bottom:20px; }
+.photo-item { aspect-ratio:1; border-radius:8px; overflow:hidden; position:relative; cursor:pointer; background:var(--teal-pale); }
+.photo-item img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.3s; }
+.photo-item:hover img { transform:scale(1.06); }
+.photo-item .ph-overlay { position:absolute; inset:0; background:rgba(0,0,0,0); transition:background 0.2s; display:flex; align-items:center; justify-content:center; }
+.photo-item:hover .ph-overlay { background:rgba(0,0,0,0.28); }
+.ph-btn { width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.92); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--ink); opacity:0; transform:scale(0.7); transition:all 0.2s; }
+.photo-item:hover .ph-btn { opacity:1; transform:scale(1); }
+.ph-btn svg { width:13px; height:13px; }
+.ph-btn.danger:hover { background:var(--red); color:#fff; }
+
+.toggle-group { display:flex; flex-direction:column; }
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--teal-pale); }
+.toggle-row:last-child { border-bottom:none; }
+.toggle-label { font-size:14px; color:var(--charcoal); }
+.toggle-sub { font-size:11.5px; color:var(--muted); margin-top:2px; }
+.toggle { width:38px; height:21px; border-radius:11px; background:var(--border); position:relative; cursor:pointer; transition:background 0.2s; flex-shrink:0; }
+.toggle.on { background:var(--teal); }
+.toggle::after { content:''; position:absolute; width:15px; height:15px; border-radius:50%; background:#fff; top:3px; left:3px; transition:left 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+.toggle.on::after { left:20px; }
+
+.pin-row { display:flex; gap:8px; margin-top:10px; }
+.pin-box { flex:1; height:46px; border:1px solid var(--border); border-radius:8px; background:var(--teal-pale); display:flex; align-items:center; justify-content:center; font-family:var(--font-d); font-size:22px; color:var(--ink); }
+
+.theme-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.theme-option { border:2px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; transition:border-color 0.2s; position:relative; }
+.theme-option:hover { border-color:var(--muted); }
+.theme-option.selected { border-color:var(--teal); }
+.theme-option.selected::after { content:'✓'; position:absolute; top:6px; right:6px; width:18px; height:18px; border-radius:50%; background:var(--teal); color:#fff; font-size:10px; font-weight:700; display:grid; place-items:center; }
+.theme-preview { height:60px; display:flex; gap:3px; padding:6px; }
+.theme-preview .tc { flex:1; border-radius:4px; }
+.theme-label { padding:6px 8px; font-size:11px; font-weight:500; color:var(--charcoal); background:var(--white); }
+
+.layout-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px; }
+.layout-option { border:2px solid var(--border); border-radius:10px; padding:12px; cursor:pointer; transition:border-color 0.2s; text-align:center; }
+.layout-option:hover { border-color:var(--muted); }
+.layout-option.selected { border-color:var(--teal); background:var(--teal-pale); }
+.layout-icon { font-size:22px; margin-bottom:6px; }
+.layout-name { font-size:11px; font-weight:500; color:var(--charcoal); }
+
+/* Panel cards */
+.panel-card { background:var(--white); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px; position:sticky; top:24px; }
+.panel-title { font-family:var(--font-d); font-size:15px; font-weight:500; color:var(--ink); margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--teal-pale); }
+.panel-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--teal-pale); }
+.panel-row:last-child { border:none; }
+.pr-key { font-size:12px; color:var(--muted); }
+.pr-val { font-size:13px; color:var(--charcoal); font-weight:500; }
+.pr-val.teal { color:var(--teal); }
+.pr-val.green { color:var(--teal); }
+
+.share-box { background:var(--teal-pale); border-radius:8px; padding:10px 12px; display:flex; align-items:center; gap:8px; margin-top:14px; }
+.share-box span { font-size:12px; color:var(--charcoal); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.share-copy-btn { font-size:11px; font-weight:600; color:var(--teal); background:none; border:none; cursor:pointer; flex-shrink:0; text-transform:uppercase; letter-spacing:0.04em; }
+
+.flow-nav { display:flex; align-items:center; justify-content:space-between; margin-top:8px; }
+.btn { display:flex; align-items:center; gap:7px; padding:10px 22px; border-radius:9px; cursor:pointer; font-family:var(--font-ui); font-size:13px; font-weight:500; transition:all 0.2s; border:none; }
+.btn.primary { background:var(--ink); color:#fff; }
+.btn.primary:hover { background:#0e2828; transform:translateY(-1px); }
+.btn.secondary { background:var(--teal-pale); color:var(--charcoal); border:1px solid var(--border); }
+.btn.secondary:hover { background:var(--border); }
+.btn.teal { background:var(--teal); color:#fff; }
+.btn.teal:hover { background:var(--teal-l); transform:translateY(-1px); box-shadow:0 4px 16px rgba(92,189,185,0.35); }
+.btn svg { width:15px; height:15px; }
+
+/* ═══════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════ */
+.settings-layout { display:grid; grid-template-columns:200px 1fr; gap:28px; }
+.settings-nav { display:flex; flex-direction:column; gap:2px; }
+.settings-nav-item { padding:9px 14px; border-radius:8px; cursor:pointer; font-size:13.5px; color:var(--mid); transition:all 0.15s; }
+.settings-nav-item:hover { background:var(--teal-pale); color:var(--charcoal); }
+.settings-nav-item.active { background:var(--teal-pale); color:var(--ink); font-weight:500; border-left:3px solid var(--teal); }
+
+.settings-section { display:none; }
+.settings-section.active { display:block; }
+.settings-section h2 { font-family:var(--font-d); font-size:24px; font-weight:400; color:var(--ink); margin-bottom:24px; }
+
+.profile-avatar-upload { display:flex; align-items:center; gap:20px; margin-bottom:24px; padding:20px; background:var(--teal-pale); border-radius:12px; }
+.big-avatar { width:72px; height:72px; border-radius:50%; background:var(--teal); display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:600; color:#fff; flex-shrink:0; font-family:var(--font-d); }
+.avatar-upload-btn { padding:8px 16px; border-radius:8px; border:1px solid var(--border); background:var(--white); font-family:var(--font-ui); font-size:12.5px; font-weight:500; color:var(--charcoal); cursor:pointer; transition:all 0.15s; }
+.avatar-upload-btn:hover { border-color:var(--teal); color:var(--teal); }
+
+.plan-card { background:var(--ink); border-radius:14px; padding:24px 28px; display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+.plan-info h4 { font-family:var(--font-d); font-size:20px; font-weight:400; color:#fff; margin-bottom:4px; }
+.plan-info p { font-size:13px; color:rgba(255,255,255,0.45); }
+.plan-upgrade { padding:10px 22px; background:var(--teal); color:var(--ink); border:none; border-radius:8px; font-family:var(--font-ui); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.plan-upgrade:hover { background:var(--teal-l); }
+
+/* ── PINK ACCENT BLOCKS ── */
+.pink-block {
+  background:var(--pink); border:1px solid var(--pink-d);
+  border-radius:12px; padding:18px 20px;
+}
+.pink-block h4 { font-family:var(--font-d); font-size:16px; font-weight:500; color:var(--ink); margin-bottom:4px; }
+.pink-block p { font-size:13px; color:var(--mid); }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:28px; right:28px; z-index:9999; background:var(--ink); color:#fff; padding:13px 20px; border-radius:10px; font-size:13.5px; box-shadow:0 8px 32px rgba(0,0,0,0.2); display:flex; align-items:center; gap:10px; transform:translateY(80px); opacity:0; transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; }
+.toast.show { transform:translateY(0); opacity:1; }
+.toast svg { width:16px; height:16px; color:var(--teal-l); }
+
+/* ── MODAL ── */
+.modal-bg { position:fixed; inset:0; background:rgba(26,58,58,0.45); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-bg.open { display:flex; }
+.modal { background:var(--white); border-radius:18px; padding:36px; width:480px; max-width:95vw; box-shadow:0 24px 64px rgba(26,58,58,0.2); animation:modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes modalIn { from{opacity:0;transform:scale(0.92) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+.modal-title { font-family:var(--font-d); font-size:24px; font-weight:500; color:var(--ink); margin-bottom:6px; }
+.modal-sub { font-size:13.5px; color:var(--muted); margin-bottom:28px; }
+.modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+
+/* ── ANIMS ── */
+.stagger > * { animation:fadeUp 0.4s ease both; }
+.stagger > *:nth-child(1){animation-delay:.04s}
+.stagger > *:nth-child(2){animation-delay:.08s}
+.stagger > *:nth-child(3){animation-delay:.12s}
+.stagger > *:nth-child(4){animation-delay:.16s}
+.stagger > *:nth-child(5){animation-delay:.20s}
+.stagger > *:nth-child(6){animation-delay:.24s}
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg">Saved</span>
+</div>
+
+<!-- MODAL: Delete -->
+<div class="modal-bg" id="modal-delete">
+  <div class="modal">
+    <div class="modal-title">Delete Gallery?</div>
+    <div class="modal-sub">This permanently removes the gallery and all photos. This cannot be undone.</div>
+    <div class="form-group"><label>Type "DELETE" to confirm</label><input type="text" placeholder="DELETE"/></div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('modal-delete')">Cancel</button>
+      <button class="btn" style="background:var(--red);color:#fff" onclick="closeModal('modal-delete');showToast('Gallery deleted')">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Share -->
+<div class="modal-bg" id="modal-share">
+  <div class="modal">
+    <div class="modal-title">Share Gallery</div>
+    <div class="modal-sub">Send this link to your client to access their gallery.</div>
+    <div class="form-group">
+      <label>Gallery Link</label>
+      <div class="share-box" style="margin-top:0">
+        <span>framelight.app/g/emma-james-wedding-2025</span>
+        <button class="share-copy-btn" onclick="showToast('Link copied!');closeModal('modal-share')">Copy</button>
+      </div>
+    </div>
+    <div class="form-group"><label>Or send via email</label><input type="text" placeholder="client@email.com"/></div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('modal-share')">Close</button>
+      <button class="btn teal" onclick="showToast('Invite sent!');closeModal('modal-share')">Send Invite</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-logo"><div class="logo-mark">Frame<span>light</span></div></div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Main</div>
+    <div class="nav-item active" onclick="navigate('overview',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Overview
+    </div>
+    <div class="nav-item" onclick="navigate('galleries',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+      Galleries <span class="nav-badge">12</span>
+    </div>
+    <div class="nav-item" onclick="navigate('new-gallery',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      New Gallery
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Account</div>
+    <div class="nav-item" onclick="navigate('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      View My Site
+    </div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="storage-block">
+      <div class="storage-label"><span>Storage</span><span>3.4 / 10 GB</span></div>
+      <div class="storage-bar"><div class="storage-fill"></div></div>
+      <a class="storage-upgrade">Upgrade for more →</a>
+    </div>
+    <div class="user-row">
+      <div class="user-avatar">S</div>
+      <div><div class="user-name">Sarah Kim</div><div class="user-plan">Basic Plan</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <header class="topbar">
+    <div class="topbar-title" id="topbar-title">Overview</div>
+    <div class="topbar-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search galleries…"/>
+    </div>
+    <button class="topbar-btn primary" onclick="navigate('new-gallery',document.querySelectorAll('.nav-item')[2])">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Gallery
+    </button>
+  </header>
+
+  <!-- OVERVIEW -->
+  <div class="page active page-pad" id="page-overview">
+    <div class="overview-hero">
+      <div class="hero-text">
+        <h2>Good morning, <em>Sarah.</em></h2>
+        <p>3 galleries awaiting client review · 2 expiring soon</p>
+      </div>
+      <div class="hero-actions">
+        <button class="hero-btn teal" onclick="navigate('new-gallery',document.querySelectorAll('.nav-item')[2])">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Gallery
+        </button>
+        <button class="hero-btn outline" onclick="navigate('galleries',document.querySelectorAll('.nav-item')[1])">View All</button>
+      </div>
+    </div>
+
+    <div class="stats-grid stagger">
+      <div class="stat-card accent">
+        <div class="s-label">Active Galleries <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
+        <div class="s-val">12</div><div class="s-sub">3 pending review</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-label">Total Photos <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <div class="s-val">2,841</div><div class="s-sub">Across all galleries</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-label">Client Views <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="s-val">541</div><div class="s-sub">↑ 18% this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-label">Downloads <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        <div class="s-val">317</div><div class="s-sub">↑ 6% this month</div>
+      </div>
+    </div>
+
+    <!-- Pink welcome block -->
+    <div class="pink-block" style="margin-bottom:28px">
+      <h4>📸 Your galleries are looking great!</h4>
+      <p>Emma & James viewed their gallery 14 times this week. Consider sending a download reminder.</p>
+    </div>
+
+    <div class="section-header">
+      <h3>Recent Galleries</h3>
+      <span class="see-all" onclick="navigate('galleries',document.querySelectorAll('.nav-item')[1])">See all →</span>
+    </div>
+    <div class="gallery-grid stagger">
+      <div class="g-card">
+        <div class="g-thumb"><img src="https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600&q=80" alt=""/><div class="g-tags"><span class="g-tag locked">🔒 PIN</span></div><div class="g-thumb-overlay"><div class="g-thumb-actions"><button class="g-thumb-btn" onclick="navigate('new-gallery',document.querySelectorAll('.nav-item')[2]);event.stopPropagation()">Edit</button><button class="g-thumb-btn" onclick="openModal('modal-share');event.stopPropagation()">Share</button></div></div></div>
+        <div class="g-body"><div class="g-title">Emma & James Wedding</div><div class="g-meta">247 photos · Jun 14, 2025 · Expires Aug 14</div><div class="g-footer"><span class="g-footer-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>84 views</span><div class="g-footer-actions"><button class="icon-btn" onclick="openModal('modal-share')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></button><button class="icon-btn" onclick="navigate('new-gallery',document.querySelectorAll('.nav-item')[2])"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="icon-btn" onclick="openModal('modal-delete')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div></div>
+      </div>
+      <div class="g-card">
+        <div class="g-thumb"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80" alt=""/><div class="g-tags"><span class="g-tag public">Public</span></div><div class="g-thumb-overlay"><div class="g-thumb-actions"><button class="g-thumb-btn">Edit</button><button class="g-thumb-btn" onclick="openModal('modal-share');event.stopPropagation()">Share</button></div></div></div>
+        <div class="g-body"><div class="g-title">Nakamura Family</div><div class="g-meta">84 photos · Jun 2, 2025 · No expiry</div><div class="g-footer"><span class="g-footer-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>32 views</span><div class="g-footer-actions"><button class="icon-btn" onclick="openModal('modal-share')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></button><button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="icon-btn" onclick="openModal('modal-delete')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div></div>
+      </div>
+      <div class="g-card">
+        <div class="g-thumb"><img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80" alt=""/><div class="g-tags"><span class="g-tag expired">Expired</span></div><div class="g-thumb-overlay"><div class="g-thumb-actions"><button class="g-thumb-btn">Renew</button></div></div></div>
+        <div class="g-body"><div class="g-title">Hartley Engagement</div><div class="g-meta">112 photos · Expired Mar 8, 2025</div><div class="g-footer"><span class="g-footer-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>201 views</span><div class="g-footer-actions"><button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></button><button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="icon-btn" onclick="openModal('modal-delete')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GALLERIES -->
+  <div class="page page-pad" id="page-galleries">
+    <div class="galleries-toolbar">
+      <button class="filter-btn active">All (12)</button>
+      <button class="filter-btn" onclick="toggleFilter(this)">Active (9)</button>
+      <button class="filter-btn" onclick="toggleFilter(this)">Expired (2)</button>
+      <button class="filter-btn" onclick="toggleFilter(this)">Draft (1)</button>
+      <select class="sort-select"><option>Newest First</option><option>Oldest First</option><option>Most Views</option><option>Name A–Z</option></select>
+    </div>
+    <div class="gallery-grid stagger">
+      <div class="g-card"><div class="g-thumb"><img src="https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600&q=80" alt=""/><div class="g-tags"><span class="g-tag locked">🔒 PIN</span></div><div class="g-thumb-overlay"><div class="g-thumb-actions"><button class="g-thumb-btn" onclick="navigate('new-gallery',document.querySelectorAll('.nav-item')[2])">Edit</button><button class="g-thumb-btn" onclick="openModal('modal-share');event.stopPropagation()">Share</button></div></div></div><div class="g-body"><div class="g-title">Emma & James Wedding</div><div class="g-meta">247 photos · Jun 14, 2025</div><div class="g-footer"><span class="g-footer-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>84 views</span><div class="g-footer-actions"><button class="icon-btn" onclick="openModal('modal-share')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></button><button class="icon-btn" onclick="navigate('new-gallery',document.querySelectorAll('.nav-item')[2])"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="icon-btn" onclick="openModal('modal-delete')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div></div></div>
+      <div class="g-card"><div class="g-thumb"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80" alt=""/><div class="g-tags"><span class="g-tag public">Public</span></div><div class="g-thumb-overlay"><div class="g-thumb-actions"><button class="g-thumb-btn">Edit</button><button class="g-thumb-btn" onclick="openModal('modal-share');event.stopPropagation()">Share</button></div></div></div><div class="g-body"><div class="g-title">Nakamura Family</div><div class="g-meta">84 photos · Jun 2, 2025</div><div class="g-footer"><span class="g-footer-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>32 views</span><div class="g-footer-actions"><button class="icon-btn" onclick="openModal('modal-share')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></button><button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="icon-btn" onclick="openModal('modal-delete')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div></div></div>
+      <div class="g-card"><div class="g-thumb"><img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80" alt=""/><div class="g-tags"><span class="g-tag expired">Expired</span></div></div><div class="g-body"><div class="g-title">Hartley Engagement</div><div class="g-meta">112 photos · Expired</div><div class="g-footer"><span class="g-footer-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>201 views</span><div class="g-footer-actions"><button class="icon-btn" onclick="openModal('modal-delete')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div></div></div>
+    </div>
+  </div>
+
+  <!-- NEW GALLERY -->
+  <div class="page page-pad" id="page-new-gallery">
+    <div style="max-width:960px;margin:0 auto">
+      <div class="flow-steps" id="flow-steps">
+        <div class="flow-step active" onclick="goStep(1)"><div class="step-num">1</div>Details</div>
+        <div class="flow-step" onclick="goStep(2)"><div class="step-num">2</div>Upload Photos</div>
+        <div class="flow-step" onclick="goStep(3)"><div class="step-num">3</div>Privacy & Settings</div>
+        <div class="flow-step" onclick="goStep(4)"><div class="step-num">4</div>Design</div>
+      </div>
+      <div class="flow-layout">
+        <div>
+          <!-- STEP 1 -->
+          <div class="step-panel active" id="step-1">
+            <div class="form-card">
+              <div class="form-card-title">Gallery Details</div>
+              <div class="form-group"><label>Gallery Name *</label><input type="text" placeholder="e.g. Emma & James Wedding" id="gal-name" oninput="updatePreview()"/></div>
+              <div class="form-row"><div class="form-group"><label>Client Name</label><input type="text" placeholder="Emma & James"/></div><div class="form-group"><label>Client Email</label><input type="text" placeholder="client@email.com"/></div></div>
+              <div class="form-row"><div class="form-group"><label>Event Date</label><input type="date"/></div><div class="form-group"><label>Gallery Type</label><select><option>Wedding</option><option>Portrait</option><option>Newborn</option><option>Commercial</option><option>Event</option></select></div></div>
+              <div class="form-group"><label>Internal Notes</label><textarea placeholder="Notes not shown to client…"></textarea></div>
+            </div>
+            <div class="form-card">
+              <div class="form-card-title">Cover Image</div>
+              <div class="cover-upload" id="cover-upload" onclick="this.classList.add('has-image')">
+                <div class="cu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+                <h4>Upload cover photo</h4>
+                <p>Recommended 2400×1600px landscape</p>
+                <img src="https://images.unsplash.com/photo-1606800052052-a08af7148866?w=900&q=75" alt="" style="display:none" id="cover-preview"/>
+                <div class="cover-overlay"><span>Change Cover</span></div>
+              </div>
+            </div>
+            <div class="flow-nav"><div></div><button class="btn primary" onclick="goStep(2)">Continue <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></div>
+          </div>
+
+          <!-- STEP 2 -->
+          <div class="step-panel" id="step-2">
+            <div class="drop-zone" id="drop-zone">
+              <div class="dz-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg></div>
+              <h3>Drop photos here</h3>
+              <p>JPG, PNG, RAW, GIF · or <span class="browse" onclick="simulateUpload()">browse files</span></p>
+            </div>
+            <div class="upload-list" id="upload-list"></div>
+            <div class="photo-grid" id="photo-grid">
+              <div class="photo-item"><img src="https://images.unsplash.com/photo-1606800052052-a08af7148866?w=400&q=75" alt=""/><div class="ph-overlay"><button class="ph-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div>
+              <div class="photo-item"><img src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=400&q=75" alt=""/><div class="ph-overlay"><button class="ph-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div>
+              <div class="photo-item"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=75" alt=""/><div class="ph-overlay"><button class="ph-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div>
+              <div class="photo-item"><img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=75" alt=""/><div class="ph-overlay"><button class="ph-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div>
+              <div class="photo-item"><img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&q=75" alt=""/><div class="ph-overlay"><button class="ph-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div>
+              <div class="photo-item"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&q=75" alt=""/><div class="ph-overlay"><button class="ph-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div></div>
+            </div>
+            <div class="flow-nav"><button class="btn secondary" onclick="goStep(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button><button class="btn primary" onclick="goStep(3)">Continue <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></div>
+          </div>
+
+          <!-- STEP 3 -->
+          <div class="step-panel" id="step-3">
+            <div class="form-card">
+              <div class="form-card-title">Privacy</div>
+              <div class="toggle-group">
+                <div class="toggle-row"><div><div class="toggle-label">PIN Protection</div><div class="toggle-sub">Require a 4-digit code to access gallery</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                <div style="padding:10px 0 16px"><div style="font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">4-Digit PIN</div><div class="pin-row"><div class="pin-box">4</div><div class="pin-box">2</div><div class="pin-box">1</div><div class="pin-box">9</div></div></div>
+                <div class="toggle-row"><div><div class="toggle-label">Disable Security for Admin</div><div class="toggle-sub">You bypass PIN when logged in</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              </div>
+            </div>
+            <div class="form-card">
+              <div class="form-card-title">Downloads & Features</div>
+              <div class="toggle-group">
+                <div class="toggle-row"><div><div class="toggle-label">Allow Downloads</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><div><div class="toggle-label">Bulk ZIP Download</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><div><div class="toggle-label">Allow Favorites</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              </div>
+              <div class="form-group" style="margin-top:16px"><label>Download Sizes</label><select><option>Web (2048px) + Hi-Res</option><option>Hi-Res only</option><option>Web only</option></select></div>
+            </div>
+            <div class="form-card">
+              <div class="form-card-title">Expiry</div>
+              <div class="toggle-row"><div><div class="toggle-label">Set Expiry Date</div><div class="toggle-sub">Gallery auto-hides after this date</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="form-row" style="margin-top:16px"><div class="form-group"><label>Expires On</label><input type="date" value="2025-08-14"/></div><div class="form-group"><label>Reminder Email</label><select><option>7 days before</option><option>3 days before</option><option>None</option></select></div></div>
+            </div>
+            <div class="flow-nav"><button class="btn secondary" onclick="goStep(2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button><button class="btn primary" onclick="goStep(4)">Continue <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button></div>
+          </div>
+
+          <!-- STEP 4 -->
+          <div class="step-panel" id="step-4">
+            <div class="form-card">
+              <div class="form-card-title">Your Branding</div>
+              <div class="form-row">
+                <div class="form-group"><label>Studio Name</label><input type="text" placeholder="Sarah Kim Photography" id="studio-name" oninput="updatePreview()"/></div>
+                <div class="form-group"><label>Logo</label><div style="display:flex;gap:8px;align-items:center"><div style="width:40px;height:40px;border-radius:8px;background:var(--teal-pale);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--teal)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><span style="font-size:12px;color:var(--muted)">PNG or SVG</span></div></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Accent Colour</label><div style="display:flex;gap:8px;align-items:center"><input type="color" value="#5cbdb9" style="width:40px;height:36px;padding:2px;border-radius:6px;border:1px solid var(--border);cursor:pointer"/><input type="text" value="#5cbdb9" style="flex:1"/></div></div>
+                <div class="form-group"><label>Show "Powered by Framelight"</label><select><option>Yes — show subtle badge</option><option>No — hide (upgrade required)</option></select></div>
+              </div>
+            </div>
+            <div class="form-card">
+              <div class="form-card-title">Layout & Theme</div>
+              <div class="layout-grid">
+                <div class="layout-option selected" onclick="selectLayout(this)"><div class="layout-icon">⊞</div><div class="layout-name">Masonry</div></div>
+                <div class="layout-option" onclick="selectLayout(this)"><div class="layout-icon">▦</div><div class="layout-name">Justified</div></div>
+                <div class="layout-option" onclick="selectLayout(this)"><div class="layout-icon">▣</div><div class="layout-name">Square Grid</div></div>
+              </div>
+              <div class="theme-grid">
+                <div class="theme-option selected" onclick="selectTheme(this)"><div class="theme-preview"><div class="tc" style="background:#fbe3e8"></div><div class="tc" style="background:#5cbdb9"></div><div class="tc" style="background:#ebf6f5"></div></div><div class="theme-label">Framelight</div></div>
+                <div class="theme-option" onclick="selectTheme(this)"><div class="theme-preview"><div class="tc" style="background:#1a3a3a"></div><div class="tc" style="background:#5cbdb9"></div><div class="tc" style="background:#89d0cd"></div></div><div class="theme-label">Dark Teal</div></div>
+                <div class="theme-option" onclick="selectTheme(this)"><div class="theme-preview"><div class="tc" style="background:#fff"></div><div class="tc" style="background:#222"></div><div class="tc" style="background:#888"></div></div><div class="theme-label">Minimal</div></div>
+                <div class="theme-option" onclick="selectTheme(this)"><div class="theme-preview"><div class="tc" style="background:#FDF8F4"></div><div class="tc" style="background:#5C4033"></div><div class="tc" style="background:#D4956A"></div></div><div class="theme-label">Terracotta</div></div>
+                <div class="theme-option" onclick="selectTheme(this)"><div class="theme-preview"><div class="tc" style="background:#F8F4FD"></div><div class="tc" style="background:#6B4F9E"></div><div class="tc" style="background:#B89FD8"></div></div><div class="theme-label">Lavender</div></div>
+                <div class="theme-option" onclick="selectTheme(this)"><div class="theme-preview"><div class="tc" style="background:#FDF6F0"></div><div class="tc" style="background:#C4954A"></div><div class="tc" style="background:#DDB96E"></div></div><div class="theme-label">Warm Gold</div></div>
+              </div>
+            </div>
+            <div class="flow-nav"><button class="btn secondary" onclick="goStep(3)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</button><button class="btn teal" onclick="publishGallery()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Publish Gallery</button></div>
+          </div>
+        </div>
+
+        <!-- SIDEBAR PANEL -->
+        <div>
+          <div class="panel-card">
+            <div class="panel-title">Summary</div>
+            <div class="panel-row"><span class="pr-key">Name</span><span class="pr-val" id="prev-name">—</span></div>
+            <div class="panel-row"><span class="pr-key">Photos</span><span class="pr-val">6 uploaded</span></div>
+            <div class="panel-row"><span class="pr-key">Privacy</span><span class="pr-val teal">PIN Protected</span></div>
+            <div class="panel-row"><span class="pr-key">Downloads</span><span class="pr-val green">Enabled</span></div>
+            <div class="panel-row"><span class="pr-key">Expires</span><span class="pr-val">Aug 14, 2025</span></div>
+            <div class="panel-row"><span class="pr-key">Studio</span><span class="pr-val" id="prev-studio">Not set</span></div>
+            <div class="share-box"><span>framelight.app/g/my-gallery</span><button class="share-copy-btn" onclick="showToast('Link copied!')">Copy</button></div>
+          </div>
+          <div class="panel-card" style="background:var(--pink);border-color:var(--pink-d)">
+            <div class="panel-title" style="border-color:var(--pink-d)">Tips</div>
+            <div style="font-size:12.5px;color:var(--mid);line-height:1.7">
+              <p style="margin-bottom:8px">📸 Upload your best shot as the cover.</p>
+              <p style="margin-bottom:8px">🔒 Use PIN for private galleries.</p>
+              <p>⏰ Set an expiry to encourage timely downloads.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="page page-pad" id="page-settings">
+    <div class="settings-layout">
+      <div class="settings-nav">
+        <div class="settings-nav-item active" onclick="settingsNav('profile',this)">Profile</div>
+        <div class="settings-nav-item" onclick="settingsNav('branding',this)">Branding</div>
+        <div class="settings-nav-item" onclick="settingsNav('billing',this)">Billing & Plan</div>
+        <div class="settings-nav-item" onclick="settingsNav('defaults',this)">Gallery Defaults</div>
+        <div class="settings-nav-item" onclick="settingsNav('notifications',this)">Notifications</div>
+        <div class="settings-nav-item" onclick="settingsNav('security',this)">Security</div>
+      </div>
+      <div>
+        <div class="settings-section active" id="settings-profile">
+          <h2>Profile</h2>
+          <div class="profile-avatar-upload"><div class="big-avatar">S</div><div><div style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:4px">Sarah Kim</div><div style="font-size:13px;color:var(--muted);margin-bottom:12px">sarah@studio.com</div><button class="avatar-upload-btn">Upload Photo</button></div></div>
+          <div class="form-card">
+            <div class="form-row"><div class="form-group"><label>First Name</label><input type="text" value="Sarah"/></div><div class="form-group"><label>Last Name</label><input type="text" value="Kim"/></div></div>
+            <div class="form-group"><label>Email</label><input type="text" value="sarah@studio.com"/></div>
+            <div class="form-group"><label>Website</label><input type="text" value="https://sarahkimphoto.com"/></div>
+            <div class="form-group"><label>Location</label><input type="text" value="Las Vegas, NV"/></div>
+            <button class="btn teal" onclick="showToast('Profile saved!')">Save Changes</button>
+          </div>
+        </div>
+        <div class="settings-section" id="settings-branding">
+          <h2>Branding</h2>
+          <div class="form-card">
+            <div class="form-card-title">Studio Identity</div>
+            <div class="form-group"><label>Studio Name</label><input type="text" value="Sarah Kim Photography"/></div>
+            <div class="form-row"><div class="form-group"><label>Accent Colour</label><div style="display:flex;gap:8px;align-items:center"><input type="color" value="#5cbdb9" style="width:40px;height:36px;padding:2px;border-radius:6px;border:1px solid var(--border)"/><input type="text" value="#5cbdb9" style="flex:1"/></div></div><div class="form-group"><label>Default Theme</label><select><option>Framelight (Pink + Teal)</option><option>Dark Teal</option><option>Minimal</option><option>Warm Gold</option></select></div></div>
+            <div class="form-group"><label>Custom Domain</label><input type="text" placeholder="gallery.yourdomain.com (upgrade required)"/></div>
+            <button class="btn teal" onclick="showToast('Branding saved!')">Save Branding</button>
+          </div>
+        </div>
+        <div class="settings-section" id="settings-billing">
+          <h2>Billing & Plan</h2>
+          <div class="plan-card"><div class="plan-info"><h4>Basic Plan</h4><p>10GB storage · $10/month · Renews Jul 1, 2025</p></div><button class="plan-upgrade">Upgrade to Pro →</button></div>
+          <div class="pink-block"><h4>Save 37% with annual billing</h4><p>Switch to annual and get 2 months free on any plan.</p></div>
+        </div>
+        <div class="settings-section" id="settings-defaults">
+          <h2>Gallery Defaults</h2>
+          <div class="form-card">
+            <div class="toggle-group">
+              <div class="toggle-row"><div><div class="toggle-label">PIN Protection by default</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="toggle-row"><div><div class="toggle-label">Allow downloads by default</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="toggle-row"><div><div class="toggle-label">Enable favorites by default</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="toggle-row"><div><div class="toggle-label">Set expiry by default</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            </div>
+            <div class="form-row" style="margin-top:16px"><div class="form-group"><label>Default Expiry</label><select><option>60 days</option><option>30 days</option><option>90 days</option></select></div><div class="form-group"><label>Default Layout</label><select><option>Masonry</option><option>Justified Grid</option><option>Square Grid</option></select></div></div>
+            <button class="btn teal" onclick="showToast('Defaults saved!')">Save Defaults</button>
+          </div>
+        </div>
+        <div class="settings-section" id="settings-notifications">
+          <h2>Notifications</h2>
+          <div class="form-card">
+            <div class="toggle-group">
+              <div class="toggle-row"><div><div class="toggle-label">Gallery viewed by client</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="toggle-row"><div><div class="toggle-label">Photo downloaded</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="toggle-row"><div><div class="toggle-label">Favorites selected</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="toggle-row"><div><div class="toggle-label">Gallery expiry reminder</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section" id="settings-security">
+          <h2>Security</h2>
+          <div class="form-card"><div class="form-card-title">Change Password</div><div class="form-group"><label>Current Password</label><input type="password" placeholder="••••••••"/></div><div class="form-row"><div class="form-group"><label>New Password</label><input type="password" placeholder="••••••••"/></div><div class="form-group"><label>Confirm</label><input type="password" placeholder="••••••••"/></div></div><button class="btn teal" onclick="showToast('Password updated!')">Update Password</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const titles = {overview:'Overview',galleries:'All Galleries','new-gallery':'New Gallery',settings:'Settings'};
+function navigate(page, navEl) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(navEl) navEl.classList.add('active');
+  document.getElementById('topbar-title').textContent = titles[page]||page;
+  if(page==='new-gallery') goStep(1);
+}
+function goStep(n) {
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('step-'+n).classList.add('active');
+  document.querySelectorAll('.flow-step').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if(i+1<n) s.classList.add('done');
+    if(i+1===n) s.classList.add('active');
+  });
+}
+function updatePreview() {
+  const n=document.getElementById('gal-name').value;
+  const s=document.getElementById('studio-name')?.value;
+  document.getElementById('prev-name').textContent=n||'—';
+  if(s) document.getElementById('prev-studio').textContent=s;
+}
+document.getElementById('cover-upload').addEventListener('click',function(){
+  document.getElementById('cover-preview').style.display='block';
+  this.classList.add('has-image');
+});
+const fakeFiles=[
+  {name:'DSC_4821.jpg',src:'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=80&q=50'},
+  {name:'DSC_4822.jpg',src:'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=80&q=50'},
+  {name:'DSC_4823.jpg',src:'https://images.unsplash.com/photo-1519741497674-611481863552?w=80&q=50'},
+];
+let uploadIdx=0;
+function simulateUpload(){
+  if(uploadIdx>=fakeFiles.length){showToast('All uploaded!');return;}
+  const f=fakeFiles[uploadIdx++];
+  const item=document.createElement('div'); item.className='upload-item';
+  item.innerHTML=`<img class="upload-thumb" src="${f.src}"/><div class="upload-info"><div class="upload-name">${f.name}</div><div class="upload-bar-wrap"><div class="upload-bar"><div class="upload-bar-fill" style="width:0%" id="bar-${uploadIdx}"></div></div><span class="upload-pct" id="pct-${uploadIdx}">0%</span></div></div><button class="upload-remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+  document.getElementById('upload-list').appendChild(item);
+  const bar=document.getElementById('bar-'+uploadIdx), pct=document.getElementById('pct-'+uploadIdx);
+  let p=0;
+  const iv=setInterval(()=>{
+    p+=Math.random()*18+8;
+    if(p>=100){p=100;clearInterval(iv);bar.style.width='100%';pct.className='upload-status-done';pct.textContent='✓ Done';}
+    else{bar.style.width=p+'%';pct.textContent=Math.round(p)+'%';}
+  },180);
+}
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragging');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('dragging'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragging');simulateUpload();});
+dz.addEventListener('click',simulateUpload);
+function selectTheme(el){document.querySelectorAll('.theme-option').forEach(t=>t.classList.remove('selected'));el.classList.add('selected');}
+function selectLayout(el){document.querySelectorAll('.layout-option').forEach(l=>l.classList.remove('selected'));el.classList.add('selected');}
+function settingsNav(s,el){document.querySelectorAll('.settings-section').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.settings-nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('settings-'+s).classList.add('active');el.classList.add('active');}
+function toggleFilter(btn){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(mb=>mb.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+function showToast(msg){const t=document.getElementById('toast');document.getElementById('toast-msg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function publishGallery(){showToast('🎉 Gallery published!');setTimeout(()=>navigate('galleries',document.querySelectorAll('.nav-item')[1]),1000);}
+</script>
+</body>
+</html>
