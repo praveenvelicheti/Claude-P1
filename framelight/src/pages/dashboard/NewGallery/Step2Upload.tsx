@@ -96,8 +96,9 @@ export function Step2Upload({ galleryId, photographerId, photos, onPhotosChange 
     e.target.value = ''
   }
 
-  function removePhoto(photoId: string) {
+  async function removePhoto(photoId: string) {
     onPhotosChange(photos.filter(p => p.id !== photoId))
+    await supabase.from('photos').delete().eq('id', photoId)
   }
 
   return (

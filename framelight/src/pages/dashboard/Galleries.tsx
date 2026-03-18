@@ -401,7 +401,7 @@ export function Galleries() {
               </div>
               <p className="font-display text-[22px] font-light text-ink mb-2">No galleries found</p>
               <p className="text-[13px] text-ink-muted mb-5">Try a different filter or create a new gallery.</p>
-              <Button variant="teal" onClick={() => navigate('/dashboard/new')}>Create Gallery</Button>
+              <Button variant="primary" onClick={() => navigate('/dashboard/new')}>Create Gallery</Button>
             </div>
           ) : view === 'grid' ? (
             <div className="grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3.5">

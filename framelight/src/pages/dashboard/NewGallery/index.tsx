@@ -110,6 +110,14 @@ export function NewGallery() {
         layout: g.layout,
         theme: g.theme,
       }))
+
+      const { data: photoData } = await supabase
+        .from('photos')
+        .select('*')
+        .eq('gallery_id', editId!)
+        .order('position')
+      if (photoData) setPhotos(photoData as typeof photos)
+
       setLoadingGallery(false)
     }
     loadGallery()

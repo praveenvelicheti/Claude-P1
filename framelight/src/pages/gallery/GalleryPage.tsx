@@ -93,14 +93,23 @@ export function GalleryPage() {
     }
   }
 
-  function downloadPhoto(photo: Photo) {
+  async function downloadPhoto(photo: Photo) {
     if (!gallery) return
     db.from('downloads').insert({ gallery_id: gallery.id, photo_id: photo.id, session_token: sessionToken, is_bulk: false })
-    const a = document.createElement('a')
-    a.href = photo.url
-    a.download = photo.filename ?? 'photo.jpg'
-    a.target = '_blank'
-    a.click()
+    try {
+      const res = await fetch(photo.url)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = photo.filename ?? 'photo.jpg'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      setTimeout(() => URL.revokeObjectURL(url), 5000)
+    } catch {
+      window.open(photo.url, '_blank')
+    }
   }
 
   async function downloadAll() {
@@ -265,7 +274,7 @@ export function GalleryPage() {
       <div
         ref={coverRef}
         className="relative w-screen overflow-hidden bg-ink"
-        style={{ height: '100vh', minHeight: '600px' }}
+        style={{ height: 'clamp(380px, 56.25vw, 100vh)' }}
       >
         {gallery.cover_url && (
           <img
