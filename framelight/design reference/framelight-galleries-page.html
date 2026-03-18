@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Framelight — My Galleries</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --pink:      #fbe3e8;
+  --pink-d:    #f5c8d2;
+  --teal:      #5cbdb9;
+  --teal-l:    #89d0cd;
+  --mint:      #ebf6f5;
+  --ink:       #1a3a3a;
+  --charcoal:  #2a5250;
+  --mid:       #3d7a78;
+  --muted:     #7aadab;
+  --border:    #ceecea;
+  --bg:        #f4faf9;
+  --white:     #ffffff;
+  --red:       #e07878;
+  --amber:     #e8a44a;
+  --font-d:    'Cormorant', Georgia, serif;
+  --font-ui:   'Outfit', sans-serif;
+  --sidebar-w: 228px;
+  --top-h:     58px;
+}
+
+html, body { height:100%; font-family:var(--font-ui); background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; overflow:hidden; }
+
+/* ═══ APP SHELL ═══ */
+.app { display:flex; height:100vh; }
+
+/* ═══ SIDEBAR ═══ */
+.sidebar {
+  width:var(--sidebar-w); flex-shrink:0;
+  background:var(--ink); display:flex; flex-direction:column;
+}
+.sidebar-logo {
+  height:var(--top-h); display:flex; align-items:center;
+  padding:0 22px; border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0;
+}
+.logo-wordmark { font-family:var(--font-d); font-size:22px; font-weight:500; color:#fff; letter-spacing:0.04em; }
+.logo-wordmark span { color:var(--teal-l); font-style:italic; }
+
+.sidebar-section { padding:18px 14px 6px; }
+.section-label {
+  font-size:9px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
+  color:rgba(255,255,255,0.28); padding:0 8px; margin-bottom:6px;
+}
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 12px; border-radius:8px; cursor:pointer;
+  font-size:13px; font-weight:400; color:rgba(255,255,255,0.5);
+  transition:all 0.15s; margin-bottom:2px; user-select:none;
+}
+.nav-item svg { width:15px; height:15px; flex-shrink:0; opacity:0.6; }
+.nav-item:hover { background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.85); }
+.nav-item:hover svg { opacity:1; }
+.nav-item.active { background:rgba(92,189,185,0.16); color:#fff; font-weight:500; }
+.nav-item.active svg { opacity:1; color:var(--teal-l); }
+.nav-pill { margin-left:auto; background:var(--teal); color:var(--ink); font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px; }
+
+.sidebar-bottom { margin-top:auto; padding:14px; border-top:1px solid rgba(255,255,255,0.07); }
+.storage-wrap { padding:13px; background:rgba(255,255,255,0.05); border-radius:10px; margin-bottom:12px; }
+.storage-row { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:7px; }
+.storage-row span:last-child { color:rgba(255,255,255,0.7); }
+.storage-bar { height:3px; background:rgba(255,255,255,0.1); border-radius:2px; }
+.storage-fill { height:100%; width:34%; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--teal-l)); }
+.upgrade-link { display:block; margin-top:9px; font-size:11px; color:var(--teal-l); font-weight:500; cursor:pointer; }
+.user-chip { display:flex; align-items:center; gap:9px; padding:7px 8px; border-radius:8px; cursor:pointer; transition:background 0.15s; }
+.user-chip:hover { background:rgba(255,255,255,0.06); }
+.user-av { width:28px; height:28px; border-radius:50%; background:var(--teal); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--ink); flex-shrink:0; }
+.user-name { font-size:12px; color:rgba(255,255,255,0.7); }
+.user-plan { font-size:10px; color:rgba(255,255,255,0.32); margin-top:1px; }
+
+/* ═══ MAIN ═══ */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+
+/* ── TOPBAR ── */
+.topbar {
+  height:var(--top-h); flex-shrink:0;
+  background:var(--white); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 28px; gap:14px;
+}
+.topbar-title { font-family:var(--font-d); font-size:21px; font-weight:500; color:var(--ink); flex:1; letter-spacing:0.01em; }
+.topbar-title span { font-size:13px; color:var(--muted); font-family:var(--font-ui); font-weight:400; margin-left:8px; vertical-align:middle; }
+
+.search-wrap {
+  display:flex; align-items:center; gap:8px;
+  background:var(--mint); border:1px solid var(--border);
+  border-radius:8px; padding:7px 13px; width:240px; transition:border-color 0.2s;
+}
+.search-wrap:focus-within { border-color:var(--teal); }
+.search-wrap svg { width:14px; height:14px; color:var(--muted); flex-shrink:0; }
+.search-wrap input { background:none; border:none; outline:none; font-family:var(--font-ui); font-size:13px; color:var(--ink); width:100%; }
+.search-wrap input::placeholder { color:var(--muted); }
+
+.new-btn {
+  display:flex; align-items:center; gap:7px; padding:9px 18px;
+  border-radius:8px; border:none; cursor:pointer; font-family:var(--font-ui);
+  font-size:13px; font-weight:500; background:var(--teal); color:#fff;
+  transition:all 0.2s; white-space:nowrap;
+}
+.new-btn:hover { background:var(--teal-l); transform:translateY(-1px); box-shadow:0 4px 14px rgba(92,189,185,0.35); }
+.new-btn svg { width:15px; height:15px; }
+
+/* ── TOOLBAR (filter bar) ── */
+.toolbar {
+  display:flex; align-items:center; gap:10px;
+  padding:14px 28px; background:var(--white);
+  border-bottom:1px solid var(--border); flex-wrap:wrap;
+}
+.filter-pills { display:flex; gap:6px; flex-wrap:wrap; }
+.fpill {
+  padding:6px 15px; border-radius:20px; border:1px solid var(--border);
+  background:var(--white); font-family:var(--font-ui); font-size:12px;
+  font-weight:500; color:var(--mid); cursor:pointer; transition:all 0.15s;
+  white-space:nowrap;
+}
+.fpill:hover { background:var(--mint); border-color:var(--teal); color:var(--teal); }
+.fpill.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+.fpill .pill-count { opacity:0.6; margin-left:4px; font-size:11px; }
+
+.toolbar-right { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.sort-select {
+  padding:7px 12px; border-radius:8px; border:1px solid var(--border);
+  background:var(--white); font-family:var(--font-ui); font-size:12.5px;
+  color:var(--charcoal); outline:none; cursor:pointer;
+}
+.view-toggle { display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.vt-btn {
+  width:34px; height:34px; border:none; background:var(--white); cursor:pointer;
+  display:flex; align-items:center; justify-content:center; color:var(--muted);
+  transition:all 0.15s;
+}
+.vt-btn:hover { background:var(--mint); color:var(--teal); }
+.vt-btn.active { background:var(--mint); color:var(--teal); }
+.vt-btn svg { width:15px; height:15px; }
+
+/* ── SCROLL AREA ── */
+.scroll-area { flex:1; overflow-y:auto; padding:28px; }
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* ═══════════════════════════════
+   GRID VIEW — full-bleed dark cards
+═══════════════════════════════ */
+.galleries-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+  gap:18px;
+}
+
+/* ── THE CARD ── */
+.g-card {
+  position:relative;
+  border-radius:22px; overflow:hidden; cursor:pointer;
+  aspect-ratio: 3/4;
+  background: var(--ink);
+  transition: transform 0.28s cubic-bezier(0.34,1.2,0.64,1), box-shadow 0.28s;
+  box-shadow: 0 4px 20px rgba(26,58,58,0.12);
+}
+.g-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 24px 56px rgba(26,58,58,0.22);
+}
+
+/* full-bleed cover image */
+.g-cover-img {
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover; display:block;
+  transition: transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.g-card:hover .g-cover-img { transform: scale(1.06); }
+
+/* no-cover placeholder */
+.g-no-cover {
+  position:absolute; inset:0;
+  background: linear-gradient(135deg, #1a3a3a 0%, #2a5250 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+}
+.g-no-cover svg { width:32px; height:32px; color:rgba(255,255,255,0.2); }
+.g-no-cover span { font-size:12px; color:rgba(255,255,255,0.3); letter-spacing:0.06em; }
+
+/* gradient overlay — bottom heavy like the reference */
+.g-overlay {
+  position:absolute; inset:0;
+  background: linear-gradient(
+    to bottom,
+    rgba(15,30,30,0.0)  0%,
+    rgba(15,30,30,0.05) 35%,
+    rgba(15,30,30,0.55) 62%,
+    rgba(15,30,30,0.88) 82%,
+    rgba(15,30,30,0.96) 100%
+  );
+  pointer-events:none;
+}
+
+/* top-left edit icon */
+.g-edit-btn {
+  position:absolute; top:14px; left:14px; z-index:10;
+  width:32px; height:32px; border-radius:50%;
+  background:rgba(255,255,255,0.15); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; opacity:0; transition:all 0.2s; color:#fff;
+}
+.g-card:hover .g-edit-btn { opacity:1; }
+.g-edit-btn:hover { background:rgba(255,255,255,0.3); border-color:rgba(255,255,255,0.5); }
+.g-edit-btn svg { width:13px; height:13px; }
+
+/* top-right 3-dot menu */
+.g-menu-btn {
+  position:absolute; top:14px; right:14px; z-index:10;
+  width:32px; height:32px; border-radius:50%;
+  background:rgba(255,255,255,0.15); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; opacity:0; transition:all 0.2s;
+  color:#fff;
+}
+.g-card:hover .g-menu-btn { opacity:1; }
+.g-menu-btn:hover { background:rgba(255,255,255,0.28); }
+.g-menu-btn svg { width:14px; height:14px; }
+
+/* ── CONTENT INSIDE CARD (bottom) ── */
+.g-content {
+  position:absolute; bottom:0; left:0; right:0;
+  padding:20px 20px 18px;
+  display:flex; flex-direction:column; gap:10px;
+  z-index:2;
+}
+
+/* title */
+.g-name {
+  font-family:var(--font-d); font-size:22px; font-weight:400;
+  color:#fff; line-height:1.1; letter-spacing:0.01em;
+}
+
+/* description / client line */
+.g-desc {
+  font-size:12px; color:rgba(255,255,255,0.6);
+  line-height:1.5; font-weight:300;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+
+/* pill badges row */
+.g-pills {
+  display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+}
+.g-pill {
+  display:flex; align-items:center; gap:5px;
+  padding:5px 11px; border-radius:20px;
+  background:rgba(255,255,255,0.14); backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.15);
+  font-size:11px; font-weight:400; color:rgba(255,255,255,0.85);
+  letter-spacing:0.03em; white-space:nowrap;
+}
+.g-pill svg { width:11px; height:11px; }
+.g-pill.teal  { background:rgba(92,189,185,0.25); border-color:rgba(92,189,185,0.4); color:#a8e6e3; }
+.g-pill.amber { background:rgba(232,164,74,0.25); border-color:rgba(232,164,74,0.4); color:#f5cc80; }
+.g-pill.red   { background:rgba(224,120,120,0.25); border-color:rgba(224,120,120,0.4); color:#f5aaaa; }
+
+/* 3-dot dropdown menu */
+.g-dropdown {
+  position:absolute; top:52px; right:14px; z-index:20;
+  background:#fff; border-radius:12px; overflow:hidden;
+  box-shadow:0 8px 32px rgba(26,58,58,0.18), 0 0 0 1px rgba(26,58,58,0.06);
+  min-width:160px;
+  display:none; flex-direction:column;
+  animation:dropIn 0.15s ease;
+}
+@keyframes dropIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+.g-dropdown.open { display:flex; }
+.g-dd-item {
+  display:flex; align-items:center; gap:9px;
+  padding:11px 14px; font-size:13px; color:var(--charcoal);
+  cursor:pointer; transition:background 0.12s; background:none; border:none;
+  font-family:var(--font-ui); text-align:left; width:100%;
+}
+.g-dd-item svg { width:14px; height:14px; color:var(--muted); }
+.g-dd-item:hover { background:var(--mint); }
+.g-dd-item.danger { color:var(--red); }
+.g-dd-item.danger svg { color:var(--red); }
+.g-dd-item.danger:hover { background:#fff0f0; }
+.g-dd-divider { height:1px; background:var(--border); margin:2px 0; }
+
+/* ═══════════════════════════════
+   LIST VIEW
+═══════════════════════════════ */
+.galleries-list { display:flex; flex-direction:column; gap:8px; }
+
+.l-row {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:12px; display:flex; align-items:center; gap:0;
+  cursor:pointer; transition:all 0.2s; overflow:hidden;
+}
+.l-row:hover { border-color:rgba(92,189,185,0.4); box-shadow:0 4px 18px rgba(92,189,185,0.1); transform:translateX(2px); }
+
+.l-thumb {
+  width:72px; height:72px; flex-shrink:0;
+  background:var(--mint); overflow:hidden;
+}
+.l-thumb img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.4s; }
+.l-row:hover .l-thumb img { transform:scale(1.08); }
+
+.l-body { flex:1; min-width:0; padding:0 18px; }
+.l-name { font-family:var(--font-d); font-size:16px; font-weight:500; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+.l-meta { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.l-meta-item { display:flex; align-items:center; gap:4px; }
+.l-meta-item svg { width:11px; height:11px; }
+
+.l-stats { display:flex; align-items:center; gap:20px; padding:0 20px; }
+.l-stat { text-align:center; }
+.l-stat-val { font-family:var(--font-d); font-size:17px; font-weight:400; color:var(--ink); }
+.l-stat-lbl { font-size:10px; color:var(--muted); letter-spacing:0.05em; text-transform:uppercase; }
+
+.l-status { padding:0 10px; flex-shrink:0; }
+.l-badge {
+  font-size:10px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase;
+  padding:4px 10px; border-radius:20px;
+}
+.l-badge.active   { background:rgba(92,189,185,0.15); color:var(--teal); }
+.l-badge.draft    { background:var(--mint); color:var(--mid); }
+.l-badge.expired  { background:#fff0f0; color:var(--red); }
+.l-badge.locked   { background:var(--pink); color:#c0506a; }
+
+.l-actions { display:flex; align-items:center; gap:4px; padding:0 14px; flex-shrink:0; }
+
+/* ═══════════════════════════════
+   EMPTY STATE
+═══════════════════════════════ */
+.empty-state {
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; padding:80px 32px; text-align:center;
+}
+.es-icon { width:72px; height:72px; border-radius:50%; background:var(--mint); display:flex; align-items:center; justify-content:center; margin:0 auto 22px; }
+.es-icon svg { width:30px; height:30px; color:var(--teal); }
+.es-title { font-family:var(--font-d); font-size:26px; font-weight:400; color:var(--charcoal); margin-bottom:8px; }
+.es-sub { font-size:14px; color:var(--muted); max-width:300px; line-height:1.6; margin-bottom:28px; }
+
+/* ═══════════════════════════════
+   MODALS
+═══════════════════════════════ */
+.modal-bg {
+  position:fixed; inset:0; background:rgba(26,58,58,0.45); z-index:500;
+  display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px);
+}
+.modal-bg.open { display:flex; }
+.modal {
+  background:var(--white); border-radius:18px; padding:36px; width:460px; max-width:94vw;
+  box-shadow:0 24px 64px rgba(26,58,58,0.2);
+  animation:modalPop 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalPop { from{opacity:0;transform:scale(0.92) translateY(12px)} to{opacity:1;transform:scale(1) translateY(0)} }
+.modal-title { font-family:var(--font-d); font-size:24px; font-weight:500; color:var(--ink); margin-bottom:6px; }
+.modal-sub { font-size:13.5px; color:var(--muted); margin-bottom:26px; line-height:1.5; }
+.modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:11px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase; color:var(--muted); margin-bottom:7px; }
+.form-group input, .form-group select {
+  width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:8px;
+  background:var(--mint); font-family:var(--font-ui); font-size:13.5px; color:var(--ink);
+  outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color:var(--teal); box-shadow:0 0 0 3px rgba(92,189,185,0.15); background:var(--white);
+}
+.form-group input::placeholder { color:var(--muted); }
+
+/* SHARE BOX */
+.share-box {
+  display:flex; align-items:center; gap:8px; padding:10px 13px;
+  background:var(--mint); border-radius:8px; border:1px solid var(--border);
+  margin-top:8px;
+}
+.share-box input { background:none; border:none; outline:none; font-family:var(--font-ui); font-size:12.5px; color:var(--charcoal); flex:1; min-width:0; }
+.share-copy { font-size:11px; font-weight:600; color:var(--teal); background:none; border:none; cursor:pointer; text-transform:uppercase; letter-spacing:0.06em; flex-shrink:0; }
+.share-copy:hover { text-decoration:underline; }
+
+/* BUTTONS */
+.btn { display:flex; align-items:center; gap:7px; padding:10px 22px; border-radius:9px; cursor:pointer; font-family:var(--font-ui); font-size:13px; font-weight:500; transition:all 0.2s; border:none; }
+.btn.primary { background:var(--teal); color:#fff; }
+.btn.primary:hover { background:var(--teal-l); transform:translateY(-1px); }
+.btn.secondary { background:var(--mint); color:var(--charcoal); border:1px solid var(--border); }
+.btn.secondary:hover { background:var(--border); }
+.btn.danger { background:var(--red); color:#fff; }
+.btn.danger:hover { background:#c05858; }
+.btn svg { width:14px; height:14px; }
+
+/* TOAST */
+.toast { position:fixed; bottom:26px; right:26px; z-index:9999; background:var(--ink); color:#fff; padding:12px 20px; border-radius:10px; font-size:13.5px; box-shadow:0 8px 32px rgba(26,58,58,0.22); display:flex; align-items:center; gap:10px; transform:translateY(60px); opacity:0; transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; }
+.toast.show { transform:translateY(0); opacity:1; }
+.toast svg { width:15px; height:15px; color:var(--teal-l); }
+
+/* ANIMS */
+.g-card, .l-row { animation:cardIn 0.4s ease both; }
+.g-card:nth-child(1),.l-row:nth-child(1){animation-delay:.03s}
+.g-card:nth-child(2),.l-row:nth-child(2){animation-delay:.06s}
+.g-card:nth-child(3),.l-row:nth-child(3){animation-delay:.09s}
+.g-card:nth-child(4),.l-row:nth-child(4){animation-delay:.12s}
+.g-card:nth-child(5),.l-row:nth-child(5){animation-delay:.15s}
+.g-card:nth-child(6),.l-row:nth-child(6){animation-delay:.18s}
+.g-card:nth-child(7),.l-row:nth-child(7){animation-delay:.21s}
+.g-card:nth-child(8),.l-row:nth-child(8){animation-delay:.24s}
+@keyframes cardIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+/* RESPONSIVE sidebar collapse */
+@media (max-width:780px) {
+  .sidebar { display:none; }
+  .topbar { padding:0 16px; }
+  .toolbar { padding:12px 16px; }
+  .scroll-area { padding:16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<!-- MODAL: Share -->
+<div class="modal-bg" id="modal-share">
+  <div class="modal">
+    <div class="modal-title">Share Gallery</div>
+    <div class="modal-sub">Copy the link below or send an email invite directly to your client.</div>
+    <div class="form-group">
+      <label>Gallery Link</label>
+      <div class="share-box">
+        <input type="text" value="framelight.app/g/meghan-desmond-2025" readonly id="share-link-input"/>
+        <button class="share-copy" onclick="copyShareLink()">Copy</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Send Email Invite</label>
+      <input type="text" placeholder="client@email.com"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('modal-share')">Close</button>
+      <button class="btn primary" onclick="showToast('Invite sent to client!');closeModal('modal-share')">Send Invite</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Delete -->
+<div class="modal-bg" id="modal-delete">
+  <div class="modal">
+    <div class="modal-title">Delete Gallery?</div>
+    <div class="modal-sub">This will permanently remove <strong id="delete-gallery-name">this gallery</strong> and all its photos. This action cannot be undone.</div>
+    <div class="form-group">
+      <label>Type the gallery name to confirm</label>
+      <input type="text" id="delete-confirm" placeholder="Type gallery name…" oninput="checkDeleteConfirm()"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('modal-delete')">Cancel</button>
+      <button class="btn danger" id="delete-confirm-btn" disabled onclick="confirmDelete()">Delete Gallery</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Rename / Edit -->
+<div class="modal-bg" id="modal-rename">
+  <div class="modal">
+    <div class="modal-title">Edit Gallery</div>
+    <div class="modal-sub">Update the gallery title and client details.</div>
+    <div class="form-group"><label>Gallery Name</label><input type="text" id="rename-input" value="Emma & James Wedding"/></div>
+    <div class="form-group"><label>Client Name</label><input type="text" value="Emma & James Hartley"/></div>
+    <div class="form-group"><label>Client Email</label><input type="text" value="emma@email.com"/></div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('modal-rename')">Cancel</button>
+      <button class="btn primary" onclick="showToast('Gallery updated!');closeModal('modal-rename')">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-logo"><div class="logo-wordmark">Frame<span>light</span></div></div>
+  <div class="sidebar-section">
+    <div class="section-label">Main</div>
+    <div class="nav-item" onclick="window.location='#'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Overview
+    </div>
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      Galleries <span class="nav-pill">12</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      New Gallery
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="section-label">Account</div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </div>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="storage-wrap">
+      <div class="storage-row"><span>Storage</span><span>3.4 / 10 GB</span></div>
+      <div class="storage-bar"><div class="storage-fill"></div></div>
+      <span class="upgrade-link">Upgrade for more storage →</span>
+    </div>
+    <div class="user-chip">
+      <div class="user-av">S</div>
+      <div><div class="user-name">Sarah Kim</div><div class="user-plan">Basic Plan</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-title">
+      My Galleries
+      <span id="count-label">12 galleries</span>
+    </div>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search galleries…" id="search-input" oninput="applyFilters()"/>
+    </div>
+    <button class="new-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Gallery
+    </button>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="filter-pills">
+      <button class="fpill active" data-filter="all"    onclick="setFilter('all',this)">All <span class="pill-count">12</span></button>
+      <button class="fpill"        data-filter="active" onclick="setFilter('active',this)">Active <span class="pill-count">8</span></button>
+      <button class="fpill"        data-filter="locked" onclick="setFilter('locked',this)">PIN Protected <span class="pill-count">5</span></button>
+      <button class="fpill"        data-filter="draft"  onclick="setFilter('draft',this)">Draft <span class="pill-count">2</span></button>
+      <button class="fpill"        data-filter="expired"onclick="setFilter('expired',this)">Expired <span class="pill-count">2</span></button>
+    </div>
+    <div class="toolbar-right">
+      <select class="sort-select" onchange="applyFilters()">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+        <option value="views">Most Views</option>
+        <option value="photos">Most Photos</option>
+        <option value="az">Name A–Z</option>
+      </select>
+      <div class="view-toggle">
+        <button class="vt-btn active" id="grid-btn" title="Grid view" onclick="setView('grid')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </button>
+        <button class="vt-btn" id="list-btn" title="List view" onclick="setView('list')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6" stroke-width="2.5" stroke-linecap="round"/><line x1="3" y1="12" x2="3.01" y2="12" stroke-width="2.5" stroke-linecap="round"/><line x1="3" y1="18" x2="3.01" y2="18" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCROLL AREA -->
+  <div class="scroll-area">
+    <div id="gallery-container"></div>
+  </div>
+
+</div>
+</div>
+
+<script>
+/* ═══════════════════════════════════
+   DATA
+═══════════════════════════════════ */
+const galleries = [
+  {
+    id:1, name:'Meghan & Desmond Wedding', client:'Meghan & Desmond Clarke',
+    date:'Jun 14, 2025', photos:247, views:184, downloads:62, favorites:28,
+    status:'active', pin:true,
+    expiry:'Aug 14, 2025', expiryDays:58,
+    cover:'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600&q=80',
+    slug:'meghan-desmond-2025'
+  },
+  {
+    id:2, name:'Emma & James Wedding', client:'Emma & James Hartley',
+    date:'May 22, 2025', photos:312, views:241, downloads:98, favorites:41,
+    status:'active', pin:true,
+    expiry:'Jul 22, 2025', expiryDays:14,
+    cover:'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&q=80',
+    slug:'emma-james-2025'
+  },
+  {
+    id:3, name:'Nakamura Family Portraits', client:'The Nakamura Family',
+    date:'May 2, 2025', photos:84, views:56, downloads:31, favorites:12,
+    status:'active', pin:false,
+    expiry:null, expiryDays:null,
+    cover:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80',
+    slug:'nakamura-family-2025'
+  },
+  {
+    id:4, name:'Rodriguez Newborn Session', client:'Sofia Rodriguez',
+    date:'Apr 18, 2025', photos:63, views:94, downloads:47, favorites:19,
+    status:'active', pin:true,
+    expiry:'Jun 18, 2025', expiryDays:7,
+    cover:'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80',
+    slug:'rodriguez-newborn-2025'
+  },
+  {
+    id:5, name:'Chen Engagement Session', client:'Amy & David Chen',
+    date:'Apr 5, 2025', photos:128, views:73, downloads:22, favorites:15,
+    status:'active', pin:false,
+    expiry:'Jul 5, 2025', expiryDays:42,
+    cover:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80',
+    slug:'chen-engagement-2025'
+  },
+  {
+    id:6, name:'Williams Brand Shoot', client:'Williams & Co.',
+    date:'Mar 20, 2025', photos:201, views:38, downloads:14, favorites:4,
+    status:'active', pin:true,
+    expiry:'Jun 20, 2025', expiryDays:28,
+    cover:'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&q=80',
+    slug:'williams-brand-2025'
+  },
+  {
+    id:7, name:'Summer Mini Sessions', client:'Multiple clients',
+    date:'Jun 1, 2025', photos:0, views:0, downloads:0, favorites:0,
+    status:'draft', pin:false,
+    expiry:null, expiryDays:null,
+    cover:null, slug:'summer-minis-2025'
+  },
+  {
+    id:8, name:'Corporate Headshots — TechCo', client:'TechCo Inc.',
+    date:'Jun 8, 2025', photos:44, views:12, downloads:0, favorites:2,
+    status:'draft', pin:false,
+    expiry:null, expiryDays:null,
+    cover:'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80',
+    slug:'techco-headshots-2025'
+  },
+  {
+    id:9, name:'Hartley Engagement', client:'The Hartley Family',
+    date:'Jan 8, 2025', photos:112, views:201, downloads:89, favorites:22,
+    status:'expired', pin:true,
+    expiry:'Mar 8, 2025', expiryDays:-102,
+    cover:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=80',
+    slug:'hartley-engagement-2025'
+  },
+  {
+    id:10, name:'Kim Anniversary', client:'The Kim Family',
+    date:'Feb 14, 2025', photos:88, views:64, downloads:38, favorites:9,
+    status:'expired', pin:false,
+    expiry:'Apr 14, 2025', expiryDays:-65,
+    cover:'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=600&q=80',
+    slug:'kim-anniversary-2025'
+  },
+  {
+    id:11, name:'Park Senior Portraits', client:'Jenna Park',
+    date:'Mar 10, 2025', photos:76, views:49, downloads:28, favorites:11,
+    status:'active', pin:false,
+    expiry:'Aug 10, 2025', expiryDays:73,
+    cover:'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80',
+    slug:'park-senior-2025'
+  },
+  {
+    id:12, name:'Garcia Maternity', client:'Isabella Garcia',
+    date:'May 30, 2025', photos:95, views:27, downloads:8, favorites:6,
+    status:'active', pin:true,
+    expiry:'Jul 30, 2025', expiryDays:30,
+    cover:'https://images.unsplash.com/photo-1513278974582-3e1b4a4fa21e?w=600&q=80',
+    slug:'garcia-maternity-2025'
+  },
+];
+
+/* ═══════════════════════════════════
+   STATE
+═══════════════════════════════════ */
+let currentFilter = 'all';
+let currentView = 'grid';
+let deleteTarget = null;
+
+/* ═══════════════════════════════════
+   HELPERS
+═══════════════════════════════════ */
+function expiryLabel(g) {
+  if (!g.expiry) return '';
+  if (g.status === 'expired') return 'Expired ' + g.expiry;
+  if (g.expiryDays <= 7)  return '⚠ Expires in ' + g.expiryDays + 'd';
+  if (g.expiryDays <= 30) return 'Expires in ' + g.expiryDays + 'd';
+  return 'Expires ' + g.expiry;
+}
+function expiryClass(g) {
+  if (g.status === 'expired') return 'expired';
+  if (g.expiryDays !== null && g.expiryDays <= 14) return 'soon';
+  return '';
+}
+function statusLabel(g) {
+  if (g.status === 'expired') return 'Expired';
+  if (g.status === 'draft')   return 'Draft';
+  if (g.pin)                  return '🔒 PIN';
+  return 'Active';
+}
+function statusClass(g) {
+  if (g.status === 'expired') return 'expired';
+  if (g.status === 'draft')   return 'draft';
+  if (g.pin)                  return 'locked';
+  return 'active';
+}
+
+/* ═══════════════════════════════════
+   RENDER
+═══════════════════════════════════ */
+function applyFilters() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const sort = document.querySelector('.sort-select').value;
+
+  let list = galleries.filter(g => {
+    const matchFilter =
+      currentFilter === 'all'     ? true :
+      currentFilter === 'active'  ? g.status === 'active' && !g.pin :
+      currentFilter === 'locked'  ? g.pin :
+      currentFilter === 'draft'   ? g.status === 'draft' :
+      currentFilter === 'expired' ? g.status === 'expired' : true;
+    const matchSearch = g.name.toLowerCase().includes(search) || g.client.toLowerCase().includes(search);
+    return matchFilter && matchSearch;
+  });
+
+  list.sort((a,b) => {
+    if (sort==='oldest') return a.id - b.id;
+    if (sort==='views')  return b.views - a.views;
+    if (sort==='photos') return b.photos - a.photos;
+    if (sort==='az')     return a.name.localeCompare(b.name);
+    return b.id - a.id; // newest
+  });
+
+  document.getElementById('count-label').textContent = list.length + ' galleriesshown';
+  document.getElementById('count-label').textContent = list.length + (list.length===1?' gallery':' galleries');
+
+  const container = document.getElementById('gallery-container');
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+        <div class="es-title">No galleries found</div>
+        <div class="es-sub">Try a different search or filter, or create a new gallery to get started.</div>
+        <button class="btn primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Gallery</button>
+      </div>`;
+    return;
+  }
+
+  if (currentView === 'grid') {
+    container.innerHTML = `<div class="galleries-grid">${list.map(g => renderCard(g)).join('')}</div>`;
+  } else {
+    container.innerHTML = `<div class="galleries-list">${list.map(g => renderRow(g)).join('')}</div>`;
+  }
+}
+
+/* ── GRID CARD ── */
+function renderCard(g) {
+  const pillStatus = () => {
+    if (g.status === 'expired') return `<span class="g-pill red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>Expired</span>`;
+    if (g.status === 'draft')   return `<span class="g-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Draft</span>`;
+    if (g.pin)                  return `<span class="g-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>PIN Protected</span>`;
+    return `<span class="g-pill teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Active</span>`;
+  };
+
+  const pillExpiry = () => {
+    if (!g.expiry || g.status === 'expired') return '';
+    if (g.expiryDays <= 7)  return `<span class="g-pill amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Expires in ${g.expiryDays}d</span>`;
+    return `<span class="g-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${g.expiryDays}d left</span>`;
+  };
+
+  const pillPhotos = () => g.photos > 0
+    ? `<span class="g-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>${g.photos} photos</span>`
+    : '';
+
+  const coverEl = g.cover
+    ? `<img class="g-cover-img" src="${g.cover}" alt="${g.name}" loading="lazy"/>`
+    : `<div class="g-no-cover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>No cover yet</span></div>`;
+
+  return `
+  <div class="g-card" id="card-${g.id}" onclick="openGallery(${g.id})">
+    ${coverEl}
+    <div class="g-overlay"></div>
+
+    <!-- top-left edit button -->
+    <button class="g-edit-btn" title="Edit gallery" onclick="event.stopPropagation();openRename(${g.id})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </button>
+
+    <!-- top-right 3-dot menu -->
+    <button class="g-menu-btn" onclick="event.stopPropagation();toggleDropdown(${g.id})">
+      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+    </button>
+    <div class="g-dropdown" id="dd-${g.id}">
+      <button class="g-dd-item" onclick="viewGallery(${g.id});closeDropdowns()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View Gallery
+      </button>
+      <button class="g-dd-item" onclick="openShare(${g.id});closeDropdowns()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Share Link
+      </button>
+      <button class="g-dd-item" onclick="openRename(${g.id});closeDropdowns()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit Details
+      </button>
+      <div class="g-dd-divider"></div>
+      <button class="g-dd-item danger" onclick="openDelete(${g.id});closeDropdowns()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>Delete
+      </button>
+    </div>
+
+    <!-- bottom content -->
+    <div class="g-content">
+      <div class="g-name">${g.name}</div>
+      <div class="g-desc">${g.client} · ${g.date}</div>
+      <div class="g-pills">
+        ${pillStatus()}
+        ${pillPhotos()}
+        ${pillExpiry()}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── LIST ROW ── */
+function renderRow(g) {
+  return `
+  <div class="l-row" onclick="openGallery(${g.id})">
+    <div class="l-thumb">
+      ${g.cover ? `<img src="${g.cover}" alt="${g.name}" loading="lazy"/>` : ''}
+    </div>
+    <div class="l-body">
+      <div class="l-name">${g.name}</div>
+      <div class="l-meta">
+        <span class="l-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${g.client}</span>
+        <span class="l-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${g.date}</span>
+        ${g.expiry ? `<span class="l-meta-item ${expiryClass(g) === 'soon' ? 'g-expiry soon' : expiryClass(g) === 'expired' ? 'g-expiry expired' : ''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${expiryLabel(g)}</span>` : ''}
+      </div>
+    </div>
+    <div class="l-stats">
+      <div class="l-stat"><div class="l-stat-val">${g.photos}</div><div class="l-stat-lbl">Photos</div></div>
+      <div class="l-stat"><div class="l-stat-val">${g.views}</div><div class="l-stat-lbl">Views</div></div>
+      <div class="l-stat"><div class="l-stat-val">${g.downloads}</div><div class="l-stat-lbl">DLs</div></div>
+    </div>
+    <div class="l-status"><span class="l-badge ${statusClass(g)}">${statusLabel(g)}</span></div>
+    <div class="l-actions">
+      <button class="g-act-btn" title="Share" onclick="event.stopPropagation();openShare(${g.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></button>
+      <button class="g-act-btn" title="Edit" onclick="event.stopPropagation();openRename(${g.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button class="g-act-btn danger" title="Delete" onclick="event.stopPropagation();openDelete(${g.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════
+   ACTIONS
+═══════════════════════════════════ */
+function closeDropdowns() {
+  document.querySelectorAll('.g-dropdown').forEach(d => d.classList.remove('open'));
+}
+function toggleDropdown(id) {
+  const dd = document.getElementById('dd-' + id);
+  const isOpen = dd.classList.contains('open');
+  closeDropdowns();
+  if (!isOpen) dd.classList.add('open');
+}
+document.addEventListener('click', closeDropdowns);
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('grid-btn').classList.toggle('active', v==='grid');
+  document.getElementById('list-btn').classList.toggle('active', v==='list');
+  applyFilters();
+}
+
+function openGallery(id)  { showToast('Opening gallery editor…'); }
+function viewGallery(id)  { showToast('Opening client view…'); }
+
+function openShare(id) {
+  const g = galleries.find(x=>x.id===id);
+  document.getElementById('share-link-input').value = `framelight.app/g/${g.slug}`;
+  openModal('modal-share');
+}
+function copyShareLink() {
+  const v = document.getElementById('share-link-input').value;
+  navigator.clipboard?.writeText(v).catch(()=>{});
+  showToast('Link copied to clipboard!');
+}
+
+function openRename(id) {
+  const g = galleries.find(x=>x.id===id);
+  document.getElementById('rename-input').value = g.name;
+  openModal('modal-rename');
+}
+
+function openDelete(id) {
+  const g = galleries.find(x=>x.id===id);
+  deleteTarget = g;
+  document.getElementById('delete-gallery-name').textContent = '"' + g.name + '"';
+  document.getElementById('delete-confirm').value = '';
+  document.getElementById('delete-confirm-btn').disabled = true;
+  openModal('modal-delete');
+}
+function checkDeleteConfirm() {
+  const val = document.getElementById('delete-confirm').value;
+  document.getElementById('delete-confirm-btn').disabled = val !== deleteTarget.name;
+}
+function confirmDelete() {
+  showToast('Gallery deleted');
+  closeModal('modal-delete');
+  applyFilters();
+}
+
+/* ═══════════════════════════════════
+   MODALS
+═══════════════════════════════════ */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', function(e) { if(e.target===this) this.classList.remove('open'); });
+});
+
+/* ═══════════════════════════════════
+   TOAST
+═══════════════════════════════════ */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ═══════════════════════════════════
+   INIT
+═══════════════════════════════════ */
+applyFilters();
+</script>
+</body>
+</html>

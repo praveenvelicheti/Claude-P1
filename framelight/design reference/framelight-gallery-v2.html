@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Meghan & Desmond — Framelight</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════
+   FRAMELIGHT GALLERY — Pixieset-faithful clone
+   Palette: #fbe3e8 pink · #5cbdb9 teal · #ebf6f5 mint
+═══════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --pink:    #fbe3e8;
+  --teal:    #5cbdb9;
+  --teal-l:  #89d0cd;
+  --mint:    #ebf6f5;
+  --ink:     #1a3a3a;
+  --mid:     #3d7a78;
+  --muted:   #7aadab;
+  --border:  #ceecea;
+  --white:   #ffffff;
+  --font-d:  'Cormorant Garamond', Georgia, serif;
+  --font-ui: 'Jost', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-ui);
+  background: var(--white);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════
+   1. COVER — 100vh full bleed hero
+═══════════════════════════════════════════ */
+.cover {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-height: 600px;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.cover-bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center 30%;
+  display: block;
+  animation: coverZoom 22s ease-in-out infinite alternate;
+  transform-origin: center center;
+}
+@keyframes coverZoom {
+  from { transform: scale(1.06); }
+  to   { transform: scale(1.0); }
+}
+
+/* very subtle dark vignette */
+.cover-vignette {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 40%, rgba(26,58,58,0.25) 100%),
+    linear-gradient(to bottom, rgba(26,58,58,0.08) 0%, rgba(26,58,58,0.45) 100%);
+  pointer-events: none;
+}
+
+/* centered title block */
+.cover-title {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+.cover-eyebrow {
+  font-family: var(--font-ui);
+  font-size: 11px; font-weight: 400; letter-spacing: 0.22em;
+  text-transform: uppercase; color: rgba(255,255,255,0.65);
+  margin-bottom: 18px;
+  animation: fadeUp 1s ease 0.2s both;
+}
+.cover-name {
+  font-family: var(--font-d);
+  font-size: clamp(44px, 9vw, 100px);
+  font-weight: 300; color: #fff;
+  line-height: 0.95; letter-spacing: -0.01em;
+  animation: fadeUp 1s ease 0.4s both;
+}
+.cover-name em { font-style: italic; display: block; }
+.cover-date {
+  font-family: var(--font-ui);
+  font-size: 12px; font-weight: 300; letter-spacing: 0.18em;
+  text-transform: uppercase; color: rgba(255,255,255,0.5);
+  margin-top: 22px;
+  animation: fadeUp 1s ease 0.6s both;
+}
+
+/* scroll cue */
+.cover-scroll {
+  position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: rgba(255,255,255,0.45); cursor: pointer;
+  animation: fadeUp 1s ease 1s both;
+  transition: color 0.2s;
+}
+.cover-scroll:hover { color: rgba(255,255,255,0.8); }
+.cover-scroll span { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 400; }
+.scroll-line {
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.5));
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.4; transform: scaleY(1); }
+  50%       { opacity: 1;   transform: scaleY(1.15); }
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(18px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   2. FLOATING NAV — appears on scroll
+═══════════════════════════════════════════ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 54px;
+  display: flex; align-items: center;
+  padding: 0 clamp(16px, 4vw, 48px);
+  transition: background 0.35s, box-shadow 0.35s, backdrop-filter 0.35s;
+  pointer-events: all;
+}
+
+/* transparent over cover */
+.nav.over-cover {
+  background: transparent;
+}
+
+/* solid once scrolled past cover */
+.nav.scrolled {
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 1px 0 var(--border);
+}
+
+.nav-left {
+  display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;
+}
+
+.nav-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  overflow: hidden; flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  transition: border-color 0.35s;
+}
+.nav.scrolled .nav-avatar { border-color: var(--border); }
+.nav-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.nav-photographer {
+  font-family: var(--font-d); font-size: 16px; font-weight: 400;
+  color: rgba(255,255,255,0.9); white-space: nowrap; transition: color 0.35s;
+  letter-spacing: 0.03em;
+}
+.nav.scrolled .nav-photographer { color: var(--ink); }
+
+.nav-sep {
+  width: 1px; height: 14px; flex-shrink: 0;
+  background: rgba(255,255,255,0.25); transition: background 0.35s;
+}
+.nav.scrolled .nav-sep { background: var(--border); }
+
+.nav-gallery-name {
+  font-size: 12px; font-weight: 300; letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.55); white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; font-style: italic; transition: color 0.35s;
+}
+.nav.scrolled .nav-gallery-name { color: var(--muted); }
+
+.nav-right {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+}
+
+/* icon buttons */
+.nav-btn {
+  position: relative; width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.85); transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.5); }
+.nav.scrolled .nav-btn { border-color: var(--border); background: var(--white); color: var(--ink); backdrop-filter: none; }
+.nav.scrolled .nav-btn:hover { background: var(--mint); border-color: var(--teal); }
+.nav-btn svg { width: 16px; height: 16px; }
+
+.nav-fav-count {
+  position: absolute; top: -3px; right: -3px;
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--teal); color: #fff;
+  font-size: 8px; font-weight: 600;
+  display: none; place-items: center;
+  border: 2px solid var(--white);
+}
+.nav-fav-count.show { display: grid; }
+
+/* download pill button */
+.nav-dl-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 16px; height: 36px; border-radius: 18px;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(8px); cursor: pointer;
+  font-family: var(--font-ui); font-size: 11.5px; font-weight: 400;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(255,255,255,0.9); transition: all 0.2s; white-space: nowrap;
+}
+.nav-dl-pill:hover { background: rgba(255,255,255,0.28); }
+.nav-dl-pill svg { width: 13px; height: 13px; }
+.nav.scrolled .nav-dl-pill { background: var(--teal); border-color: var(--teal); color: #fff; backdrop-filter: none; }
+.nav.scrolled .nav-dl-pill:hover { background: var(--teal-l); border-color: var(--teal-l); }
+
+/* hide text on small screens */
+@media (max-width: 500px) {
+  .nav-gallery-name, .nav-sep { display: none; }
+  .nav-dl-pill .dl-text { display: none; }
+  .nav-dl-pill { padding: 0 10px; }
+}
+
+/* ═══════════════════════════════════════════
+   3. GALLERY BODY
+═══════════════════════════════════════════ */
+.gallery-body { background: var(--white); }
+
+/* ── FAVORITES NOTICE BAR ── */
+.fav-notice {
+  display: none;
+  align-items: center; justify-content: space-between;
+  padding: 11px clamp(16px, 4vw, 48px);
+  background: var(--pink); border-bottom: 1px solid #f0c8d0;
+  flex-wrap: wrap; gap: 10px;
+}
+.fav-notice.visible { display: flex; }
+.fav-notice-text {
+  font-size: 13px; color: var(--ink);
+  display: flex; align-items: center; gap: 8px;
+}
+.fav-notice-text svg { width: 14px; height: 14px; color: #d45f7a; }
+.fav-notice strong { color: #d45f7a; }
+.fav-dl-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 20px;
+  background: var(--teal); color: #fff; border: none;
+  font-family: var(--font-ui); font-size: 11.5px; font-weight: 400;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer; transition: background 0.2s; white-space: nowrap;
+}
+.fav-dl-btn:hover { background: var(--teal-l); }
+.fav-dl-btn svg { width: 12px; height: 12px; }
+
+/* ── SETS NAV (photo groups) ── */
+.sets-nav {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; padding: 0 clamp(16px, 4vw, 48px);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.sets-nav::-webkit-scrollbar { display: none; }
+.set-tab {
+  padding: 16px 22px; font-size: 12px; font-weight: 400;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: all 0.18s; background: none; border-top: none;
+  border-left: none; border-right: none; font-family: var(--font-ui);
+}
+.set-tab:hover { color: var(--ink); }
+.set-tab.active { color: var(--ink); border-bottom-color: var(--teal); font-weight: 500; }
+
+/* ── PHOTO COUNT ── */
+.gallery-info {
+  padding: clamp(24px, 4vw, 40px) clamp(16px, 4vw, 48px) 0;
+  display: flex; align-items: baseline; gap: 14px;
+}
+.gallery-title-sm {
+  font-family: var(--font-d); font-size: clamp(22px, 4vw, 32px);
+  font-weight: 300; color: var(--ink); letter-spacing: 0.01em;
+}
+.gallery-title-sm em { font-style: italic; }
+.gallery-count {
+  font-size: 12px; color: var(--muted); letter-spacing: 0.05em;
+}
+
+/* ═══════════════════════════════════════════
+   4. MASONRY GRID — Pixieset-style
+   2 columns desktop, 2 mobile, 0 side padding
+═══════════════════════════════════════════ */
+.photo-grid {
+  padding: clamp(12px, 2vw, 24px) clamp(8px, 2vw, 24px);
+  columns: 3;
+  column-gap: clamp(4px, 0.6vw, 8px);
+}
+
+@media (max-width: 900px) {
+  .photo-grid { columns: 2; padding-left: 0; padding-right: 0; column-gap: 2px; }
+}
+@media (max-width: 500px) {
+  .photo-grid { columns: 2; padding: 0; column-gap: 2px; }
+}
+
+.photo-wrap {
+  break-inside: avoid;
+  margin-bottom: clamp(4px, 0.6vw, 8px);
+  position: relative; overflow: hidden;
+  cursor: pointer; display: block;
+  background: var(--mint);
+}
+@media (max-width: 900px) { .photo-wrap { margin-bottom: 2px; } }
+
+.photo-wrap img {
+  width: 100%; display: block;
+  transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.photo-wrap:hover img { transform: scale(1.04); }
+
+/* hover action layer */
+.photo-actions-layer {
+  position: absolute; inset: 0;
+  opacity: 0; transition: opacity 0.22s;
+  background: linear-gradient(to top, rgba(26,58,58,0.42) 0%, transparent 60%);
+  display: flex; align-items: flex-end; justify-content: flex-end;
+  padding: 12px;
+}
+.photo-wrap:hover .photo-actions-layer { opacity: 1; }
+
+.photo-action-btns { display: flex; gap: 7px; }
+.p-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(255,255,255,0.9); border: none;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--ink); transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.p-btn:hover { background: #fff; transform: scale(1.08); }
+.p-btn svg { width: 14px; height: 14px; }
+.p-btn.fav-on { color: #d45f7a; }
+.p-btn.fav-on svg { fill: #d45f7a; }
+
+/* ═══════════════════════════════════════════
+   5. LIGHTBOX — full screen
+═══════════════════════════════════════════ */
+.lightbox {
+  position: fixed; inset: 0; z-index: 500;
+  background: #0d1f1f;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.28s;
+}
+.lightbox.open { opacity: 1; pointer-events: all; }
+
+/* top bar */
+.lb-top {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+  height: 56px; display: flex; align-items: center;
+  padding: 0 clamp(14px, 3vw, 28px); gap: 12px;
+  background: linear-gradient(to bottom, rgba(13,31,31,0.85) 0%, transparent 100%);
+}
+.lb-close {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.8); transition: all 0.18s; flex-shrink: 0;
+}
+.lb-close:hover { background: rgba(255,255,255,0.18); color: #fff; }
+.lb-close svg { width: 16px; height: 16px; }
+.lb-top-info { flex: 1; min-width: 0; }
+.lb-top-gallery { font-family: var(--font-d); font-size: 15px; font-weight: 300; color: rgba(255,255,255,0.8); letter-spacing: 0.02em; }
+.lb-top-count { font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 0.06em; margin-top: 1px; }
+.lb-top-actions { display: flex; gap: 8px; }
+.lb-action-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.8); cursor: pointer;
+  font-family: var(--font-ui); font-size: 11px; font-weight: 400;
+  letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap;
+  transition: all 0.15s;
+}
+.lb-action-btn:hover { background: rgba(255,255,255,0.16); color: #fff; border-color: rgba(255,255,255,0.4); }
+.lb-action-btn.fav-on { color: #f48aaa; border-color: #f48aaa; background: rgba(244,138,170,0.12); }
+.lb-action-btn.fav-on svg { fill: #f48aaa; }
+.lb-action-btn svg { width: 13px; height: 13px; }
+.lb-label { display: inline; }
+@media (max-width: 600px) { .lb-label { display: none; } .lb-action-btn { padding: 7px 9px; } }
+
+/* main image */
+.lb-stage {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.lb-img {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain;
+  padding: 56px clamp(48px, 6vw, 90px) 80px;
+  animation: lbIn 0.28s ease;
+  display: block;
+}
+@keyframes lbIn { from { opacity:0; transform: scale(0.97); } to { opacity:1; transform:scale(1); } }
+
+.lb-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(13,31,31,0.55); backdrop-filter: blur(8px);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.7); transition: all 0.18s;
+}
+.lb-arrow:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.35); }
+.lb-arrow svg { width: 18px; height: 18px; }
+.lb-prev { left: clamp(10px, 2vw, 24px); }
+.lb-next { right: clamp(10px, 2vw, 24px); }
+
+/* filmstrip */
+.lb-strip {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 72px;
+  background: linear-gradient(to top, rgba(13,31,31,0.9) 0%, transparent 100%);
+  display: flex; align-items: flex-end; padding: 0 12px 10px;
+  gap: 5px; overflow-x: auto;
+}
+.lb-strip::-webkit-scrollbar { display: none; }
+.lb-thumb {
+  width: 50px; height: 50px; flex-shrink: 0;
+  border-radius: 4px; overflow: hidden; cursor: pointer;
+  opacity: 0.42; border: 2px solid transparent;
+  transition: all 0.18s;
+}
+.lb-thumb:hover { opacity: 0.75; }
+.lb-thumb.active { opacity: 1; border-color: var(--teal); }
+.lb-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ═══════════════════════════════════════════
+   6. FOOTER
+═══════════════════════════════════════════ */
+.gallery-footer {
+  padding: clamp(28px, 4vw, 48px) clamp(16px, 4vw, 48px);
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  background: var(--white);
+}
+.footer-logo {
+  font-family: var(--font-d); font-size: 18px; font-weight: 300;
+  color: var(--ink); letter-spacing: 0.06em;
+}
+.footer-logo em { font-style: italic; color: var(--teal); }
+.footer-powered {
+  font-size: 11px; color: var(--muted); letter-spacing: 0.08em;
+}
+.footer-powered a { color: var(--teal); text-decoration: none; }
+.footer-powered a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════
+   7. TOAST
+═══════════════════════════════════════════ */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--ink); color: #fff;
+  padding: 11px 20px; border-radius: 24px;
+  font-size: 13px; font-family: var(--font-ui);
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 8px 32px rgba(13,31,31,0.3);
+  opacity: 0; transition: all 0.32s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 9999; white-space: nowrap; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast svg { width: 14px; height: 14px; color: var(--teal-l); }
+
+/* ── STAGGER ANIM ── */
+.photo-wrap {
+  animation: gridIn 0.5s ease both;
+}
+.photo-wrap:nth-child(1){animation-delay:.04s}
+.photo-wrap:nth-child(2){animation-delay:.08s}
+.photo-wrap:nth-child(3){animation-delay:.12s}
+.photo-wrap:nth-child(4){animation-delay:.16s}
+.photo-wrap:nth-child(5){animation-delay:.20s}
+.photo-wrap:nth-child(6){animation-delay:.24s}
+.photo-wrap:nth-child(7){animation-delay:.28s}
+.photo-wrap:nth-child(8){animation-delay:.32s}
+.photo-wrap:nth-child(9){animation-delay:.36s}
+.photo-wrap:nth-child(10){animation-delay:.40s}
+.photo-wrap:nth-child(11){animation-delay:.44s}
+.photo-wrap:nth-child(12){animation-delay:.48s}
+@keyframes gridIn {
+  from { opacity:0; transform: translateY(14px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     FLOATING NAV
+══════════════════════════════════ -->
+<nav class="nav over-cover" id="main-nav">
+  <div class="nav-left">
+    <div class="nav-avatar">
+      <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=60&q=80" alt=""/>
+    </div>
+    <span class="nav-photographer">Chris Ruth</span>
+    <div class="nav-sep"></div>
+    <span class="nav-gallery-name">Meghan & Desmond</span>
+  </div>
+  <div class="nav-right">
+    <!-- Favorites -->
+    <button class="nav-btn" title="Favorites" onclick="showToast('No favorites yet — click ❤️ on any photo')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+      </svg>
+      <span class="nav-fav-count" id="fav-count">0</span>
+    </button>
+    <!-- Slideshow -->
+    <button class="nav-btn" title="Slideshow" onclick="startSlideshow()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+    </button>
+    <!-- Download -->
+    <button class="nav-dl-pill" onclick="showToast('Preparing your ZIP download…')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span class="dl-text">Download</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════
+     COVER — 100vh hero
+══════════════════════════════════ -->
+<section class="cover" id="cover">
+  <img
+    class="cover-bg"
+    src="https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1800&q=90"
+    alt="Meghan & Desmond Wedding Cover"
+  />
+  <div class="cover-vignette"></div>
+  <div class="cover-title">
+    <div class="cover-eyebrow">Chris Ruth Photography</div>
+    <h1 class="cover-name">
+      Meghan
+      <em>& Desmond</em>
+    </h1>
+    <div class="cover-date">June 14, 2025 &nbsp;·&nbsp; Las Vegas, Nevada</div>
+  </div>
+  <div class="cover-scroll" onclick="document.getElementById('gallery-body').scrollIntoView({behavior:'smooth'})">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     GALLERY BODY
+══════════════════════════════════ -->
+<div class="gallery-body" id="gallery-body">
+
+  <!-- Favorites notice -->
+  <div class="fav-notice" id="fav-notice">
+    <div class="fav-notice-text">
+      <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      You've selected <strong id="fav-notice-count">0</strong> favorites
+    </div>
+    <button class="fav-dl-btn" onclick="showToast('Downloading favorites as ZIP…')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Favorites
+    </button>
+  </div>
+
+  <!-- Sets nav -->
+  <div class="sets-nav">
+    <button class="set-tab active" onclick="switchSet(this,'all')">All Photos</button>
+    <button class="set-tab" onclick="switchSet(this,'ceremony')">Ceremony</button>
+    <button class="set-tab" onclick="switchSet(this,'reception')">Reception</button>
+    <button class="set-tab" onclick="switchSet(this,'portraits')">Portraits</button>
+    <button class="set-tab" onclick="switchSet(this,'details')">Details</button>
+  </div>
+
+  <!-- Gallery info -->
+  <div class="gallery-info">
+    <h2 class="gallery-title-sm">Meghan <em>& Desmond</em></h2>
+    <span class="gallery-count" id="photo-count-label">247 photos</span>
+  </div>
+
+  <!-- ── PHOTO GRID ── -->
+  <div class="photo-grid" id="photo-grid">
+    <!-- Photos injected by JS -->
+  </div>
+
+  <!-- Footer -->
+  <div class="gallery-footer">
+    <div class="footer-logo">Chris Ruth <em>Photography</em></div>
+    <div class="footer-powered">Delivered with <a href="#">Framelight</a></div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════
+     LIGHTBOX
+══════════════════════════════════ -->
+<div class="lightbox" id="lightbox">
+  <div class="lb-top">
+    <button class="lb-close" onclick="closeLightbox()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="lb-top-info">
+      <div class="lb-top-gallery">Meghan & Desmond</div>
+      <div class="lb-top-count" id="lb-count">1 of 12</div>
+    </div>
+    <div class="lb-top-actions">
+      <button class="lb-action-btn" id="lb-fav-btn" onclick="toggleFavLb()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        <span class="lb-label">Favorite</span>
+      </button>
+      <button class="lb-action-btn" onclick="showToast('Photo downloaded!')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span class="lb-label">Download</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="lb-stage">
+    <img class="lb-img" id="lb-img" src="" alt=""/>
+    <button class="lb-arrow lb-prev" onclick="lbNav(-1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="lb-arrow lb-next" onclick="lbNav(1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+
+  <div class="lb-strip" id="lb-strip"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   DATA — wedding photos
+══════════════════════════════════════ */
+const photos = [
+  { id:1,  full:'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600&q=80', set:'ceremony' },
+  { id:2,  full:'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&q=80', set:'ceremony' },
+  { id:3,  full:'https://images.unsplash.com/photo-1519741497674-611481863552?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80', set:'portraits' },
+  { id:4,  full:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80', set:'ceremony' },
+  { id:5,  full:'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&q=80', set:'portraits' },
+  { id:6,  full:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80', set:'reception' },
+  { id:7,  full:'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80', set:'reception' },
+  { id:8,  full:'https://images.unsplash.com/photo-1529636798458-92182e662485?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1529636798458-92182e662485?w=600&q=80', set:'details' },
+  { id:9,  full:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=80', set:'portraits' },
+  { id:10, full:'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=600&q=80', set:'details' },
+  { id:11, full:'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80', set:'reception' },
+  { id:12, full:'https://images.unsplash.com/photo-1513278974582-3e1b4a4fa21e?w=1400&q=90', thumb:'https://images.unsplash.com/photo-1513278974582-3e1b4a4fa21e?w=600&q=80', set:'details' },
+];
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+const favorites = new Set();
+let lbIndex = 0;
+let visiblePhotos = [...photos];
+let slideshowInterval = null;
+
+/* ══════════════════════════════════════
+   RENDER GRID
+══════════════════════════════════════ */
+function renderGrid(list) {
+  const grid = document.getElementById('photo-grid');
+  document.getElementById('photo-count-label').textContent = list.length + ' photos';
+  grid.innerHTML = list.map((p, i) => `
+    <div class="photo-wrap" data-idx="${i}" onclick="openLightbox(${i})">
+      <img src="${p.thumb}" alt="Photo ${p.id}" loading="lazy"/>
+      <div class="photo-actions-layer">
+        <div class="photo-action-btns">
+          <button class="p-btn fav-btn${favorites.has(p.id) ? ' fav-on' : ''}"
+            data-id="${p.id}"
+            onclick="event.stopPropagation(); toggleFav(${p.id}, this)">
+            <svg viewBox="0 0 24 24" fill="${favorites.has(p.id) ? '#d45f7a' : 'none'}" stroke="${favorites.has(p.id) ? '#d45f7a' : 'currentColor'}" stroke-width="1.8">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+            </svg>
+          </button>
+          <button class="p-btn" onclick="event.stopPropagation(); showToast('Photo downloaded!')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ══════════════════════════════════════
+   SETS NAV
+══════════════════════════════════════ */
+function switchSet(btn, set) {
+  document.querySelectorAll('.set-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  visiblePhotos = set === 'all' ? [...photos] : photos.filter(p => p.set === set);
+  renderGrid(visiblePhotos);
+  rebuildStrip();
+}
+
+/* ══════════════════════════════════════
+   FAVORITES
+══════════════════════════════════════ */
+function toggleFav(id, btn) {
+  const on = favorites.has(id);
+  on ? favorites.delete(id) : favorites.add(id);
+  updateFavUI();
+  if (!on) {
+    showToast('❤️ Added to favorites');
+    btn.classList.add('fav-on');
+    btn.querySelector('svg').setAttribute('fill','#d45f7a');
+    btn.querySelector('svg').setAttribute('stroke','#d45f7a');
+  } else {
+    btn.classList.remove('fav-on');
+    btn.querySelector('svg').setAttribute('fill','none');
+    btn.querySelector('svg').setAttribute('stroke','currentColor');
+  }
+}
+function updateFavUI() {
+  const c = favorites.size;
+  const countEl = document.getElementById('fav-count');
+  const noticeEl = document.getElementById('fav-notice');
+  const noticeCount = document.getElementById('fav-notice-count');
+  countEl.textContent = c;
+  countEl.classList.toggle('show', c > 0);
+  noticeEl.classList.toggle('visible', c > 0);
+  noticeCount.textContent = c;
+}
+
+/* ══════════════════════════════════════
+   LIGHTBOX
+══════════════════════════════════════ */
+function openLightbox(idx) {
+  lbIndex = idx;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  lbRender();
+  rebuildStrip();
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+  if (slideshowInterval) { clearInterval(slideshowInterval); slideshowInterval = null; }
+}
+function lbNav(dir) {
+  lbIndex = (lbIndex + dir + visiblePhotos.length) % visiblePhotos.length;
+  lbRender();
+}
+function lbRender() {
+  const p = visiblePhotos[lbIndex];
+  const img = document.getElementById('lb-img');
+  img.style.animation = 'none'; img.offsetHeight; // force reflow
+  img.style.animation = '';
+  img.src = p.full;
+  document.getElementById('lb-count').textContent = `${lbIndex + 1} of ${visiblePhotos.length}`;
+  // update fav btn
+  const favBtn = document.getElementById('lb-fav-btn');
+  const on = favorites.has(p.id);
+  favBtn.classList.toggle('fav-on', on);
+  favBtn.querySelector('svg').setAttribute('fill', on ? '#f48aaa' : 'none');
+  favBtn.querySelector('.lb-label').textContent = on ? 'Favorited' : 'Favorite';
+  // update strip
+  document.querySelectorAll('.lb-thumb').forEach((t, i) => {
+    t.classList.toggle('active', i === lbIndex);
+    if (i === lbIndex) t.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+  });
+}
+function toggleFavLb() {
+  const p = visiblePhotos[lbIndex];
+  const on = favorites.has(p.id);
+  on ? favorites.delete(p.id) : favorites.add(p.id);
+  updateFavUI();
+  // update grid btn
+  const gridBtn = document.querySelector(`.fav-btn[data-id="${p.id}"]`);
+  if (gridBtn) {
+    gridBtn.classList.toggle('fav-on', !on);
+    gridBtn.querySelector('svg').setAttribute('fill', !on ? '#d45f7a' : 'none');
+    gridBtn.querySelector('svg').setAttribute('stroke', !on ? '#d45f7a' : 'currentColor');
+  }
+  lbRender();
+  showToast(!on ? '❤️ Added to favorites' : 'Removed from favorites');
+}
+function rebuildStrip() {
+  document.getElementById('lb-strip').innerHTML = visiblePhotos.map((p,i) => `
+    <div class="lb-thumb${i===lbIndex?' active':''}" onclick="lbIndex=${i};lbRender()">
+      <img src="${p.thumb}" alt=""/>
+    </div>
+  `).join('');
+}
+
+/* ══════════════════════════════════════
+   SLIDESHOW
+══════════════════════════════════════ */
+function startSlideshow() {
+  openLightbox(0);
+  if (slideshowInterval) clearInterval(slideshowInterval);
+  slideshowInterval = setInterval(() => lbNav(1), 3500);
+  showToast('Slideshow started');
+}
+
+/* ══════════════════════════════════════
+   NAV SCROLL BEHAVIOR
+══════════════════════════════════════ */
+const nav = document.getElementById('main-nav');
+const cover = document.getElementById('cover');
+function handleScroll() {
+  const coverBottom = cover.getBoundingClientRect().bottom;
+  if (coverBottom <= 60) {
+    nav.classList.remove('over-cover');
+    nav.classList.add('scrolled');
+  } else {
+    nav.classList.add('over-cover');
+    nav.classList.remove('scrolled');
+  }
+}
+window.addEventListener('scroll', handleScroll, { passive: true });
+handleScroll();
+
+/* ══════════════════════════════════════
+   KEYBOARD
+══════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'ArrowRight') lbNav(1);
+  if (e.key === 'ArrowLeft')  lbNav(-1);
+  if (e.key === 'Escape')     closeLightbox();
+});
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+renderGrid(photos);
+rebuildStrip();
+</script>
+</body>
+</html>
