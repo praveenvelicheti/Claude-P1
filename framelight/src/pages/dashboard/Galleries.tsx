@@ -312,11 +312,11 @@ export function Galleries() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col md:overflow-hidden">
       <Topbar title="My Galleries" showNew />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
+      <main className="flex-1 md:overflow-y-auto">
+        <div className="px-4 pt-5 pb-[88px] xs:px-5 md:p-8 md:pb-8">
           {/* Toolbar */}
           <div className="flex items-center gap-2.5 mb-6 flex-wrap">
             {/* Filter pills */}
@@ -382,7 +382,7 @@ export function Galleries() {
 
           {loading ? (
             view === 'grid' ? (
-              <div className="grid grid-cols-4 gap-3.5">
+              <div className="grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3.5">
                 {[...Array(8)].map((_, i) => (
                   <div key={i} className="bg-white border border-border rounded-[18px] animate-pulse" style={{ aspectRatio: '3/4' }} />
                 ))}
@@ -406,7 +406,7 @@ export function Galleries() {
               <Button variant="teal" onClick={() => navigate('/dashboard/new')}>Create Gallery</Button>
             </div>
           ) : view === 'grid' ? (
-            <div className="grid grid-cols-4 gap-3.5">
+            <div className="grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3.5">
               {filtered.map(g => (
                 <GalleryCard
                   key={g.id}

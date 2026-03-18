@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 
@@ -31,14 +32,25 @@ const navItems = [
   }
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean
+  onClose?: () => void
+}
+
+export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const { profile, signOut } = useAuth()
   const navigate = useNavigate()
   const storageGB = ((profile?.storage_used_bytes ?? 0) / 1e9)
   const storageLimit = 5
   const storagePct = Math.min((storageGB / storageLimit) * 100, 100)
-
   const initials = (profile?.studio_name ?? 'U').slice(0, 2).toUpperCase()
+
+  // Close drawer on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape' && isOpen) onClose?.() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [isOpen, onClose])
 
   async function handleSignOut() {
     await signOut()
@@ -46,7 +58,23 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-[232px] flex-shrink-0 bg-ink flex flex-col overflow-hidden">
+    <aside
+      className={[
+        // Base styles
+        'bg-ink flex flex-col overflow-y-auto flex-shrink-0',
+        // Desktop: static, 232px
+        'lg:w-[232px] lg:static lg:translate-x-0 lg:shadow-none lg:z-auto',
+        // Tablet: static, 200px
+        'md:w-[200px] md:static md:translate-x-0 md:shadow-none md:z-auto',
+        // Mobile: fixed drawer
+        'w-[260px] fixed inset-y-0 left-0 z-[300]',
+        'shadow-[4px_0_24px_rgba(26,58,58,0.2)]',
+        'transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
+        isOpen ? 'translate-x-0' : '-translate-x-full',
+        // On md+, always visible regardless of isOpen
+        'md:translate-x-0',
+      ].join(' ')}
+    >
       {/* Logo */}
       <div className="h-[58px] flex items-center px-[22px] border-b border-white/[0.07] flex-shrink-0">
         <span className="font-display text-[22px] font-medium text-white tracking-[0.04em]">
@@ -66,6 +94,7 @@ export function Sidebar() {
                 key={item.to}
                 to={item.to}
                 end={item.to === '/dashboard'}
+                onClick={() => onClose?.()}
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-3 py-[9px] rounded-lg text-[13.5px] font-normal mb-px transition-all duration-150 select-none cursor-pointer
                   ${isActive
@@ -97,7 +126,7 @@ export function Sidebar() {
             />
           </div>
           <button
-            onClick={() => navigate('/dashboard/settings')}
+            onClick={() => { navigate('/dashboard/settings'); onClose?.() }}
             className="mt-2.5 text-[11px] text-teal-light font-medium cursor-pointer block bg-transparent border-0 p-0"
           >
             Upgrade plan →
@@ -107,7 +136,7 @@ export function Sidebar() {
         {/* User row */}
         <div
           className="flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-colors hover:bg-white/[0.06]"
-          onClick={() => navigate('/dashboard/settings')}
+          onClick={() => { navigate('/dashboard/settings'); onClose?.() }}
         >
           <div className="w-[30px] h-[30px] rounded-full bg-teal flex items-center justify-center text-xs font-semibold text-ink flex-shrink-0">
             {initials}

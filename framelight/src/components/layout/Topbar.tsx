@@ -12,7 +12,7 @@ export function Topbar({ title, titleEm, showNew = false, children }: TopbarProp
   const navigate = useNavigate()
 
   return (
-    <header className="h-[58px] flex-shrink-0 bg-white border-b border-border flex items-center px-8 gap-4">
+    <header className="hidden md:flex h-[58px] flex-shrink-0 bg-white border-b border-border items-center px-8 gap-4">
       <div className="flex-1 font-display text-[22px] font-medium text-ink">
         {title}
         {titleEm && <em className="italic text-teal"> {titleEm}</em>}

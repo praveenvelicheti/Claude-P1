@@ -1,7 +1,11 @@
+import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
+import { useGalleries } from './hooks/useGalleries'
 import { ToastProvider } from './components/ui/Toast'
 import { Sidebar } from './components/layout/Sidebar'
+import { MobileTopbar } from './components/layout/MobileTopbar'
+import { BottomTabBar } from './components/layout/BottomTabBar'
 import { Login } from './pages/auth/Login'
 import { Signup } from './pages/auth/Signup'
 import { Overview } from './pages/dashboard/Overview'
@@ -12,6 +16,14 @@ import { GalleryPage } from './pages/gallery/GalleryPage'
 
 function DashboardLayout() {
   const { user, loading } = useAuth()
+  const { galleries } = useGalleries(user?.id)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Lock body scroll while drawer is open
+  useEffect(() => {
+    document.body.style.overflow = drawerOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [drawerOpen])
 
   if (loading) {
     return (
@@ -24,11 +36,33 @@ function DashboardLayout() {
   if (!user) return <Navigate to="/login" replace />
 
   return (
-    <div className="flex h-screen overflow-hidden bg-appbg font-ui">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+    /* Mobile: column, natural scroll. Tablet/Desktop: row, fixed height */
+    <div className="flex flex-col min-h-screen md:flex-row md:h-screen md:overflow-hidden bg-appbg font-ui">
+
+      {/* Sidebar — drawer on mobile, static on md+ */}
+      <Sidebar isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
+      {/* Drawer backdrop — mobile only */}
+      <div
+        className={[
+          'fixed inset-0 z-[200] bg-ink/50 backdrop-blur-[3px] md:hidden',
+          'transition-opacity duration-300',
+          drawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
+        ].join(' ')}
+        onClick={() => setDrawerOpen(false)}
+      />
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col md:overflow-hidden">
+        {/* Mobile topbar — hidden on md+ */}
+        <MobileTopbar onMenuClick={() => setDrawerOpen(true)} />
+
+        {/* Page outlet */}
         <Outlet />
       </div>
+
+      {/* Bottom tab bar — mobile only */}
+      <BottomTabBar galleryCount={galleries.length} />
     </div>
   )
 }
