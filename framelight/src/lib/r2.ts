@@ -25,7 +25,19 @@ export async function getUploadUrl(
     body: { filename, contentType, galleryId, photographerId, isThumb },
     headers: { Authorization: `Bearer ${session.access_token}` },
   })
-  if (error) throw error
+  if (error) {
+    console.error('[getUploadUrl] edge function error:', error)
+    // FunctionsHttpError wraps the response — try to surface the body
+    if ('context' in error && error.context instanceof Response) {
+      const body = await (error.context as Response).text().catch(() => '')
+      console.error('[getUploadUrl] response body:', body)
+    }
+    throw error
+  }
+  if (!data?.uploadUrl) {
+    console.error('[getUploadUrl] unexpected response:', data)
+    throw new Error('No uploadUrl in response')
+  }
   return data as UploadUrlResponse
 }
 
@@ -52,10 +64,14 @@ export async function uploadToR2(
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve()
       } else {
-        reject(new Error(`Upload failed: ${xhr.status}`))
+        console.error('[uploadToR2] PUT failed:', xhr.status, xhr.responseText)
+        reject(new Error(`Upload failed: ${xhr.status} ${xhr.responseText}`))
       }
     }
-    xhr.onerror = () => reject(new Error('Network error during upload'))
+    xhr.onerror = () => {
+      console.error('[uploadToR2] Network/CORS error during upload to', uploadUrl)
+      reject(new Error('Network error during upload (possible CORS issue)'))
+    }
     xhr.send(file)
   })
 }

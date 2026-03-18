@@ -78,7 +78,8 @@ export function Step2Upload({ galleryId, photographerId, photos, onPhotosChange 
           onPhotosChange([...photos, photo as UploadedPhoto])
         }
         updateUpload(item.id, { status: 'done', progress: 100 })
-      } catch {
+      } catch (err) {
+        console.error('[Upload] failed for', item.file.name, err)
         updateUpload(item.id, { status: 'error' })
       }
     }
