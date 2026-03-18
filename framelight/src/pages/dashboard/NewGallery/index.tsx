@@ -123,7 +123,8 @@ export function NewGallery() {
         await ensureGallery()
         setStep(2)
       } catch (e) {
-        toast.show('Failed to create gallery', 'error')
+        console.error('[NewGallery] ensureGallery failed:', e)
+        toast.show('Failed to create gallery — check the title and try again', 'error')
       } finally {
         setSaving(false)
       }
@@ -139,7 +140,7 @@ export function NewGallery() {
 
       // Update gallery with final settings/design
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from('galleries') as any).update({
+      const { error: updateErr } = await (supabase.from('galleries') as any).update({
         layout: design.layout,
         theme: design.theme,
         pin_enabled: settings.pinEnabled,
@@ -152,11 +153,12 @@ export function NewGallery() {
         expiry_date: settings.expiryDate || null,
         status: 'published',
       }).eq('id', gid)
+      if (updateErr) throw updateErr
 
       toast.show('Gallery published!')
       navigate(`/dashboard/gallery/${gid}`)
     } catch {
-      toast.show('Failed to publish gallery', 'error')
+      toast.show('Failed to publish gallery — check your settings and try again', 'error')
     } finally {
       setSaving(false)
     }
