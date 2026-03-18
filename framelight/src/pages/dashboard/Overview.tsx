@@ -1,11 +1,22 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useGalleries } from '../../hooks/useGalleries'
 import { Topbar } from '../../components/layout/Topbar'
 import { Button } from '../../components/ui/Button'
+import { Modal } from '../../components/ui/Modal'
+import { useToast } from '../../components/ui/Toast'
 import type { Gallery } from '../../types/database'
 
-function GalleryCard({ gallery, onClick }: { gallery: Gallery; onClick: () => void }) {
+function GalleryCard({
+  gallery,
+  onEdit,
+  onDelete,
+}: {
+  gallery: Gallery
+  onEdit: () => void
+  onDelete: () => void
+}) {
   const statusColors: Record<string, string> = {
     published: 'bg-ink/60 text-white/90',
     draft:     'bg-white/75 text-ink-mid',
@@ -14,11 +25,8 @@ function GalleryCard({ gallery, onClick }: { gallery: Gallery; onClick: () => vo
   const tag = statusColors[gallery.status] ?? statusColors.draft
 
   return (
-    <div
-      className="bg-white border border-border rounded-[14px] overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-[3px] hover:shadow-card hover:border-teal-pale group"
-      onClick={onClick}
-    >
-      <div className="h-[185px] relative overflow-hidden bg-teal-pale">
+    <div className="bg-white border border-border rounded-[14px] overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-[3px] hover:shadow-card hover:border-teal-pale group">
+      <div className="h-[185px] relative overflow-hidden bg-teal-pale" onClick={onEdit}>
         {gallery.cover_url ? (
           <img src={gallery.cover_url} alt={gallery.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.05]" />
         ) : (
@@ -30,10 +38,16 @@ function GalleryCard({ gallery, onClick }: { gallery: Gallery; onClick: () => vo
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-ink/55 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end p-3.5">
           <div className="flex gap-1.5">
-            <button className="px-3 py-1.5 rounded-md border border-white/30 bg-white/15 backdrop-blur-sm text-white text-[11px] font-medium tracking-[0.04em] hover:bg-white/28 transition-colors font-ui">
+            <button
+              onClick={(e) => { e.stopPropagation(); onEdit() }}
+              className="px-3 py-1.5 rounded-md border border-white/30 bg-white/15 backdrop-blur-sm text-white text-[11px] font-medium tracking-[0.04em] hover:bg-white/28 transition-colors font-ui"
+            >
               Edit
             </button>
-            <button className="px-3 py-1.5 rounded-md border border-white/30 bg-white/15 backdrop-blur-sm text-white text-[11px] font-medium tracking-[0.04em] hover:bg-white/28 transition-colors font-ui">
+            <button
+              onClick={(e) => { e.stopPropagation(); window.open(`/g/${gallery.slug}`, '_blank') }}
+              className="px-3 py-1.5 rounded-md border border-white/30 bg-white/15 backdrop-blur-sm text-white text-[11px] font-medium tracking-[0.04em] hover:bg-white/28 transition-colors font-ui"
+            >
               View
             </button>
           </div>
@@ -50,7 +64,7 @@ function GalleryCard({ gallery, onClick }: { gallery: Gallery; onClick: () => vo
         </div>
       </div>
       <div className="px-[18px] pt-4 pb-[18px]">
-        <div className="font-display text-[17px] font-medium text-ink mb-[3px]">{gallery.title}</div>
+        <div className="font-display text-[17px] font-medium text-ink mb-[3px] cursor-pointer" onClick={onEdit}>{gallery.title}</div>
         <div className="text-[12px] text-ink-muted mb-3.5">{gallery.client_name ?? 'No client'} · {new Date(gallery.created_at).toLocaleDateString()}</div>
         <div className="flex items-center justify-between border-t border-teal-pale pt-3">
           <div className="flex gap-3">
@@ -60,10 +74,18 @@ function GalleryCard({ gallery, onClick }: { gallery: Gallery; onClick: () => vo
             </span>
           </div>
           <div className="flex gap-1.5">
-            <button className="w-7 h-7 rounded-md border border-border bg-transparent cursor-pointer flex items-center justify-center text-ink-muted transition-all hover:border-teal hover:text-teal hover:bg-teal-pale">
+            <button
+              onClick={() => window.open(`/g/${gallery.slug}`, '_blank')}
+              className="w-7 h-7 rounded-md border border-border bg-transparent cursor-pointer flex items-center justify-center text-ink-muted transition-all hover:border-teal hover:text-teal hover:bg-teal-pale"
+              title="View gallery"
+            >
               <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             </button>
-            <button className="w-7 h-7 rounded-md border border-border bg-transparent cursor-pointer flex items-center justify-center text-ink-muted transition-all hover:border-red hover:text-red hover:bg-pink">
+            <button
+              onClick={onDelete}
+              className="w-7 h-7 rounded-md border border-border bg-transparent cursor-pointer flex items-center justify-center text-ink-muted transition-all hover:border-red hover:text-red hover:bg-pink"
+              title="Delete gallery"
+            >
               <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
             </button>
           </div>
@@ -75,8 +97,24 @@ function GalleryCard({ gallery, onClick }: { gallery: Gallery; onClick: () => vo
 
 export function Overview() {
   const { user, profile } = useAuth()
-  const { galleries, loading } = useGalleries(user?.id)
+  const { galleries, loading, deleteGallery } = useGalleries(user?.id)
   const navigate = useNavigate()
+  const toast = useToast()
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState('')
+
+  async function handleDelete() {
+    if (!deleteId || deleteConfirm !== 'DELETE') return
+    try {
+      await deleteGallery(deleteId)
+      toast.show('Gallery deleted')
+    } catch {
+      toast.show('Failed to delete gallery — try again or refresh the page', 'error')
+    } finally {
+      setDeleteId(null)
+      setDeleteConfirm('')
+    }
+  }
 
   const activeCount = galleries.filter(g => g.status === 'published').length
   const totalViews  = galleries.reduce((s, g) => s + g.view_count, 0)
@@ -139,12 +177,6 @@ export function Overview() {
             ))}
           </div>
 
-          {/* Tip banner */}
-          <div className="bg-pink border border-pink-dark rounded-xl px-5 py-[18px] mb-8">
-            <h4 className="font-display text-[16px] font-medium text-ink mb-1">💡 Pro tip</h4>
-            <p className="text-[13px] text-ink-mid">Enable PIN protection on client galleries to keep sessions private and share links confidently.</p>
-          </div>
-
           {/* Recent Galleries */}
           <div className="flex items-center justify-between mb-[18px]">
             <h3 className="font-display text-[20px] font-medium text-ink">Recent Galleries</h3>
@@ -176,12 +208,43 @@ export function Overview() {
           ) : (
             <div className="grid grid-cols-3 gap-[18px]">
               {recent.map(g => (
-                <GalleryCard key={g.id} gallery={g} onClick={() => navigate(`/dashboard/gallery/${g.id}`)} />
+                <GalleryCard
+                  key={g.id}
+                  gallery={g}
+                  onEdit={() => navigate(`/dashboard/gallery/${g.id}`)}
+                  onDelete={() => setDeleteId(g.id)}
+                />
               ))}
             </div>
           )}
         </div>
       </main>
+
+      <Modal
+        open={!!deleteId}
+        onClose={() => { setDeleteId(null); setDeleteConfirm('') }}
+        title="Delete Gallery?"
+        subtitle="This permanently removes the gallery and all photos. This cannot be undone."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => { setDeleteId(null); setDeleteConfirm('') }}>Cancel</Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleteConfirm !== 'DELETE'}>Delete</Button>
+          </>
+        }
+      >
+        <div className="mb-[18px]">
+          <label className="block text-[11px] font-semibold tracking-[0.09em] uppercase text-ink-muted mb-[7px]">
+            Type "DELETE" to confirm
+          </label>
+          <input
+            type="text"
+            value={deleteConfirm}
+            onChange={e => setDeleteConfirm(e.target.value)}
+            className="w-full px-[13px] py-[10px] border border-border rounded-lg bg-teal-pale font-ui text-[13.5px] text-ink outline-none focus:border-red focus:shadow-[0_0_0_3px_rgba(224,120,120,0.15)]"
+            placeholder="DELETE"
+          />
+        </div>
+      </Modal>
     </div>
   )
 }

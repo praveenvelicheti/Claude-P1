@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../../hooks/useAuth'
 import { useGalleries } from '../../../hooks/useGalleries'
 import { Topbar } from '../../../components/layout/Topbar'
@@ -11,6 +11,7 @@ import { Step3Settings } from './Step3Settings'
 import { Step4Design } from './Step4Design'
 import { supabase } from '../../../lib/supabase'
 import { getUploadUrl, uploadToR2 } from '../../../lib/r2'
+import type { Gallery } from '../../../types/database'
 
 const STEPS = [
   { num: 1, label: 'Details' },
@@ -24,14 +25,17 @@ function generateSlug(title: string) {
 }
 
 export function NewGallery() {
+  const { id: editId } = useParams<{ id: string }>()
+  const isEdit = !!editId
   const { user, profile } = useAuth()
   const { createGallery } = useGalleries(user?.id)
   const navigate = useNavigate()
   const toast = useToast()
 
   const [step, setStep] = useState(1)
-  const [galleryId, setGalleryId] = useState<string | null>(null)
+  const [galleryId, setGalleryId] = useState<string | null>(editId ?? null)
   const [saving, setSaving] = useState(false)
+  const [loadingGallery, setLoadingGallery] = useState(isEdit)
 
   const [details, setDetails] = useState({
     title: '',
@@ -68,6 +72,48 @@ export function NewGallery() {
     theme: 'framelight',
     showPoweredBy: true,
   })
+
+  useEffect(() => {
+    if (!editId) return
+    async function loadGallery() {
+      const { data, error } = await supabase
+        .from('galleries')
+        .select('*')
+        .eq('id', editId!)
+        .single()
+      if (error || !data) {
+        toast.show('Gallery not found', 'error')
+        navigate('/dashboard/galleries')
+        return
+      }
+      const g = data as Gallery
+      setDetails(prev => ({
+        ...prev,
+        title: g.title,
+        clientName: g.client_name ?? '',
+        clientEmail: g.client_email ?? '',
+        coverPreview: g.cover_url ?? '',
+      }))
+      setSettings({
+        pinEnabled: g.pin_enabled,
+        pinCode: g.pin_code ?? '',
+        adminBypass: g.admin_bypass,
+        downloadsEnabled: g.downloads_enabled,
+        zipEnabled: g.zip_enabled,
+        favoritesEnabled: g.favorites_enabled,
+        downloadSizes: g.download_sizes,
+        expiryDate: g.expiry_date ?? '',
+        expiryReminderDays: g.expiry_reminder_days,
+      })
+      setDesign(prev => ({
+        ...prev,
+        layout: g.layout,
+        theme: g.theme,
+      }))
+      setLoadingGallery(false)
+    }
+    loadGallery()
+  }, [editId])
 
   async function ensureGallery(): Promise<string> {
     if (galleryId) return galleryId
@@ -120,11 +166,34 @@ export function NewGallery() {
     if (step === 1) {
       setSaving(true)
       try {
-        await ensureGallery()
+        if (isEdit) {
+          let coverUrl: string | undefined
+          if (details.coverFile && user) {
+            try {
+              const { uploadUrl, publicUrl } = await getUploadUrl(
+                details.coverFile.name,
+                details.coverFile.type,
+                'covers',
+                user.id
+              )
+              await uploadToR2(uploadUrl, details.coverFile)
+              coverUrl = publicUrl
+            } catch { /* continue without new cover */ }
+          }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error } = await (supabase.from('galleries') as any).update({
+            title: details.title,
+            client_name: details.clientName || null,
+            client_email: details.clientEmail || null,
+            ...(coverUrl ? { cover_url: coverUrl } : {}),
+          }).eq('id', editId!)
+          if (error) throw error
+        } else {
+          await ensureGallery()
+        }
         setStep(2)
-      } catch (e) {
-        console.error('[NewGallery] ensureGallery failed:', e)
-        toast.show('Failed to create gallery — check the title and try again', 'error')
+      } catch {
+        toast.show('Failed to save changes — try again', 'error')
       } finally {
         setSaving(false)
       }
@@ -133,14 +202,16 @@ export function NewGallery() {
 
     if (step < 4) { setStep(s => s + 1); return }
 
-    // Final publish
+    // Final save / publish
     setSaving(true)
     try {
       const gid = await ensureGallery()
 
-      // Update gallery with final settings/design
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: updateErr } = await (supabase.from('galleries') as any).update({
+        title: details.title,
+        client_name: details.clientName || null,
+        client_email: details.clientEmail || null,
         layout: design.layout,
         theme: design.theme,
         pin_enabled: settings.pinEnabled,
@@ -151,14 +222,17 @@ export function NewGallery() {
         favorites_enabled: settings.favoritesEnabled,
         download_sizes: settings.downloadSizes,
         expiry_date: settings.expiryDate || null,
-        status: 'published',
+        ...(!isEdit && { status: 'published' }),
       }).eq('id', gid)
       if (updateErr) throw updateErr
 
-      toast.show('Gallery published!')
-      navigate(`/dashboard/gallery/${gid}`)
+      toast.show(isEdit ? 'Gallery saved!' : 'Gallery published!')
+      navigate('/dashboard/galleries')
     } catch {
-      toast.show('Failed to publish gallery — check your settings and try again', 'error')
+      toast.show(
+        isEdit ? 'Failed to save gallery — try again' : 'Failed to publish gallery — check your settings and try again',
+        'error'
+      )
     } finally {
       setSaving(false)
     }
@@ -169,11 +243,19 @@ export function NewGallery() {
     navigate('/dashboard/galleries')
   }
 
+  if (loadingGallery) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-ink-muted text-[14px]">Loading gallery…</div>
+      </div>
+    )
+  }
+
   const gid = galleryId ?? 'pending'
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <Topbar title="New Gallery" />
+      <Topbar title={isEdit ? 'Edit Gallery' : 'New Gallery'} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8">
@@ -235,7 +317,7 @@ export function NewGallery() {
                     onClick={handleNext}
                     loading={saving}
                   >
-                    {step === 4 ? 'Publish Gallery' : 'Continue'}
+                    {step === 4 ? (isEdit ? 'Save Changes' : 'Publish Gallery') : 'Continue'}
                     {step < 4 && (
                       <svg className="w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <polyline points="9 18 15 12 9 6"/>
