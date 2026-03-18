@@ -58,7 +58,7 @@ export function Settings() {
       await updateProfile({ studio_name: profileForm.studioName })
       toast.show('Profile saved')
     } catch {
-      toast.show('Failed to save', 'error')
+      toast.show('Failed to save profile — please try again', 'error')
     } finally {
       setSaving(false)
     }
@@ -70,7 +70,7 @@ export function Settings() {
       await updateProfile({ studio_name: branding.studioName, accent_color: branding.accentColor })
       toast.show('Branding saved')
     } catch {
-      toast.show('Failed to save', 'error')
+      toast.show('Failed to save branding — please try again', 'error')
     } finally {
       setSaving(false)
     }

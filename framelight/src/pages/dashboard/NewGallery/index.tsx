@@ -139,7 +139,7 @@ export function NewGallery() {
 
       // Update gallery with final settings/design
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from('galleries') as any).update({
+      const { error: updateErr } = await (supabase.from('galleries') as any).update({
         layout: design.layout,
         theme: design.theme,
         pin_enabled: settings.pinEnabled,
@@ -152,6 +152,7 @@ export function NewGallery() {
         expiry_date: settings.expiryDate || null,
         status: 'published',
       }).eq('id', gid)
+      if (updateErr) throw updateErr
 
       toast.show('Gallery published!')
       navigate(`/dashboard/gallery/${gid}`)
