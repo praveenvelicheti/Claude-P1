@@ -20,7 +20,6 @@ function GalleryCard({
   onShare: () => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const navigate = useNavigate()
 
   const expiryDays = gallery.expiry_date
     ? Math.ceil((new Date(gallery.expiry_date).getTime() - Date.now()) / 86400000)
@@ -30,7 +29,7 @@ function GalleryCard({
     <div
       className="relative rounded-[18px] overflow-hidden cursor-pointer group bg-ink"
       style={{ aspectRatio: '3/4' }}
-      onClick={() => navigate(`/dashboard/gallery/${gallery.id}`)}
+      onClick={() => window.open(`/g/${gallery.slug}`, '_blank')}
     >
       {gallery.cover_url ? (
         <img

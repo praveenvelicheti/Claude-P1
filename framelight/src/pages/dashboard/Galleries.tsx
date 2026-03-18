@@ -23,7 +23,6 @@ function GalleryCard({
   onShare: () => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const navigate = useNavigate()
 
   const expiryDays = gallery.expiry_date
     ? Math.ceil((new Date(gallery.expiry_date).getTime() - Date.now()) / 86400000)
@@ -33,7 +32,7 @@ function GalleryCard({
     <div
       className="relative rounded-[18px] overflow-hidden cursor-pointer group bg-ink"
       style={{ aspectRatio: '3/4' }}
-      onClick={() => navigate(`/dashboard/gallery/${gallery.id}`)}
+      onClick={() => window.open(`/g/${gallery.slug}`, '_blank')}
     >
       {gallery.cover_url ? (
         <img
@@ -169,7 +168,6 @@ function GalleryRow({
   onDelete: () => void
   onShare: () => void
 }) {
-  const navigate = useNavigate()
   const expiryDays = gallery.expiry_date
     ? Math.ceil((new Date(gallery.expiry_date).getTime() - Date.now()) / 86400000)
     : null
@@ -177,7 +175,7 @@ function GalleryRow({
   return (
     <div
       className="flex items-center gap-4 px-5 py-3.5 border-b border-teal-pale last:border-b-0 hover:bg-teal-pale/50 transition-colors cursor-pointer group"
-      onClick={() => navigate(`/dashboard/gallery/${gallery.id}`)}
+      onClick={() => window.open(`/g/${gallery.slug}`, '_blank')}
     >
       {/* Thumb */}
       <div className="w-[52px] h-[52px] rounded-xl overflow-hidden flex-shrink-0 bg-ink">
