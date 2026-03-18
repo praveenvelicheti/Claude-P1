@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Settings — Framelight</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --pink:    #fbe3e8;
+  --pink-d:  #f5c8d2;
+  --teal:    #5cbdb9;
+  --teal-l:  #89d0cd;
+  --mint:    #ebf6f5;
+  --ink:     #1a3a3a;
+  --charcoal:#2a5250;
+  --mid:     #3d7a78;
+  --muted:   #7aadab;
+  --border:  #ceecea;
+  --bg:      #f4faf9;
+  --white:   #fff;
+  --red:     #e07878;
+  --amber:   #e8a44a;
+  --font-d:  'Cormorant Garamond',Georgia,serif;
+  --font-ui: 'Outfit',sans-serif;
+  --top-h:   58px;
+  --sidebar-w:228px;
+}
+
+html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--ink);display:flex;flex-direction:column;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1)}
+.sidebar-logo{height:var(--top-h);display:flex;align-items:center;padding:0 22px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.logo-mark{font-family:var(--font-d);font-size:22px;font-weight:500;color:#fff;letter-spacing:0.04em}
+.logo-mark span{color:var(--teal-l);font-style:italic}
+.sidebar-section{padding:18px 14px 6px}
+.sidebar-lbl{font-size:9px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.28);padding:0 8px;margin-bottom:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5);transition:all 0.15s;margin-bottom:2px}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:0.6}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.85)}
+.nav-item.active{background:rgba(92,189,185,0.16);color:#fff;font-weight:500}
+.nav-item.active svg{opacity:1;color:var(--teal-l)}
+.nav-pill{margin-left:auto;background:var(--teal);color:var(--ink);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px}
+.sidebar-bottom{margin-top:auto;padding:14px;border-top:1px solid rgba(255,255,255,0.07)}
+.storage-wrap{padding:13px;background:rgba(255,255,255,0.05);border-radius:10px;margin-bottom:12px}
+.storage-row{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:7px}
+.storage-row span:last-child{color:rgba(255,255,255,0.7)}
+.storage-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px}
+.storage-fill{height:100%;width:34%;border-radius:2px;background:linear-gradient(90deg,var(--teal),var(--teal-l))}
+.user-chip{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:background 0.15s}
+.user-chip:hover{background:rgba(255,255,255,0.06)}
+.user-av{width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--ink);flex-shrink:0}
+.user-name{font-size:12px;color:rgba(255,255,255,0.7)}
+.user-plan{font-size:10px;color:rgba(255,255,255,0.32);margin-top:1px}
+
+/* MOBILE TOPBAR */
+.mobile-topbar{display:none;height:var(--top-h);flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border);align-items:center;padding:0 16px;gap:12px;position:sticky;top:0;z-index:50}
+.mob-menu-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink);flex-shrink:0}
+.mob-menu-btn svg{width:18px;height:18px}
+.mob-logo{font-family:var(--font-d);font-size:20px;font-weight:500;color:var(--ink);letter-spacing:0.04em;flex:1;text-align:center}
+.mob-logo span{color:var(--teal-l);font-style:italic}
+.sidebar-overlay{position:fixed;inset:0;background:rgba(26,58,58,0.5);z-index:200;display:none;backdrop-filter:blur(3px)}
+.sidebar-overlay.open{display:block}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* TOPBAR */
+.topbar{height:var(--top-h);flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:14px}
+.topbar-title{font-family:var(--font-d);font-size:21px;font-weight:500;color:var(--ink);flex:1}
+.topbar-title em{font-style:italic;color:var(--teal)}
+.save-btn{display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;border:none;cursor:pointer;font-family:var(--font-ui);font-size:13px;font-weight:500;background:var(--teal);color:#fff;transition:all 0.2s}
+.save-btn:hover{background:var(--teal-l);transform:translateY(-1px);box-shadow:0 4px 14px rgba(92,189,185,0.35)}
+.save-btn svg{width:14px;height:14px}
+
+.page-scroll{flex:1;overflow-y:auto}
+
+/* SETTINGS LAYOUT */
+.settings-wrap{display:grid;grid-template-columns:210px 1fr;min-height:100%}
+
+/* SETTINGS NAV */
+.settings-nav{border-right:1px solid var(--border);padding:28px 14px;background:var(--white);position:sticky;top:0;height:fit-content;min-height:100%}
+.settings-nav-label{font-size:9px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:0 8px;margin-bottom:6px;margin-top:18px}
+.settings-nav-label:first-child{margin-top:0}
+.snav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:13px;color:var(--mid);transition:all 0.15s;margin-bottom:1px;border:none;background:none;font-family:var(--font-ui);width:100%;text-align:left;-webkit-tap-highlight-color:transparent}
+.snav-item svg{width:15px;height:15px;flex-shrink:0;opacity:0.7}
+.snav-item:hover{background:var(--mint);color:var(--charcoal)}
+.snav-item.active{background:var(--mint);color:var(--ink);font-weight:500;border-left:3px solid var(--teal);border-radius:0 9px 9px 0;padding-left:9px}
+.snav-item.active svg{opacity:1;color:var(--teal)}
+
+/* SETTINGS CONTENT */
+.settings-content{padding:32px 36px 48px}
+
+/* Section */
+.settings-section{display:none}
+.settings-section.active{display:block}
+
+/* Page header */
+.s-header{margin-bottom:28px}
+.s-title{font-family:var(--font-d);font-size:28px;font-weight:400;color:var(--ink);letter-spacing:0.01em;line-height:1}
+.s-title em{font-style:italic;color:var(--teal)}
+.s-sub{font-size:13px;color:var(--muted);margin-top:6px}
+
+/* Panel */
+.panel{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px}
+.panel-head{padding:18px 22px 15px;border-bottom:1px solid var(--mint);display:flex;align-items:center;justify-content:space-between}
+.panel-head h3{font-family:var(--font-d);font-size:18px;font-weight:400;color:var(--ink)}
+.panel-head h3 em{font-style:italic}
+.panel-body{padding:20px 22px}
+
+/* Avatar upload */
+.avatar-row{display:flex;align-items:center;gap:20px;padding:20px;background:linear-gradient(135deg,var(--mint),var(--white));border-radius:14px;margin-bottom:20px;border:1px solid var(--border)}
+.big-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-l));display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:32px;font-weight:400;color:#fff;flex-shrink:0;box-shadow:0 4px 16px rgba(92,189,185,0.3);cursor:pointer;position:relative;overflow:hidden}
+.big-avatar img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.avatar-info{}
+.avatar-name{font-family:var(--font-d);font-size:22px;font-weight:400;color:var(--ink);margin-bottom:3px}
+.avatar-email{font-size:13px;color:var(--muted);margin-bottom:12px}
+.avatar-upload-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--white);font-family:var(--font-ui);font-size:12.5px;font-weight:500;color:var(--charcoal);cursor:pointer;transition:all 0.15s}
+.avatar-upload-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--mint)}
+.avatar-upload-btn svg{width:13px;height:13px}
+
+/* Form */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{margin-bottom:16px}
+.form-group:last-child{margin-bottom:0}
+.form-group label{display:block;font-size:10.5px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;background:var(--mint);font-family:var(--font-ui);font-size:13.5px;color:var(--ink);outline:none;transition:all 0.2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(92,189,185,0.13);background:var(--white)}
+.form-group input::placeholder,.form-group textarea::placeholder{color:var(--muted)}
+.form-group textarea{resize:vertical;min-height:84px;line-height:1.5}
+
+/* Toggle */
+.toggle-list{display:flex;flex-direction:column}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--mint)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{font-size:13.5px;color:var(--charcoal)}
+.toggle-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.toggle{width:40px;height:22px;border-radius:11px;background:var(--border);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;border:none}
+.toggle.on{background:var(--teal)}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.18)}
+.toggle.on::after{left:21px}
+
+/* Logo upload */
+.logo-upload-area{display:flex;align-items:center;gap:16px;padding:16px;background:var(--mint);border-radius:12px;border:1.5px dashed var(--border)}
+.logo-preview{width:60px;height:60px;border-radius:10px;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:var(--muted);text-align:center;font-weight:500}
+.logo-upload-info{}
+.logo-upload-info p{font-size:13px;color:var(--charcoal);margin-bottom:6px;font-weight:500}
+.logo-upload-info span{font-size:11px;color:var(--muted)}
+.logo-upload-btn{display:flex;align-items:center;gap:6px;margin-top:10px;padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--white);font-family:var(--font-ui);font-size:12px;font-weight:500;color:var(--charcoal);cursor:pointer;transition:all 0.15s}
+.logo-upload-btn:hover{border-color:var(--teal);color:var(--teal)}
+
+/* Plan card */
+.plan-hero{background:var(--ink);border-radius:16px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;position:relative;overflow:hidden}
+.plan-hero::before{content:'';position:absolute;top:-40px;right:-20px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(92,189,185,0.2) 0%,transparent 70%);pointer-events:none}
+.plan-hero-info h4{font-family:var(--font-d);font-size:24px;font-weight:400;color:#fff;margin-bottom:4px}
+.plan-hero-info p{font-size:13px;color:rgba(255,255,255,0.45)}
+.plan-upgrade-btn{padding:11px 22px;background:var(--teal);color:var(--ink);border:none;border-radius:9px;font-family:var(--font-ui);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;flex-shrink:0}
+.plan-upgrade-btn:hover{background:var(--teal-l)}
+
+/* Plan compare table */
+.plan-table{width:100%;border-collapse:collapse}
+.plan-table th{text-align:center;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:10px 8px;color:var(--muted)}
+.plan-table th:first-child{text-align:left}
+.plan-table th.hl{color:var(--teal)}
+.plan-table td{padding:11px 8px;font-size:13px;color:var(--charcoal);border-top:1px solid var(--mint);text-align:center}
+.plan-table td:first-child{text-align:left;color:var(--charcoal)}
+.plan-table td.hl{color:var(--teal);font-weight:500}
+.check{color:var(--teal);font-weight:700}
+.dash{color:var(--border)}
+
+/* Danger zone */
+.danger-zone{border:1.5px solid rgba(224,120,120,0.3);border-radius:14px;padding:20px 22px;background:#fff8f8}
+.danger-title{font-size:14px;font-weight:600;color:var(--red);margin-bottom:6px;display:flex;align-items:center;gap:7px}
+.danger-title svg{width:15px;height:15px}
+.danger-sub{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+.danger-btn{padding:9px 18px;border-radius:9px;border:1.5px solid rgba(224,120,120,0.4);background:none;font-family:var(--font-ui);font-size:13px;font-weight:500;color:var(--red);cursor:pointer;transition:all 0.15s}
+.danger-btn:hover{background:rgba(224,120,120,0.08)}
+
+/* Color swatch picker */
+.color-row{display:flex;gap:8px;align-items:center}
+.color-row input[type=color]{width:44px;height:42px;padding:3px;border-radius:9px;border:1.5px solid var(--border);cursor:pointer}
+.color-row input[type=text]{flex:1}
+
+/* Notification items */
+.notif-item{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid var(--mint)}
+.notif-item:last-child{border:none}
+.notif-info{}
+.notif-label{font-size:13.5px;color:var(--charcoal);font-weight:400}
+.notif-sub{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+/* Bottom CTA */
+.save-row{display:flex;align-items:center;justify-content:space-between;margin-top:6px;flex-wrap:wrap;gap:10px}
+.btn{display:flex;align-items:center;gap:7px;padding:11px 22px;border-radius:10px;cursor:pointer;font-family:var(--font-ui);font-size:13px;font-weight:500;transition:all 0.2s;border:none}
+.btn.ghost{background:var(--mint);color:var(--charcoal);border:1px solid var(--border)}
+.btn.ghost:hover{background:var(--border)}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.primary:hover{background:#0e2828}
+.btn.teal{background:var(--teal);color:#fff}
+.btn.teal:hover{background:var(--teal-l);transform:translateY(-1px);box-shadow:0 4px 16px rgba(92,189,185,0.35)}
+.btn svg{width:14px;height:14px}
+
+/* Mobile settings nav toggle */
+.settings-nav-mobile{display:none;width:100%;padding:14px 16px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:58px;z-index:40;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.settings-nav-mobile::-webkit-scrollbar{display:none}
+.snav-pills{display:flex;gap:6px}
+.snav-pill{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);font-family:var(--font-ui);font-size:12px;font-weight:500;color:var(--mid);cursor:pointer;white-space:nowrap;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.snav-pill:hover{background:var(--mint);border-color:var(--teal);color:var(--teal)}
+.snav-pill.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* Toast */
+.toast{position:fixed;bottom:26px;right:26px;z-index:9999;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13.5px;box-shadow:0 8px 32px rgba(26,58,58,0.22);display:flex;align-items:center;gap:10px;transform:translateY(60px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast svg{width:15px;height:15px;color:var(--teal-l)}
+
+/* RESPONSIVE */
+@media(max-width:1024px){
+  .settings-wrap{grid-template-columns:180px 1fr}
+  .settings-content{padding:24px 24px 40px}
+}
+@media(max-width:768px){
+  html,body{overflow:auto;height:auto}
+  .app{flex-direction:column;height:auto;min-height:100vh;overflow:visible}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:300;transform:translateX(-100%);width:260px!important;overflow-y:auto;box-shadow:4px 0 24px rgba(26,58,58,0.2)}
+  .sidebar.drawer-open{transform:translateX(0)}
+  .topbar{display:none}
+  .mobile-topbar{display:flex}
+  .main{overflow:visible;height:auto}
+  .page-scroll{overflow:visible;height:auto}
+
+  /* Sidebar nav becomes horizontal pills on mobile */
+  .settings-wrap{grid-template-columns:1fr;min-height:auto}
+  .settings-nav{display:none}
+  .settings-nav-mobile{display:block}
+  .settings-content{padding:20px 16px 40px}
+  .s-title{font-size:24px}
+  .plan-hero{flex-direction:column;align-items:flex-start;gap:16px}
+  .form-row{grid-template-columns:1fr}
+  .avatar-row{flex-direction:column;text-align:center;align-items:center}
+  .logo-upload-area{flex-direction:column;text-align:center;align-items:center}
+}
+@media(max-width:480px){
+  .settings-content{padding:16px 12px 32px}
+  .panel-body{padding:16px}
+  .panel-head{padding:14px 16px 12px}
+  .plan-hero{padding:18px}
+  .s-title{font-size:22px}
+  .big-avatar{width:64px;height:64px;font-size:26px}
+  .avatar-name{font-size:18px}
+  .toast{left:12px;right:12px;bottom:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span id="toast-msg"></span></div>
+
+<div class="mobile-topbar">
+  <button class="mob-menu-btn" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+  <div class="mob-logo">Frame<span>light</span></div>
+  <div style="width:36px"></div>
+</div>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><div class="logo-mark">Frame<span>light</span></div></div>
+  <div class="sidebar-section">
+    <div class="sidebar-lbl">Main</div>
+    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</div>
+    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Galleries<span class="nav-pill">12</span></div>
+    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>New Gallery</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-lbl">Account</div>
+    <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="storage-wrap">
+      <div class="storage-row"><span>Storage</span><span>3.4 / 10 GB</span></div>
+      <div class="storage-bar"><div class="storage-fill"></div></div>
+    </div>
+    <div class="user-chip"><div class="user-av">S</div><div><div class="user-name">Sarah Kim</div><div class="user-plan">Basic Plan</div></div></div>
+  </div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">Account <em>Settings</em></div>
+    <button class="save-btn" onclick="showToast('Changes saved!')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      Save Changes
+    </button>
+  </header>
+
+  <div class="page-scroll">
+
+    <!-- Mobile pill nav -->
+    <div class="settings-nav-mobile">
+      <div class="snav-pills">
+        <button class="snav-pill active" onclick="showSection('profile',this)">Profile</button>
+        <button class="snav-pill" onclick="showSection('branding',this)">Branding</button>
+        <button class="snav-pill" onclick="showSection('billing',this)">Billing</button>
+        <button class="snav-pill" onclick="showSection('defaults',this)">Defaults</button>
+        <button class="snav-pill" onclick="showSection('notifications',this)">Notifications</button>
+        <button class="snav-pill" onclick="showSection('security',this)">Security</button>
+      </div>
+    </div>
+
+    <div class="settings-wrap">
+
+      <!-- SETTINGS SIDEBAR NAV (desktop) -->
+      <nav class="settings-nav">
+        <div class="settings-nav-label">Account</div>
+        <button class="snav-item active" id="snav-profile" onclick="showSection('profile',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
+        </button>
+        <button class="snav-item" id="snav-branding" onclick="showSection('branding',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>Branding
+        </button>
+        <div class="settings-nav-label">Plan</div>
+        <button class="snav-item" id="snav-billing" onclick="showSection('billing',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing & Plan
+        </button>
+        <div class="settings-nav-label">Preferences</div>
+        <button class="snav-item" id="snav-defaults" onclick="showSection('defaults',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6" stroke-width="2.5" stroke-linecap="round"/><line x1="3" y1="12" x2="3.01" y2="12" stroke-width="2.5" stroke-linecap="round"/><line x1="3" y1="18" x2="3.01" y2="18" stroke-width="2.5" stroke-linecap="round"/></svg>Gallery Defaults
+        </button>
+        <button class="snav-item" id="snav-notifications" onclick="showSection('notifications',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Notifications
+        </button>
+        <button class="snav-item" id="snav-security" onclick="showSection('security',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Security
+        </button>
+      </nav>
+
+      <!-- SETTINGS CONTENT -->
+      <div class="settings-content">
+
+        <!-- PROFILE -->
+        <div class="settings-section active" id="sec-profile">
+          <div class="s-header">
+            <div class="s-title">My <em>Profile</em></div>
+            <div class="s-sub">How you appear on your galleries and to clients</div>
+          </div>
+          <div class="avatar-row">
+            <div class="big-avatar">S</div>
+            <div class="avatar-info">
+              <div class="avatar-name">Sarah Kim</div>
+              <div class="avatar-email">sarah@sarahkimphoto.com</div>
+              <button class="avatar-upload-btn" onclick="showToast('Upload photo clicked')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Change Photo
+              </button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Personal <em>Info</em></h3></div>
+            <div class="panel-body">
+              <div class="form-row">
+                <div class="form-group"><label>First Name</label><input type="text" value="Sarah"/></div>
+                <div class="form-group"><label>Last Name</label><input type="text" value="Kim"/></div>
+              </div>
+              <div class="form-group"><label>Email Address</label><input type="text" value="sarah@sarahkimphoto.com"/></div>
+              <div class="form-row">
+                <div class="form-group"><label>Phone</label><input type="text" value="+1 (702) 555-0142"/></div>
+                <div class="form-group"><label>Location</label><input type="text" value="Las Vegas, NV"/></div>
+              </div>
+              <div class="form-group"><label>Photography Speciality</label><select><option>Wedding & Engagement</option><option>Portrait</option><option>Commercial</option><option>Newborn & Family</option><option>Events</option></select></div>
+              <div class="form-group"><label>Website</label><input type="text" value="https://sarahkimphoto.com"/></div>
+              <div class="form-group"><label>Bio (shown on galleries)</label><textarea>Award-winning wedding and portrait photographer based in Las Vegas. Capturing authentic moments with a cinematic, editorial eye.</textarea></div>
+            </div>
+          </div>
+          <div class="save-row">
+            <div style="font-size:12px;color:var(--muted)">Last saved · 2 hours ago</div>
+            <button class="btn teal" onclick="showToast('Profile saved!')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Save Profile</button>
+          </div>
+        </div>
+
+        <!-- BRANDING -->
+        <div class="settings-section" id="sec-branding">
+          <div class="s-header">
+            <div class="s-title">Studio <em>Branding</em></div>
+            <div class="s-sub">Your brand identity shown on all client galleries</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Studio <em>Identity</em></h3></div>
+            <div class="panel-body">
+              <div class="form-group"><label>Studio Name</label><input type="text" value="Sarah Kim Photography"/></div>
+              <div class="form-group">
+                <label>Studio Logo</label>
+                <div class="logo-upload-area">
+                  <div class="logo-preview">LOGO</div>
+                  <div class="logo-upload-info">
+                    <p>Upload your logo</p>
+                    <span>PNG or SVG with transparent background · Max 2MB</span>
+                    <button class="logo-upload-btn" onclick="showToast('Upload logo clicked')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Choose File</button>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Accent Colour</label><div class="color-row"><input type="color" value="#5cbdb9"/><input type="text" value="#5cbdb9"/></div></div>
+                <div class="form-group"><label>Default Gallery Theme</label><select><option>Framelight (Pink + Teal)</option><option>Dark Teal</option><option>Minimal</option><option>Terracotta</option><option>Lavender</option></select></div>
+              </div>
+              <div class="form-group"><label>Custom Domain</label><input type="text" placeholder="gallery.yourstudio.com (Pro plan required)"/></div>
+              <div class="form-group"><label>Social Links</label><input type="text" placeholder="https://instagram.com/sarahkim" style="margin-bottom:8px"/><input type="text" placeholder="https://facebook.com/sarahkimphoto"/></div>
+            </div>
+          </div>
+          <div class="save-row">
+            <div></div>
+            <button class="btn teal" onclick="showToast('Branding saved!')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Save Branding</button>
+          </div>
+        </div>
+
+        <!-- BILLING -->
+        <div class="settings-section" id="sec-billing">
+          <div class="s-header">
+            <div class="s-title">Billing <em>& Plan</em></div>
+            <div class="s-sub">Manage your subscription and storage</div>
+          </div>
+          <div class="plan-hero">
+            <div class="plan-hero-info">
+              <h4>Basic Plan</h4>
+              <p>10 GB storage · $10/month · Renews July 1, 2025</p>
+            </div>
+            <button class="plan-upgrade-btn" onclick="showToast('Opening upgrade…')">Upgrade to Pro →</button>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Plan <em>Comparison</em></h3></div>
+            <div class="panel-body">
+              <table class="plan-table">
+                <thead><tr><th></th><th>Free</th><th class="hl">Basic</th><th class="hl">Pro</th><th>Ultimate</th></tr></thead>
+                <tbody>
+                  <tr><td>Storage</td><td>3 GB</td><td class="hl">10 GB</td><td class="hl">100 GB</td><td>Unlimited</td></tr>
+                  <tr><td>Galleries</td><td>Unlimited</td><td class="hl">Unlimited</td><td class="hl">Unlimited</td><td>Unlimited</td></tr>
+                  <tr><td>Custom Domain</td><td class="dash">—</td><td class="dash hl">—</td><td class="check hl">✓</td><td class="check">✓</td></tr>
+                  <tr><td>Remove Badge</td><td class="dash">—</td><td class="dash hl">—</td><td class="check hl">✓</td><td class="check">✓</td></tr>
+                  <tr><td>Watermarking</td><td class="dash">—</td><td class="dash hl">—</td><td class="check hl">✓</td><td class="check">✓</td></tr>
+                  <tr><td>Store Commission</td><td>15%</td><td class="hl">15%</td><td class="hl">0%</td><td>0%</td></tr>
+                  <tr><td>Price</td><td>Free</td><td class="hl">$10/mo</td><td class="hl">$20/mo</td><td>$40/mo</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel" style="background:var(--pink);border-color:var(--pink-d)">
+            <div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+              <div><div style="font-family:var(--font-d);font-size:18px;color:var(--ink);margin-bottom:3px">Save 37% with annual billing</div><div style="font-size:13px;color:var(--mid)">Switch to annual and get 2 months free on any plan.</div></div>
+              <button class="btn teal" onclick="showToast('Opening annual plans…')">View Annual Plans →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEFAULTS -->
+        <div class="settings-section" id="sec-defaults">
+          <div class="s-header">
+            <div class="s-title">Gallery <em>Defaults</em></div>
+            <div class="s-sub">Pre-set your preferred settings for every new gallery</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Default <em>Privacy</em></h3></div>
+            <div class="panel-body">
+              <div class="toggle-list">
+                <div class="toggle-row"><div><div class="toggle-label">PIN Protection by default</div><div class="toggle-sub">New galleries require a PIN to view</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+                <div class="toggle-row"><div><div class="toggle-label">Allow downloads by default</div><div class="toggle-sub">Clients can download photos</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+                <div class="toggle-row"><div><div class="toggle-label">Enable favorites by default</div><div class="toggle-sub">Clients can heart and save photos</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+                <div class="toggle-row"><div><div class="toggle-label">Set expiry date by default</div><div class="toggle-sub">Auto-hide galleries after a set period</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Default <em>Settings</em></h3></div>
+            <div class="panel-body">
+              <div class="form-row">
+                <div class="form-group"><label>Default Expiry Period</label><select><option>30 days</option><option>60 days</option><option>90 days</option><option>6 months</option></select></div>
+                <div class="form-group"><label>Default Grid Layout</label><select><option>Masonry</option><option>Justified Grid</option><option>Square Grid</option></select></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Default Download Size</label><select><option>Web + Hi-Res</option><option>Hi-Res only</option><option>Web only</option></select></div>
+                <div class="form-group"><label>Default Gallery Theme</label><select><option>Framelight</option><option>Dark Teal</option><option>Minimal</option><option>Terracotta</option></select></div>
+              </div>
+            </div>
+          </div>
+          <div class="save-row"><div></div><button class="btn teal" onclick="showToast('Defaults saved!')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Save Defaults</button></div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div class="settings-section" id="sec-notifications">
+          <div class="s-header">
+            <div class="s-title">Email <em>Notifications</em></div>
+            <div class="s-sub">Choose which activity alerts you receive</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Gallery <em>Activity</em></h3></div>
+            <div class="panel-body">
+              <div class="notif-item"><div class="notif-info"><div class="notif-label">Gallery viewed by client</div><div class="notif-sub">Get an email when a client opens their gallery for the first time</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+              <div class="notif-item"><div class="notif-info"><div class="notif-label">Photos downloaded</div><div class="notif-sub">Notify me when a client downloads photos</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+              <div class="notif-item"><div class="notif-info"><div class="notif-label">Favorites list created</div><div class="notif-sub">Alert me when a client selects their favorites</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+              <div class="notif-item"><div class="notif-info"><div class="notif-label">Gallery expiry reminder</div><div class="notif-sub">Remind me 7 days before a gallery expires</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+              <div class="notif-item"><div class="notif-info"><div class="notif-label">Client message received</div><div class="notif-sub">When a client leaves a comment or question</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Marketing <em>Emails</em></h3></div>
+            <div class="panel-body">
+              <div class="notif-item"><div class="notif-info"><div class="notif-label">Product updates & new features</div><div class="notif-sub">Stay informed about Framelight improvements</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+              <div class="notif-item"><div class="notif-info"><div class="notif-label">Tips & photographer resources</div><div class="notif-sub">Monthly guides and workflow ideas</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+            </div>
+          </div>
+          <div class="save-row"><div></div><button class="btn teal" onclick="showToast('Notification preferences saved!')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Save Preferences</button></div>
+        </div>
+
+        <!-- SECURITY -->
+        <div class="settings-section" id="sec-security">
+          <div class="s-header">
+            <div class="s-title">Security <em>& Access</em></div>
+            <div class="s-sub">Manage your password and account access</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Change <em>Password</em></h3></div>
+            <div class="panel-body">
+              <div class="form-group"><label>Current Password</label><input type="password" placeholder="Enter current password"/></div>
+              <div class="form-row">
+                <div class="form-group"><label>New Password</label><input type="password" placeholder="Min. 8 characters"/></div>
+                <div class="form-group"><label>Confirm Password</label><input type="password" placeholder="Repeat new password"/></div>
+              </div>
+              <button class="btn teal" onclick="showToast('Password updated successfully!')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Update Password</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Two-Factor <em>Authentication</em></h3></div>
+            <div class="panel-body">
+              <div class="toggle-list">
+                <div class="toggle-row"><div><div class="toggle-label">Enable 2FA</div><div class="toggle-sub">Secure your account with an authenticator app (Google Authenticator, Authy)</div></div><button class="toggle" onclick="this.classList.toggle('on');showToast('2FA enabled!')"></button></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Active <em>Sessions</em></h3></div>
+            <div class="panel-body">
+              <div class="notif-item"><div class="notif-info"><div class="notif-label">MacBook Pro · Las Vegas, NV</div><div class="notif-sub">Chrome · Current session · Last active now</div></div><span style="font-size:11px;color:var(--teal);font-weight:500;white-space:nowrap">Current</span></div>
+              <div class="notif-item"><div class="notif-info"><div class="notif-label">iPhone 15 Pro · Las Vegas, NV</div><div class="notif-sub">Safari · Last active 2 hours ago</div></div><button class="btn ghost" style="padding:6px 12px;font-size:12px" onclick="showToast('Session revoked')">Revoke</button></div>
+            </div>
+          </div>
+          <div class="danger-zone">
+            <div class="danger-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Danger Zone</div>
+            <div class="danger-sub">Permanently delete your account and all galleries. This action cannot be undone and all your client galleries will become inaccessible.</div>
+            <button class="danger-btn" onclick="showToast('Contact support to delete your account')">Delete My Account</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function showSection(id, el) {
+  document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.snav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.snav-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  const desktopNav = document.getElementById('snav-' + id);
+  if (desktopNav) desktopNav.classList.add('active');
+  el.classList.add('active');
+  document.querySelector('.settings-content')?.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function openSidebar() { document.getElementById('sidebar').classList.add('drawer-open'); document.getElementById('overlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('drawer-open'); document.getElementById('overlay').classList.remove('open'); document.body.style.overflow = ''; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+let tt;
+function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toast-msg').textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2800); }
+</script>
+</body>
+</html>
