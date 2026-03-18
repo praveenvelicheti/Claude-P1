@@ -1,38 +1,30 @@
-import JSZip from 'jszip'
+const ZIP_FUNCTION_URL = 'https://vvduriumhgnjbrrzchql.supabase.co/functions/v1/zip-photos'
 
 export async function downloadZip(
   photos: Array<{ url: string; filename?: string }>,
   zipName = 'photos.zip',
-  onProgress?: (pct: number) => void
 ) {
-  const zip = new JSZip()
-  const folder = zip.folder('photos')!
+  // Strip .zip suffix for the edge function (it appends .zip itself)
+  const baseName = zipName.endsWith('.zip') ? zipName.slice(0, -4) : zipName
 
-  let done = 0
-  await Promise.all(
-    photos.map(async (photo, idx) => {
-      try {
-        const res = await fetch(photo.url)
-        const blob = await res.blob()
-        const name = photo.filename || `photo-${idx + 1}.jpg`
-        folder.file(name, blob)
-      } catch {
-        // skip failed photos
-      } finally {
-        done++
-        onProgress?.(Math.round((done / photos.length) * 100))
-      }
-    })
-  )
-
-  const blob = await zip.generateAsync({ type: 'blob' }, (meta) => {
-    onProgress?.(Math.round(meta.percent))
+  const res = await fetch(ZIP_FUNCTION_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ photos, zipName: baseName }),
   })
 
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error ?? `Zip failed: ${res.status}`)
+  }
+
+  const blob = await res.blob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = zipName
+  document.body.appendChild(a)
   a.click()
+  document.body.removeChild(a)
   setTimeout(() => URL.revokeObjectURL(url), 5000)
 }
