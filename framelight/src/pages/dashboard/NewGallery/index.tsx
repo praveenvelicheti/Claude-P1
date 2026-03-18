@@ -123,6 +123,7 @@ export function NewGallery() {
         await ensureGallery()
         setStep(2)
       } catch (e) {
+        console.error('[NewGallery] ensureGallery failed:', e)
         toast.show('Failed to create gallery — check the title and try again', 'error')
       } finally {
         setSaving(false)
