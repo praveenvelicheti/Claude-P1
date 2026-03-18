@@ -291,7 +291,7 @@ export function Overview() {
                 </svg>
                 All Galleries
               </button>
-              <Button variant="teal" onClick={() => navigate('/dashboard/new')}>
+              <Button variant="primary" onClick={() => navigate('/dashboard/new')}>
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
@@ -374,7 +374,7 @@ export function Overview() {
                   </div>
                   <p className="font-display text-[22px] font-light text-ink mb-2">No galleries yet</p>
                   <p className="text-[13px] text-ink-muted mb-5">Create your first gallery to get started.</p>
-                  <Button variant="teal" onClick={() => navigate('/dashboard/new')}>Create Gallery</Button>
+                  <Button variant="primary" onClick={() => navigate('/dashboard/new')}>Create Gallery</Button>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-3.5">

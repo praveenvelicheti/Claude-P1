@@ -110,6 +110,14 @@ export function NewGallery() {
         layout: g.layout,
         theme: g.theme,
       }))
+
+      const { data: photoData } = await supabase
+        .from('photos')
+        .select('*')
+        .eq('gallery_id', editId!)
+        .order('position')
+      if (photoData) setPhotos(photoData as typeof photos)
+
       setLoadingGallery(false)
     }
     loadGallery()
@@ -265,23 +273,21 @@ export function NewGallery() {
               <button
                 key={s.num}
                 type="button"
-                onClick={() => step > s.num && setStep(s.num)}
+                onClick={() => (isEdit || step > s.num) && setStep(s.num)}
                 className={`flex items-center gap-2 px-5 py-3 text-[13px] font-ui transition-colors border-b-2 -mb-px cursor-pointer bg-transparent ${
                   step === s.num
                     ? 'text-ink font-medium border-teal'
-                    : step > s.num
+                    : (isEdit || step > s.num)
                     ? 'text-teal border-transparent hover:text-ink'
                     : 'text-ink-muted border-transparent cursor-default'
                 }`}
               >
                 <span className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center text-[10px] font-semibold flex-shrink-0 ${
-                  step > s.num
+                  (isEdit ? s.num !== step : step > s.num)
                     ? 'bg-teal border-teal text-white'
-                    : step === s.num
-                    ? 'border-current text-current'
                     : 'border-current text-current'
                 }`}>
-                  {step > s.num ? '✓' : s.num}
+                  {(isEdit ? s.num !== step : step > s.num) ? '✓' : s.num}
                 </span>
                 {s.label}
               </button>
