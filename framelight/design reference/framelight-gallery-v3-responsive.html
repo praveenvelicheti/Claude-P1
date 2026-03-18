@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Meghan & Desmond — Chris Ruth Photography</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ════════════════════════════════════════════════════
+   FRAMELIGHT GALLERY — Full Redesign
+   Palette: #fbe3e8 pink · #5cbdb9 teal · #ebf6f5 mint
+   Font: Cormorant Garamond (display) · Outfit (ui)
+════════════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --pink:      #fbe3e8;
+  --pink-mid:  #f0c8d0;
+  --teal:      #5cbdb9;
+  --teal-l:    #89d0cd;
+  --teal-pale: #d4f0ee;
+  --mint:      #ebf6f5;
+  --ink:       #1a3a3a;
+  --mid:       #3d7a78;
+  --muted:     #7aadab;
+  --border:    #ceecea;
+  --white:     #ffffff;
+  --font-d:    'Cormorant Garamond', Georgia, serif;
+  --font-ui:   'Outfit', sans-serif;
+  --nav-h:     58px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-ui);
+  background: var(--white);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ════════════════════════════════════════
+   FLOATING NAV
+════════════════════════════════════════ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 200; height: var(--nav-h);
+  display: flex; align-items: center;
+  padding: 0 clamp(14px, 4vw, 48px);
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+.nav.transparent { background: transparent; }
+.nav.solid {
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 1px 0 var(--border);
+}
+
+/* Left: photographer brand */
+.nav-brand {
+  display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
+}
+.nav-logo {
+  width: 30px; height: 30px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,0.5); transition: border-color 0.4s;
+}
+.nav.solid .nav-logo { border-color: var(--border); }
+.nav-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.nav-studio {
+  font-family: var(--font-d); font-size: 16px; font-weight: 400;
+  color: rgba(255,255,255,0.92); letter-spacing: 0.04em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: color 0.4s;
+}
+.nav.solid .nav-studio { color: var(--ink); }
+.nav-pipe {
+  width: 1px; height: 16px; flex-shrink: 0;
+  background: rgba(255,255,255,0.2); transition: background 0.4s;
+}
+.nav.solid .nav-pipe { background: var(--border); }
+.nav-title {
+  font-size: 12px; font-weight: 300; letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.5); font-style: italic;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: color 0.4s;
+}
+.nav.solid .nav-title { color: var(--muted); }
+
+/* Right: actions */
+.nav-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.nav-icon-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.1); backdrop-filter: blur(8px);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.88); transition: all 0.2s; position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-icon-btn:hover { background: rgba(255,255,255,0.22); }
+.nav.solid .nav-icon-btn { border-color: var(--border); background: var(--white); color: var(--ink); backdrop-filter: none; }
+.nav.solid .nav-icon-btn:hover { background: var(--mint); border-color: var(--teal); }
+.nav-icon-btn svg { width: 16px; height: 16px; }
+.fav-badge {
+  position: absolute; top: -3px; right: -3px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--teal); color: #fff; font-size: 8px; font-weight: 600;
+  display: none; place-items: center; border: 2px solid var(--white);
+}
+.fav-badge.show { display: grid; }
+
+.nav-download-btn {
+  display: flex; align-items: center; gap: 7px;
+  height: 36px; padding: 0 18px; border-radius: 18px;
+  background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.28);
+  backdrop-filter: blur(8px); cursor: pointer;
+  font-family: var(--font-ui); font-size: 11.5px; font-weight: 500;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(255,255,255,0.92); transition: all 0.2s; white-space: nowrap;
+}
+.nav-download-btn:hover { background: rgba(255,255,255,0.26); }
+.nav-download-btn svg { width: 13px; height: 13px; }
+.nav.solid .nav-download-btn { background: var(--teal); border-color: var(--teal); color: #fff; backdrop-filter: none; }
+.nav.solid .nav-download-btn:hover { background: var(--teal-l); }
+
+/* ════════════════════════════════════════
+   HERO COVER — full viewport
+════════════════════════════════════════ */
+.hero {
+  position: relative; width: 100%; height: 100svh;
+  min-height: 560px; overflow: hidden; background: var(--ink);
+}
+.hero-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center 35%; display: block;
+  transform: scale(1.06);
+  animation: heroZoom 24s ease-in-out infinite alternate;
+}
+@keyframes heroZoom {
+  from { transform: scale(1.06); }
+  to   { transform: scale(1.0); }
+}
+.hero-overlay {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(to bottom,
+      rgba(15,35,35,0.1)  0%,
+      rgba(15,35,35,0)    30%,
+      rgba(15,35,35,0.3)  70%,
+      rgba(15,35,35,0.75) 100%),
+    radial-gradient(ellipse at center, transparent 50%, rgba(15,35,35,0.2) 100%);
+}
+
+/* Centered text */
+.hero-content {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 0 24px;
+}
+.hero-eyebrow {
+  font-family: var(--font-ui); font-size: 10px; font-weight: 400;
+  letter-spacing: 0.28em; text-transform: uppercase;
+  color: rgba(255,255,255,0.55); margin-bottom: 20px;
+  animation: riseIn 1s ease 0.1s both;
+}
+.hero-names {
+  font-family: var(--font-d); font-weight: 300; color: #fff;
+  line-height: 0.9; letter-spacing: -0.02em;
+  font-size: clamp(52px, 11vw, 120px);
+  animation: riseIn 1.1s ease 0.25s both;
+}
+.hero-names em { font-style: italic; display: block; }
+.hero-date {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 300;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(255,255,255,0.42); margin-top: 28px;
+  display: flex; align-items: center; gap: 14px;
+  animation: riseIn 1.1s ease 0.4s both;
+}
+.hero-date .dot { width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,0.3); }
+
+/* Pink accent pill */
+.hero-pill {
+  margin-top: 36px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 20px; border-radius: 24px;
+  background: rgba(251,227,232,0.15); border: 1px solid rgba(251,227,232,0.25);
+  backdrop-filter: blur(12px);
+  font-size: 12px; font-weight: 400; letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.8); cursor: pointer;
+  transition: all 0.2s;
+  animation: riseIn 1.1s ease 0.55s both;
+  -webkit-tap-highlight-color: transparent;
+}
+.hero-pill:hover { background: rgba(251,227,232,0.25); border-color: rgba(251,227,232,0.4); }
+.hero-pill svg { width: 14px; height: 14px; }
+
+/* Scroll indicator */
+.hero-scroll {
+  position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  color: rgba(255,255,255,0.35); cursor: pointer;
+  animation: riseIn 1.1s ease 0.9s both;
+}
+.hero-scroll:hover { color: rgba(255,255,255,0.7); }
+.hero-scroll span { font-size: 8.5px; letter-spacing: 0.22em; text-transform: uppercase; }
+.hero-scroll-line {
+  width: 1px; height: 36px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.5));
+  animation: scrollBob 2.2s ease-in-out infinite;
+}
+@keyframes scrollBob {
+  0%, 100% { transform: scaleY(1); opacity: 0.5; }
+  50% { transform: scaleY(1.2); opacity: 1; }
+}
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════════════
+   GALLERY BODY
+════════════════════════════════════════ */
+.gallery-body { background: var(--white); }
+
+/* ── FAVORITES BAR ── */
+.fav-bar {
+  display: none; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  padding: 12px clamp(14px, 4vw, 48px);
+  background: var(--pink); border-bottom: 1px solid var(--pink-mid);
+}
+.fav-bar.show { display: flex; }
+.fav-bar-left {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 13px; color: var(--ink);
+}
+.fav-bar-left svg { width: 15px; height: 15px; color: #d45f7a; }
+.fav-bar-left strong { color: #d45f7a; }
+.fav-bar-dl {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 18px; border-radius: 20px;
+  background: var(--teal); color: #fff; border: none;
+  font-family: var(--font-ui); font-size: 11.5px; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer; transition: background 0.18s; white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.fav-bar-dl:hover { background: var(--teal-l); }
+.fav-bar-dl svg { width: 12px; height: 12px; }
+
+/* ── SETS NAV ── */
+.sets-nav {
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 clamp(14px, 4vw, 48px);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.sets-nav::-webkit-scrollbar { display: none; }
+.set-tab {
+  padding: 15px 20px; font-size: 11.5px; font-weight: 400;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); cursor: pointer; white-space: nowrap;
+  border: none; background: none; font-family: var(--font-ui);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: all 0.18s;
+  -webkit-tap-highlight-color: transparent;
+}
+.set-tab:hover { color: var(--ink); }
+.set-tab.active { color: var(--ink); border-bottom-color: var(--teal); font-weight: 500; }
+
+/* ── GALLERY HEADER ── */
+.gallery-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: clamp(20px, 3.5vw, 40px) clamp(14px, 4vw, 48px) clamp(10px, 1.5vw, 20px);
+  flex-wrap: wrap; gap: 8px;
+}
+.gallery-label {
+  font-family: var(--font-d); font-size: clamp(20px, 3.5vw, 30px);
+  font-weight: 300; color: var(--ink); letter-spacing: 0.01em;
+}
+.gallery-label em { font-style: italic; }
+.gallery-count-badge {
+  font-size: 12px; color: var(--muted); letter-spacing: 0.05em;
+  background: var(--mint); border: 1px solid var(--border);
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* ════════════════════════════════════════
+   PHOTO GRID — masonry, 3-col → 2-col → 2-col
+════════════════════════════════════════ */
+.photo-grid {
+  padding: 0 clamp(8px, 1.5vw, 20px) clamp(40px, 6vw, 80px);
+  columns: 3;
+  column-gap: clamp(4px, 0.5vw, 8px);
+}
+
+.photo-item {
+  break-inside: avoid;
+  margin-bottom: clamp(4px, 0.5vw, 8px);
+  position: relative; overflow: hidden; cursor: pointer;
+  display: block; border-radius: clamp(4px, 0.6vw, 8px);
+  background: var(--mint);
+}
+.photo-item img {
+  width: 100%; display: block;
+  transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.photo-item:hover img { transform: scale(1.05); }
+
+/* Hover overlay */
+.photo-hover {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top,
+    rgba(15,35,35,0.55) 0%, rgba(15,35,35,0.1) 50%, transparent 100%);
+  opacity: 0; transition: opacity 0.22s;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: clamp(8px, 1.5vw, 14px);
+}
+.photo-item:hover .photo-hover { opacity: 1; }
+
+/* Always show on mobile */
+@media (hover: none) {
+  .photo-hover { opacity: 1; background: linear-gradient(to top, rgba(15,35,35,0.45) 0%, transparent 50%); }
+}
+
+.photo-btns { display: flex; gap: 6px; }
+.ph-btn {
+  width: clamp(28px, 3.5vw, 34px); height: clamp(28px, 3.5vw, 34px);
+  border-radius: 50%; background: rgba(255,255,255,0.92);
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); transition: all 0.15s; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.ph-btn:hover { background: #fff; transform: scale(1.1); }
+.ph-btn svg { width: clamp(11px, 1.4vw, 14px); height: clamp(11px, 1.4vw, 14px); }
+.ph-btn.on { color: #d45f7a; }
+.ph-btn.on svg { fill: #d45f7a; }
+
+/* ════════════════════════════════════════
+   LIGHTBOX
+════════════════════════════════════════ */
+.lightbox {
+  position: fixed; inset: 0; z-index: 900;
+  background: #0a1e1e;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.28s;
+}
+.lightbox.open { opacity: 1; pointer-events: all; }
+
+/* top bar */
+.lb-bar {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+  height: 58px; display: flex; align-items: center; gap: 12px;
+  padding: 0 clamp(12px, 3vw, 28px);
+  background: linear-gradient(to bottom, rgba(10,30,30,0.9) 0%, transparent 100%);
+}
+.lb-close-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.08);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.8); transition: all 0.18s; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb-close-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+.lb-close-btn svg { width: 17px; height: 17px; }
+.lb-meta { flex: 1; min-width: 0; }
+.lb-title { font-family: var(--font-d); font-size: 15px; font-weight: 300; color: rgba(255,255,255,0.8); }
+.lb-counter { font-size: 10.5px; color: rgba(255,255,255,0.32); letter-spacing: 0.06em; margin-top: 1px; }
+.lb-actions { display: flex; gap: 7px; }
+.lb-act-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.8); cursor: pointer;
+  font-family: var(--font-ui); font-size: 10.5px; font-weight: 400;
+  letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;
+  transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+}
+.lb-act-btn:hover { background: rgba(255,255,255,0.16); color: #fff; }
+.lb-act-btn.on { color: #f48aaa; border-color: rgba(244,138,170,0.5); background: rgba(244,138,170,0.1); }
+.lb-act-btn.on svg { fill: #f48aaa; }
+.lb-act-btn svg { width: 13px; height: 13px; }
+.lb-btn-label { display: inline; }
+
+/* Image stage */
+.lb-stage {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  touch-action: pan-y pinch-zoom;
+}
+.lb-image {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain; display: block;
+  padding: 58px clamp(44px, 6vw, 90px) 76px;
+  animation: lbFade 0.3s ease;
+}
+@keyframes lbFade { from { opacity:0; transform: scale(0.96); } to { opacity:1; transform: scale(1); } }
+
+.lb-nav-btn {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(10,30,30,0.6); backdrop-filter: blur(10px);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.7); transition: all 0.18s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb-nav-btn:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.3); }
+.lb-nav-btn svg { width: 18px; height: 18px; }
+.lb-prev { left: clamp(8px, 2vw, 20px); }
+.lb-next { right: clamp(8px, 2vw, 20px); }
+
+/* Filmstrip */
+.lb-filmstrip {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 74px;
+  background: linear-gradient(to top, rgba(10,30,30,0.95) 0%, transparent 100%);
+  display: flex; align-items: flex-end;
+  padding: 0 12px 10px; gap: 5px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.lb-filmstrip::-webkit-scrollbar { display: none; }
+.lb-thumb {
+  width: 52px; height: 52px; flex-shrink: 0;
+  border-radius: 5px; overflow: hidden; cursor: pointer;
+  opacity: 0.4; border: 2px solid transparent; transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb-thumb:hover { opacity: 0.75; }
+.lb-thumb.active { opacity: 1; border-color: var(--teal); }
+.lb-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════ */
+.gallery-footer {
+  padding: clamp(28px, 5vw, 56px) clamp(14px, 4vw, 48px);
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  text-align: center;
+}
+.footer-studio-name {
+  font-family: var(--font-d); font-size: 22px; font-weight: 300;
+  color: var(--ink); letter-spacing: 0.05em;
+}
+.footer-studio-name em { font-style: italic; color: var(--teal); }
+.footer-gallery-name {
+  font-size: 12px; color: var(--muted); letter-spacing: 0.06em;
+}
+.footer-powered {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--muted); letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+.footer-powered a { color: var(--teal); text-decoration: none; font-weight: 500; }
+.footer-powered a:hover { text-decoration: underline; }
+.footer-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border); }
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+.toast {
+  position: fixed; bottom: clamp(16px, 3vw, 28px);
+  left: 50%; transform: translateX(-50%) translateY(60px);
+  background: var(--ink); color: #fff;
+  padding: 11px 22px; border-radius: 24px;
+  font-size: 13px; font-family: var(--font-ui);
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 8px 32px rgba(15,35,35,0.3);
+  opacity: 0; transition: all 0.32s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 9999; white-space: nowrap; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast svg { width: 14px; height: 14px; color: var(--teal-l); }
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+
+/* Tablet */
+@media (max-width: 900px) {
+  .photo-grid { columns: 2; padding-left: 0; padding-right: 0; column-gap: 3px; }
+  .photo-item { margin-bottom: 3px; border-radius: 4px; }
+  .nav-title, .nav-pipe { display: none; }
+  .lb-btn-label { display: none; }
+  .lb-act-btn { padding: 7px 10px; }
+  .hero-names { font-size: clamp(44px, 10vw, 84px); }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .photo-grid { columns: 2; padding: 0; column-gap: 2px; }
+  .photo-item { margin-bottom: 2px; border-radius: 3px; }
+  .hero-names { font-size: clamp(40px, 13vw, 64px); }
+  .hero-pill { display: none; }
+  .nav-download-btn .dl-label { display: none; }
+  .nav-download-btn { padding: 0 10px; border-radius: 50%; width: 36px; height: 36px; }
+  .sets-nav { justify-content: flex-start; }
+  .set-tab { padding: 13px 14px; font-size: 10.5px; }
+  .lb-nav-btn { width: 36px; height: 36px; }
+  .lb-nav-btn svg { width: 15px; height: 15px; }
+  .lb-image { padding: 58px 36px 76px; }
+  .lb-filmstrip { height: 64px; }
+  .lb-thumb { width: 44px; height: 44px; }
+  .toast { left: 12px; right: 12px; white-space: normal; text-align: center; border-radius: 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ FLOATING NAV ═══ -->
+<nav class="nav transparent" id="main-nav">
+  <div class="nav-brand">
+    <div class="nav-logo">
+      <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=60&q=80" alt="Chris Ruth"/>
+    </div>
+    <span class="nav-studio">Chris Ruth</span>
+    <div class="nav-pipe"></div>
+    <span class="nav-title">Meghan & Desmond</span>
+  </div>
+  <div class="nav-actions">
+    <!-- Favorites -->
+    <button class="nav-icon-btn" title="Favorites" id="nav-fav-btn" onclick="onFavNavClick()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+      </svg>
+      <span class="fav-badge" id="fav-badge">0</span>
+    </button>
+    <!-- Slideshow -->
+    <button class="nav-icon-btn" title="Slideshow" onclick="startSlideshow()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+    </button>
+    <!-- Download -->
+    <button class="nav-download-btn" onclick="showToast('Preparing your ZIP download…')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span class="dl-label">Download All</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══ HERO COVER ═══ -->
+<section class="hero" id="hero">
+  <img
+    class="hero-img"
+    src="https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1800&q=90"
+    alt="Meghan & Desmond"
+  />
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Chris Ruth Photography</div>
+    <h1 class="hero-names">Meghan<em>& Desmond</em></h1>
+    <div class="hero-date">
+      <span>June 14, 2025</span>
+      <span class="dot"></span>
+      <span>Las Vegas, Nevada</span>
+    </div>
+    <div class="hero-pill" onclick="document.getElementById('gallery-body').scrollIntoView({behavior:'smooth'})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+      </svg>
+      View 247 photos
+    </div>
+  </div>
+  <div class="hero-scroll" onclick="document.getElementById('gallery-body').scrollIntoView({behavior:'smooth'})">
+    <div class="hero-scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ═══ GALLERY BODY ═══ -->
+<div class="gallery-body" id="gallery-body">
+
+  <!-- Favorites bar -->
+  <div class="fav-bar" id="fav-bar">
+    <div class="fav-bar-left">
+      <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <span>You've selected <strong id="fav-count-text">0</strong> favorites</span>
+    </div>
+    <button class="fav-bar-dl" onclick="showToast('Downloading favorites as ZIP…')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Favorites
+    </button>
+  </div>
+
+  <!-- Sets nav -->
+  <div class="sets-nav">
+    <button class="set-tab active" onclick="switchSet(this,'all')">All Photos</button>
+    <button class="set-tab" onclick="switchSet(this,'ceremony')">Ceremony</button>
+    <button class="set-tab" onclick="switchSet(this,'reception')">Reception</button>
+    <button class="set-tab" onclick="switchSet(this,'portraits')">Portraits</button>
+    <button class="set-tab" onclick="switchSet(this,'details')">Details</button>
+  </div>
+
+  <!-- Header -->
+  <div class="gallery-header">
+    <div class="gallery-label">Meghan <em>& Desmond</em></div>
+    <span class="gallery-count-badge" id="count-badge">247 photos</span>
+  </div>
+
+  <!-- Grid -->
+  <div class="photo-grid" id="photo-grid"></div>
+
+  <!-- Footer -->
+  <div class="gallery-footer">
+    <div class="footer-studio-name">Chris Ruth <em>Photography</em></div>
+    <div class="footer-gallery-name">Meghan & Desmond · June 14, 2025</div>
+    <div class="footer-powered">
+      <span>Delivered with</span>
+      <span class="footer-dot"></span>
+      <a href="#">Framelight</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ LIGHTBOX ═══ -->
+<div class="lightbox" id="lightbox">
+  <div class="lb-bar">
+    <button class="lb-close-btn" onclick="closeLightbox()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="lb-meta">
+      <div class="lb-title">Meghan & Desmond</div>
+      <div class="lb-counter" id="lb-counter">1 of 12</div>
+    </div>
+    <div class="lb-actions">
+      <button class="lb-act-btn" id="lb-fav-btn" onclick="toggleLbFav()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+        </svg>
+        <span class="lb-btn-label" id="lb-fav-label">Favorite</span>
+      </button>
+      <button class="lb-act-btn" onclick="showToast('Photo downloaded!')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span class="lb-btn-label">Download</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="lb-stage">
+    <img class="lb-image" id="lb-image" src="" alt=""/>
+    <button class="lb-nav-btn lb-prev" onclick="lbNav(-1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="lb-nav-btn lb-next" onclick="lbNav(1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+
+  <div class="lb-filmstrip" id="lb-filmstrip"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   DATA
+══════════════════════════════════════ */
+const photos = [
+  { id:1,  full:'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600&q=80', set:'ceremony' },
+  { id:2,  full:'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&q=80', set:'ceremony' },
+  { id:3,  full:'https://images.unsplash.com/photo-1519741497674-611481863552?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80', set:'portraits' },
+  { id:4,  full:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80', set:'ceremony' },
+  { id:5,  full:'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&q=80', set:'portraits' },
+  { id:6,  full:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80', set:'reception' },
+  { id:7,  full:'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80', set:'reception' },
+  { id:8,  full:'https://images.unsplash.com/photo-1529636798458-92182e662485?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1529636798458-92182e662485?w=600&q=80', set:'details' },
+  { id:9,  full:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=80', set:'portraits' },
+  { id:10, full:'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=600&q=80', set:'details' },
+  { id:11, full:'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80', set:'reception' },
+  { id:12, full:'https://images.unsplash.com/photo-1513278974582-3e1b4a4fa21e?w=1400&q=88', thumb:'https://images.unsplash.com/photo-1513278974582-3e1b4a4fa21e?w=600&q=80', set:'details' },
+];
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+const favs = new Set();
+let lbIdx = 0;
+let visible = [...photos];
+let slideshowTimer = null;
+
+/* ══════════════════════════════════════
+   NAV SCROLL
+══════════════════════════════════════ */
+const nav = document.getElementById('main-nav');
+const hero = document.getElementById('hero');
+function onScroll() {
+  const heroBottom = hero.getBoundingClientRect().bottom;
+  nav.classList.toggle('solid', heroBottom < 80);
+  nav.classList.toggle('transparent', heroBottom >= 80);
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+
+/* ══════════════════════════════════════
+   RENDER GRID
+══════════════════════════════════════ */
+function renderGrid(list) {
+  document.getElementById('count-badge').textContent = list.length + ' photos';
+  document.getElementById('photo-grid').innerHTML = list.map((p, i) => `
+    <div class="photo-item" onclick="openLb(${i})">
+      <img src="${p.thumb}" alt="Photo ${p.id}" loading="lazy"/>
+      <div class="photo-hover">
+        <div class="photo-btns">
+          <button class="ph-btn${favs.has(p.id) ? ' on' : ''}" data-id="${p.id}"
+            onclick="event.stopPropagation();toggleFav(${p.id},this)">
+            <svg viewBox="0 0 24 24" fill="${favs.has(p.id)?'currentColor':'none'}" stroke="currentColor" stroke-width="1.8">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+            </svg>
+          </button>
+          <button class="ph-btn" onclick="event.stopPropagation();showToast('Photo downloaded!')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  buildFilmstrip();
+}
+
+/* ══════════════════════════════════════
+   SETS FILTER
+══════════════════════════════════════ */
+function switchSet(btn, set) {
+  document.querySelectorAll('.set-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  visible = set === 'all' ? [...photos] : photos.filter(p => p.set === set);
+  renderGrid(visible);
+}
+
+/* ══════════════════════════════════════
+   FAVORITES
+══════════════════════════════════════ */
+function toggleFav(id, btn) {
+  favs.has(id) ? favs.delete(id) : favs.add(id);
+  updateFavUI();
+  const on = favs.has(id);
+  btn.classList.toggle('on', on);
+  btn.querySelector('svg').setAttribute('fill', on ? 'currentColor' : 'none');
+  showToast(on ? '❤️ Added to favorites' : 'Removed from favorites');
+}
+function updateFavUI() {
+  const c = favs.size;
+  const badge = document.getElementById('fav-badge');
+  const bar = document.getElementById('fav-bar');
+  badge.textContent = c;
+  badge.classList.toggle('show', c > 0);
+  bar.classList.toggle('show', c > 0);
+  document.getElementById('fav-count-text').textContent = c;
+}
+function onFavNavClick() {
+  const c = favs.size;
+  showToast(c > 0 ? `${c} favorites selected` : 'No favorites yet — tap ❤️ on any photo');
+}
+
+/* ══════════════════════════════════════
+   LIGHTBOX
+══════════════════════════════════════ */
+function openLb(idx) {
+  lbIdx = idx;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  lbRender();
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+  if (slideshowTimer) { clearInterval(slideshowTimer); slideshowTimer = null; }
+}
+function lbNav(dir) {
+  lbIdx = (lbIdx + dir + visible.length) % visible.length;
+  lbRender();
+}
+function lbRender() {
+  const p = visible[lbIdx];
+  const img = document.getElementById('lb-image');
+  img.style.animation = 'none'; img.offsetHeight;
+  img.style.animation = '';
+  img.src = p.full;
+  document.getElementById('lb-counter').textContent = `${lbIdx+1} of ${visible.length}`;
+
+  // fav state
+  const on = favs.has(p.id);
+  const btn = document.getElementById('lb-fav-btn');
+  btn.classList.toggle('on', on);
+  btn.querySelector('svg').setAttribute('fill', on ? 'currentColor' : 'none');
+  document.getElementById('lb-fav-label').textContent = on ? 'Favorited' : 'Favorite';
+
+  // filmstrip
+  document.querySelectorAll('.lb-thumb').forEach((t, i) => {
+    t.classList.toggle('active', i === lbIdx);
+    if (i === lbIdx) t.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+  });
+}
+function buildFilmstrip() {
+  document.getElementById('lb-filmstrip').innerHTML = visible.map((p,i) => `
+    <div class="lb-thumb${i===lbIdx?' active':''}" onclick="lbIdx=${i};lbRender()">
+      <img src="${p.thumb}" alt=""/>
+    </div>
+  `).join('');
+}
+function toggleLbFav() {
+  const p = visible[lbIdx];
+  favs.has(p.id) ? favs.delete(p.id) : favs.add(p.id);
+  updateFavUI();
+  // sync grid btn
+  const gridBtn = document.querySelector(`.ph-btn[data-id="${p.id}"]`);
+  if (gridBtn) {
+    const on = favs.has(p.id);
+    gridBtn.classList.toggle('on', on);
+    gridBtn.querySelector('svg').setAttribute('fill', on ? 'currentColor' : 'none');
+  }
+  lbRender();
+  showToast(favs.has(p.id) ? '❤️ Added to favorites' : 'Removed from favorites');
+}
+
+/* ══════════════════════════════════════
+   SLIDESHOW
+══════════════════════════════════════ */
+function startSlideshow() {
+  openLb(0);
+  if (slideshowTimer) clearInterval(slideshowTimer);
+  slideshowTimer = setInterval(() => lbNav(1), 3500);
+  showToast('Slideshow started — press Esc to stop');
+}
+
+/* ══════════════════════════════════════
+   KEYBOARD
+══════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'ArrowRight') lbNav(1);
+  if (e.key === 'ArrowLeft')  lbNav(-1);
+  if (e.key === 'Escape')     closeLightbox();
+});
+
+/* ══════════════════════════════════════
+   SWIPE (mobile lightbox)
+══════════════════════════════════════ */
+let touchStartX = 0;
+const stage = document.querySelector('.lb-stage');
+stage.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+stage.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) lbNav(diff > 0 ? 1 : -1);
+});
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+renderGrid(photos);
+</script>
+</body>
+</html>

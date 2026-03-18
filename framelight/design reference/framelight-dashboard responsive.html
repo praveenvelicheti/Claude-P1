@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Framelight — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --pink:      #fbe3e8;
+  --pink-d:    #f5c8d2;
+  --teal:      #5cbdb9;
+  --teal-l:    #89d0cd;
+  --mint:      #ebf6f5;
+  --ink:       #1a3a3a;
+  --charcoal:  #2a5250;
+  --mid:       #3d7a78;
+  --muted:     #7aadab;
+  --border:    #ceecea;
+  --bg:        #f4faf9;
+  --white:     #ffffff;
+  --red:       #e07878;
+  --amber:     #e8a44a;
+  --font-d:    'Cormorant', Georgia, serif;
+  --font-ui:   'Outfit', sans-serif;
+  --sidebar-w: 232px;
+  --top-h:     58px;
+}
+
+html, body { height:100%; font-family:var(--font-ui); background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; }
+.app { display:flex; height:100vh; overflow:hidden; }
+
+/* ═══════════════════════════════
+   SIDEBAR
+═══════════════════════════════ */
+.sidebar {
+  width:var(--sidebar-w); flex-shrink:0;
+  background:var(--ink); display:flex; flex-direction:column;
+}
+.sidebar-logo {
+  height:var(--top-h); display:flex; align-items:center;
+  padding:0 22px; border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0;
+}
+.logo-mark { font-family:var(--font-d); font-size:22px; font-weight:500; color:#fff; letter-spacing:0.04em; }
+.logo-mark span { color:var(--teal-l); font-style:italic; }
+
+.sidebar-section { padding:20px 14px 8px; }
+.sidebar-lbl { font-size:9px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.28); padding:0 8px; margin-bottom:6px; }
+
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 12px; border-radius:8px; cursor:pointer;
+  font-size:13.5px; font-weight:400; color:rgba(255,255,255,0.5);
+  transition:all 0.15s; margin-bottom:2px; user-select:none;
+}
+.nav-item svg { width:15px; height:15px; flex-shrink:0; opacity:0.6; }
+.nav-item:hover { background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.85); }
+.nav-item:hover svg { opacity:1; }
+.nav-item.active { background:rgba(92,189,185,0.16); color:#fff; font-weight:500; }
+.nav-item.active svg { opacity:1; color:var(--teal-l); }
+.nav-badge { margin-left:auto; background:var(--teal); color:var(--ink); font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px; }
+
+.sidebar-bottom { margin-top:auto; padding:16px 14px; border-top:1px solid rgba(255,255,255,0.07); }
+.storage-block { padding:13px; background:rgba(255,255,255,0.05); border-radius:10px; margin-bottom:12px; }
+.storage-row { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:7px; }
+.storage-row span:last-child { color:rgba(255,255,255,0.7); }
+.storage-bar { height:3px; background:rgba(255,255,255,0.1); border-radius:2px; }
+.storage-fill { height:100%; width:34%; border-radius:2px; background:linear-gradient(90deg, var(--teal), var(--teal-l)); }
+.storage-upgrade { display:block; margin-top:9px; font-size:11px; color:var(--teal-l); font-weight:500; cursor:pointer; }
+.user-row { display:flex; align-items:center; gap:9px; padding:7px 8px; border-radius:8px; cursor:pointer; transition:background 0.15s; }
+.user-row:hover { background:rgba(255,255,255,0.06); }
+.user-av { width:30px; height:30px; border-radius:50%; background:var(--teal); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--ink); flex-shrink:0; }
+.user-name { font-size:12.5px; color:rgba(255,255,255,0.75); }
+.user-plan { font-size:10px; color:rgba(255,255,255,0.35); margin-top:1px; }
+
+/* ═══════════════════════════════
+   MAIN SHELL
+═══════════════════════════════ */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+
+.topbar {
+  height:var(--top-h); flex-shrink:0;
+  background:var(--white); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 32px; gap:14px;
+}
+.topbar-title { font-family:var(--font-d); font-size:21px; font-weight:500; color:var(--ink); flex:1; }
+.topbar-title em { font-style:italic; color:var(--teal); }
+
+.search-wrap {
+  display:flex; align-items:center; gap:8px;
+  background:var(--mint); border:1px solid var(--border);
+  border-radius:8px; padding:7px 13px; width:220px; transition:border-color 0.2s;
+}
+.search-wrap:focus-within { border-color:var(--teal); }
+.search-wrap svg { width:14px; height:14px; color:var(--muted); flex-shrink:0; }
+.search-wrap input { background:none; border:none; outline:none; font-family:var(--font-ui); font-size:13px; color:var(--ink); width:100%; }
+.search-wrap input::placeholder { color:var(--muted); }
+
+.new-btn {
+  display:flex; align-items:center; gap:7px; padding:9px 18px;
+  border-radius:8px; border:none; cursor:pointer; font-family:var(--font-ui);
+  font-size:13px; font-weight:500; background:var(--teal); color:#fff;
+  transition:all 0.2s; white-space:nowrap;
+}
+.new-btn:hover { background:var(--teal-l); transform:translateY(-1px); box-shadow:0 4px 14px rgba(92,189,185,0.35); }
+.new-btn svg { width:15px; height:15px; }
+
+.page { flex:1; overflow-y:auto; display:none; }
+.page.active { display:block; }
+.page-pad { padding:28px 32px; }
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* ═══════════════════════════════
+   OVERVIEW — redesigned
+═══════════════════════════════ */
+
+/* ── TOP GREETING ROW ── */
+.ov-header {
+  display:flex; align-items:flex-end; justify-content:space-between;
+  margin-bottom:24px; gap:16px; flex-wrap:wrap;
+}
+.ov-greeting-eyebrow {
+  font-size:10.5px; font-weight:400; letter-spacing:0.18em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:6px;
+}
+.ov-greeting-name {
+  font-family:var(--font-d); font-size:40px; font-weight:300;
+  color:var(--ink); line-height:1; letter-spacing:-0.01em;
+}
+.ov-greeting-name em { font-style:italic; color:var(--teal); }
+.ov-greeting-sub {
+  font-size:13px; color:var(--muted); margin-top:6px;
+  display:flex; align-items:center; gap:8px;
+}
+.ov-greeting-sub .sep { width:3px; height:3px; border-radius:50%; background:var(--border); }
+.ov-header-actions { display:flex; gap:9px; flex-shrink:0; }
+.ov-action-btn {
+  display:flex; align-items:center; gap:7px; padding:10px 18px;
+  border-radius:10px; border:none; cursor:pointer; font-family:var(--font-ui);
+  font-size:13px; font-weight:500; transition:all 0.2s; white-space:nowrap;
+}
+.ov-action-btn.primary { background:var(--teal); color:#fff; }
+.ov-action-btn.primary:hover { background:var(--teal-l); transform:translateY(-1px); box-shadow:0 4px 14px rgba(92,189,185,0.35); }
+.ov-action-btn.ghost { background:var(--white); color:var(--charcoal); border:1px solid var(--border); }
+.ov-action-btn.ghost:hover { border-color:var(--teal); color:var(--teal); background:var(--mint); }
+.ov-action-btn svg { width:14px; height:14px; }
+
+/* ── STAT CARDS ── */
+.stats-row {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px;
+}
+.stat-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:16px; padding:22px 22px 18px;
+  position:relative; overflow:hidden;
+  transition:all 0.22s; cursor:default;
+  animation:cardIn 0.4s ease both;
+}
+.stat-card:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(92,189,185,0.1); border-color:var(--teal); }
+.stat-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--teal), var(--teal-l));
+  transform:scaleX(0); transform-origin:left; transition:transform 0.3s; border-radius:2px 2px 0 0;
+}
+.stat-card:hover::before { transform:scaleX(1); }
+.stat-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.stat-lbl { font-size:10.5px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+.stat-ico { width:32px; height:32px; border-radius:9px; background:var(--mint); display:flex; align-items:center; justify-content:center; color:var(--teal); }
+.stat-ico svg { width:14px; height:14px; }
+.stat-val { font-family:var(--font-d); font-size:44px; font-weight:300; color:var(--ink); line-height:1; margin-bottom:5px; }
+.stat-sub { font-size:11.5px; color:var(--muted); display:flex; align-items:center; gap:4px; }
+.stat-sub.up   { color:#5a9a6a; }
+.stat-sub.warn { color:var(--amber); }
+.stat-sub svg  { width:12px; height:12px; }
+
+/* highlight stat card */
+.stat-card.featured {
+  background:var(--ink); border-color:var(--ink);
+}
+.stat-card.featured .stat-lbl  { color:rgba(255,255,255,0.4); }
+.stat-card.featured .stat-ico  { background:rgba(92,189,185,0.18); color:var(--teal-l); }
+.stat-card.featured .stat-val  { color:#fff; }
+.stat-card.featured .stat-sub  { color:rgba(255,255,255,0.38); }
+.stat-card.featured .stat-sub.up { color:var(--teal-l); }
+.stat-card.featured::before    { background:linear-gradient(90deg, var(--teal), var(--teal-l)); }
+.stat-card.featured:hover      { border-color:var(--ink); box-shadow:0 8px 28px rgba(26,58,58,0.25); }
+
+/* ── TWO-COL OVERVIEW ── */
+.overview-cols { display:grid; grid-template-columns:1fr 290px; gap:24px; align-items:start; }
+
+.section-hd {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;
+}
+.section-hd h3 { font-family:var(--font-d); font-size:21px; font-weight:400; color:var(--ink); letter-spacing:0.01em; }
+.section-hd h3 em { font-style:italic; }
+.section-hd a { font-size:12.5px; color:var(--teal); cursor:pointer; font-weight:500; text-decoration:none; }
+.section-hd a:hover { text-decoration:underline; }
+
+/* ── RECENT GALLERY CARDS (3-col) ── */
+.recent-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+
+.g-card {
+  position:relative; border-radius:18px; overflow:hidden;
+  aspect-ratio:3/4; background:var(--ink); cursor:pointer;
+  transition:transform 0.28s cubic-bezier(0.34,1.2,0.64,1), box-shadow 0.28s;
+  box-shadow:0 4px 20px rgba(26,58,58,0.1);
+  animation:cardIn 0.4s ease both;
+}
+.g-card:nth-child(1){animation-delay:.04s}
+.g-card:nth-child(2){animation-delay:.09s}
+.g-card:nth-child(3){animation-delay:.14s}
+.g-card:hover { transform:translateY(-5px) scale(1.01); box-shadow:0 20px 50px rgba(26,58,58,0.2); }
+@keyframes cardIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+.g-cover { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94); }
+.g-card:hover .g-cover { transform:scale(1.06); }
+
+.g-no-cover { position:absolute; inset:0; background:linear-gradient(135deg,#1a3a3a,#2a5250); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; }
+.g-no-cover svg { width:28px; height:28px; color:rgba(255,255,255,0.18); }
+.g-no-cover span { font-size:11px; color:rgba(255,255,255,0.25); letter-spacing:0.06em; }
+
+.g-gradient {
+  position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(15,30,30,0) 0%, rgba(15,30,30,0.05) 38%, rgba(15,30,30,0.6) 65%, rgba(15,30,30,0.94) 100%);
+}
+
+/* edit btn — top left */
+.g-edit-btn {
+  position:absolute; top:12px; left:12px; z-index:10;
+  width:30px; height:30px; border-radius:50%;
+  background:rgba(255,255,255,0.14); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; opacity:0; transition:all 0.2s; color:#fff;
+}
+.g-card:hover .g-edit-btn { opacity:1; }
+.g-edit-btn:hover { background:rgba(255,255,255,0.3); }
+.g-edit-btn svg { width:12px; height:12px; }
+
+/* 3-dot menu — top right */
+.g-menu-btn {
+  position:absolute; top:12px; right:12px; z-index:10;
+  width:30px; height:30px; border-radius:50%;
+  background:rgba(255,255,255,0.14); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; opacity:0; transition:all 0.2s; color:#fff;
+}
+.g-card:hover .g-menu-btn { opacity:1; }
+.g-menu-btn:hover { background:rgba(255,255,255,0.28); }
+.g-menu-btn svg { width:13px; height:13px; }
+
+/* dropdown */
+.g-dropdown {
+  position:absolute; top:48px; right:12px; z-index:20;
+  background:#fff; border-radius:12px; overflow:hidden;
+  box-shadow:0 8px 32px rgba(26,58,58,0.18), 0 0 0 1px rgba(26,58,58,0.06);
+  min-width:155px; display:none; flex-direction:column;
+  animation:dropIn 0.15s ease;
+}
+@keyframes dropIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+.g-dropdown.open { display:flex; }
+.g-dd-item {
+  display:flex; align-items:center; gap:9px; padding:10px 13px;
+  font-size:13px; color:var(--charcoal); cursor:pointer;
+  background:none; border:none; font-family:var(--font-ui);
+  width:100%; text-align:left; transition:background 0.12s;
+}
+.g-dd-item svg { width:13px; height:13px; color:var(--muted); }
+.g-dd-item:hover { background:var(--mint); }
+.g-dd-item.danger { color:var(--red); }
+.g-dd-item.danger svg { color:var(--red); }
+.g-dd-item.danger:hover { background:#fff0f0; }
+.g-dd-divider { height:1px; background:var(--border); margin:2px 0; }
+
+/* card content */
+.g-content { position:absolute; bottom:0; left:0; right:0; padding:16px 16px 14px; z-index:2; display:flex; flex-direction:column; gap:8px; }
+.g-title { font-family:var(--font-d); font-size:18px; font-weight:400; color:#fff; line-height:1.1; }
+.g-meta  { font-size:11px; color:rgba(255,255,255,0.5); font-weight:300; }
+.g-pills { display:flex; gap:5px; flex-wrap:wrap; }
+
+.g-pill {
+  display:flex; align-items:center; gap:4px; padding:4px 9px; border-radius:20px;
+  background:rgba(255,255,255,0.14); backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.15);
+  font-size:10px; color:rgba(255,255,255,0.85); white-space:nowrap;
+}
+.g-pill svg { width:10px; height:10px; }
+.g-pill.teal  { background:rgba(92,189,185,0.25); border-color:rgba(92,189,185,0.4); color:#a8e6e3; }
+.g-pill.amber { background:rgba(232,164,74,0.25); border-color:rgba(232,164,74,0.4); color:#f5cc80; }
+.g-pill.red   { background:rgba(224,120,120,0.25); border-color:rgba(224,120,120,0.4); color:#f5aaaa; }
+
+/* ── RIGHT COLUMN PANELS ── */
+.panel-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:16px; overflow:hidden; margin-bottom:16px;
+}
+.panel-hd {
+  padding:15px 18px 12px; border-bottom:1px solid var(--mint);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.panel-hd h4 { font-family:var(--font-d); font-size:17px; font-weight:400; color:var(--ink); }
+.panel-hd-link { font-size:12px; color:var(--teal); cursor:pointer; font-weight:500; }
+.panel-hd-link:hover { text-decoration:underline; }
+
+/* expiry alert */
+.exp-item {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px; border-bottom:1px solid var(--mint); transition:background 0.14s; cursor:pointer;
+}
+.exp-item:last-child { border-bottom:none; }
+.exp-item:hover { background:var(--mint); }
+.exp-thumb { width:38px; height:38px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--mint); }
+.exp-info { flex:1; min-width:0; }
+.exp-name { font-size:13px; font-weight:500; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.exp-days { font-size:11px; margin-top:2px; }
+.exp-days.warn { color:var(--amber); }
+.exp-days.crit { color:var(--red); font-weight:500; }
+.exp-days.ok   { color:var(--muted); }
+.exp-nudge {
+  padding:4px 10px; border-radius:7px; border:none;
+  font-family:var(--font-ui); font-size:10.5px; font-weight:500;
+  cursor:pointer; white-space:nowrap; transition:all 0.15s; flex-shrink:0;
+}
+.exp-nudge.warn { background:rgba(232,164,74,0.12); color:#a06010; border:1px solid rgba(232,164,74,0.3); }
+.exp-nudge.warn:hover { background:rgba(232,164,74,0.22); }
+.exp-nudge.crit { background:rgba(224,120,120,0.12); color:#c05050; border:1px solid rgba(224,120,120,0.3); }
+.exp-nudge.crit:hover { background:rgba(224,120,120,0.22); }
+.exp-nudge.ok   { background:var(--mint); color:var(--mid); border:1px solid var(--border); }
+.exp-nudge.ok:hover { border-color:var(--teal); color:var(--teal); }
+
+/* quick actions */
+.qa-row {
+  display:flex; align-items:center; gap:11px; padding:12px 16px;
+  cursor:pointer; transition:background 0.14s; border:none; background:none;
+  width:100%; text-align:left; font-family:var(--font-ui);
+  border-bottom:1px solid var(--mint);
+}
+.qa-row:last-child { border-bottom:none; }
+.qa-row:hover { background:var(--mint); }
+.qa-ico { width:32px; height:32px; border-radius:9px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.qa-ico.teal { background:rgba(92,189,185,0.14); color:var(--teal); }
+.qa-ico.pink { background:rgba(251,227,232,0.9); color:#c0506a; }
+.qa-ico.ink  { background:rgba(26,58,58,0.07); color:var(--ink); }
+.qa-ico svg  { width:14px; height:14px; }
+.qa-lbl { font-size:13px; color:var(--charcoal); font-weight:400; }
+.qa-sub { font-size:10.5px; color:var(--muted); margin-top:1px; }
+.qa-arr { margin-left:auto; color:var(--border); flex-shrink:0; }
+.qa-arr svg { width:13px; height:13px; }
+
+/* activity feed */
+.af-row { display:flex; align-items:flex-start; gap:12px; padding:12px 16px; border-bottom:1px solid var(--mint); }
+.af-row:last-child { border-bottom:none; }
+.af-icon-wrap { width:30px; height:30px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+.af-icon-wrap.teal  { background:rgba(92,189,185,0.14); color:var(--teal); }
+.af-icon-wrap.pink  { background:rgba(251,227,232,0.9); color:#d45f7a; }
+.af-icon-wrap.amber { background:rgba(232,164,74,0.14); color:var(--amber); }
+.af-icon-wrap.muted { background:var(--mint); color:var(--muted); }
+.af-icon-wrap svg { width:13px; height:13px; }
+.af-body { flex:1; min-width:0; }
+.af-msg { font-size:12.5px; color:var(--charcoal); line-height:1.45; }
+.af-msg strong { color:var(--ink); font-weight:500; }
+.af-time { font-size:10px; color:var(--muted); margin-top:2px; }
+.modal-bg { position:fixed; inset:0; background:rgba(26,58,58,0.45); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-bg.open { display:flex; }
+.modal { background:var(--white); border-radius:18px; padding:36px; width:460px; max-width:94vw; box-shadow:0 24px 64px rgba(26,58,58,0.2); animation:modalPop 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes modalPop { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+.modal-title { font-family:var(--font-d); font-size:24px; font-weight:500; color:var(--ink); margin-bottom:6px; }
+.modal-sub { font-size:13.5px; color:var(--muted); margin-bottom:26px; line-height:1.5; }
+.modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:11px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase; color:var(--muted); margin-bottom:7px; }
+.form-group input { width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:8px; background:var(--mint); font-family:var(--font-ui); font-size:13.5px; color:var(--ink); outline:none; transition:border-color 0.2s, box-shadow 0.2s; }
+.form-group input:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(92,189,185,0.15); background:var(--white); }
+.form-group input::placeholder { color:var(--muted); }
+.share-box { display:flex; align-items:center; gap:8px; padding:10px 13px; background:var(--mint); border-radius:8px; border:1px solid var(--border); margin-top:8px; }
+.share-box input { background:none; border:none; outline:none; font-family:var(--font-ui); font-size:12.5px; color:var(--charcoal); flex:1; min-width:0; box-shadow:none; padding:0; }
+.share-copy { font-size:11px; font-weight:600; color:var(--teal); background:none; border:none; cursor:pointer; text-transform:uppercase; letter-spacing:0.06em; flex-shrink:0; }
+
+.btn { display:flex; align-items:center; gap:7px; padding:10px 22px; border-radius:9px; cursor:pointer; font-family:var(--font-ui); font-size:13px; font-weight:500; transition:all 0.2s; border:none; }
+.btn.primary   { background:var(--teal); color:#fff; }
+.btn.primary:hover { background:var(--teal-l); }
+.btn.secondary { background:var(--mint); color:var(--charcoal); border:1px solid var(--border); }
+.btn.secondary:hover { background:var(--border); }
+
+.toast { position:fixed; bottom:26px; right:26px; z-index:9999; background:var(--ink); color:#fff; padding:12px 20px; border-radius:10px; font-size:13.5px; box-shadow:0 8px 32px rgba(26,58,58,0.22); display:flex; align-items:center; gap:10px; transform:translateY(60px); opacity:0; transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; }
+.toast.show { transform:translateY(0); opacity:1; }
+.toast svg { width:15px; height:15px; color:var(--teal-l); }
+
+/* stat anims */
+.stat-card { animation:cardIn 0.4s ease both; }
+.stat-card:nth-child(1){animation-delay:.02s} .stat-card:nth-child(2){animation-delay:.05s}
+.stat-card:nth-child(3){animation-delay:.08s} .stat-card:nth-child(4){animation-delay:.11s}
+
+/* ═══════════════════════════════════════════════
+   MOBILE TOPBAR
+═══════════════════════════════════════════════ */
+.mobile-topbar {
+  display: none;
+  height: var(--top-h); flex-shrink: 0;
+  background: var(--white); border-bottom: 1px solid var(--border);
+  align-items: center; padding: 0 16px; gap: 12px;
+  position: sticky; top: 0; z-index: 50;
+}
+.mob-menu-btn {
+  width: 36px; height: 36px; border-radius: 9px;
+  border: 1px solid var(--border); background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; color: var(--ink);
+  flex-shrink: 0;
+}
+.mob-menu-btn svg { width: 18px; height: 18px; }
+.mob-logo {
+  font-family: var(--font-d); font-size: 20px; font-weight: 500;
+  color: var(--ink); letter-spacing: 0.04em; flex: 1; text-align: center;
+}
+.mob-logo span { color: var(--teal-l); font-style: italic; }
+.mob-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--teal); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; color: #fff; flex-shrink: 0; cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════════
+   SIDEBAR OVERLAY
+═══════════════════════════════════════════════ */
+.sidebar-overlay {
+  position: fixed; inset: 0; background: rgba(26,58,58,0.5);
+  z-index: 200; display: none; backdrop-filter: blur(3px);
+}
+.sidebar-overlay.open { display: block; }
+.sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ═══════════════════════════════════════════════
+   BOTTOM TAB BAR
+═══════════════════════════════════════════════ */
+.bottom-tabbar {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--white); border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-tabbar-inner { display: flex; height: 60px; }
+.tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px; cursor: pointer;
+  color: var(--muted); transition: color 0.15s; border: none; background: none;
+  font-family: var(--font-ui); padding: 0; position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.tab-item svg { width: 20px; height: 20px; }
+.tab-item span { font-size: 10px; font-weight: 500; letter-spacing: 0.02em; }
+.tab-item.active { color: var(--teal); }
+.tab-badge {
+  position: absolute; top: 6px; right: calc(50% - 18px);
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--teal); color: #fff; font-size: 8px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--white);
+}
+
+/* ═══════════════════════════════════════════════
+   BREAKPOINT: TABLET (≤ 1024px)
+═══════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  :root { --sidebar-w: 200px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .overview-cols { grid-template-columns: 1fr; gap: 20px; }
+  .recent-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .ov-greeting-name { font-size: 32px; }
+  .stat-val { font-size: 36px; }
+  .topbar-title { font-size: 18px; }
+  .search-wrap { width: 180px; }
+}
+
+/* ═══════════════════════════════════════════════
+   BREAKPOINT: SMALL TABLET (≤ 768px)
+   — Sidebar becomes drawer, bottom tab bar appears
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  html, body { overflow: auto; height: auto; }
+  .app { flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
+
+  .sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 300;
+    transform: translateX(-100%);
+    width: 260px !important; overflow-y: auto;
+    box-shadow: 4px 0 24px rgba(26,58,58,0.2);
+  }
+  .sidebar.drawer-open { transform: translateX(0); }
+
+  .topbar { display: none; }
+  .mobile-topbar { display: flex; }
+
+  .main { overflow: visible; height: auto; }
+  .page { overflow: visible; height: auto; display: none; }
+  .page.active { display: block; }
+  .page-pad { padding: 20px 16px 80px; }
+
+  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat-val { font-size: 34px; }
+
+  .ov-header { flex-direction: column; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+  .ov-greeting-name { font-size: 30px; }
+  .ov-header-actions { width: 100%; }
+  .ov-action-btn { flex: 1; justify-content: center; }
+
+  .overview-cols { grid-template-columns: 1fr; gap: 0; }
+  .recent-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+  .bottom-tabbar { display: flex; flex-direction: column; }
+}
+
+/* ═══════════════════════════════════════════════
+   BREAKPOINT: MOBILE PHONE (≤ 480px)
+═══════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .page-pad { padding: 16px 12px 80px; }
+
+  .stats-row { gap: 8px; margin-bottom: 16px; }
+  .stat-card { padding: 15px 13px 12px; }
+  .stat-val { font-size: 28px; }
+  .stat-lbl { font-size: 9px; }
+  .stat-sub { font-size: 10px; }
+  .stat-ico { width: 26px; height: 26px; border-radius: 7px; }
+  .stat-ico svg { width: 13px; height: 13px; }
+
+  .ov-greeting-name { font-size: 26px; }
+  .ov-greeting-eyebrow { font-size: 9.5px; }
+  .ov-greeting-sub { font-size: 12px; flex-wrap: wrap; }
+
+  .recent-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .g-title { font-size: 15px; }
+  .g-meta { font-size: 10px; }
+  .g-pill { font-size: 9px; padding: 3px 7px; }
+  .g-content { padding: 12px 12px 10px; gap: 6px; }
+
+  .section-hd { margin-bottom: 12px; }
+  .section-hd h3 { font-size: 17px; }
+  .section-hd a { font-size: 11.5px; }
+
+  .exp-thumb { width: 32px; height: 32px; border-radius: 6px; }
+  .exp-name { font-size: 12px; }
+  .exp-days { font-size: 10px; }
+  .exp-nudge { padding: 4px 8px; font-size: 10px; }
+  .exp-item { padding: 10px 12px; gap: 10px; }
+
+  .af-msg { font-size: 12px; }
+  .af-icon-wrap { width: 26px; height: 26px; }
+  .af-icon-wrap svg { width: 11px; height: 11px; }
+  .af-row { padding: 10px 12px; gap: 10px; }
+
+  .qa-lbl { font-size: 12px; }
+  .qa-sub { font-size: 10px; }
+  .qa-ico { width: 28px; height: 28px; border-radius: 7px; }
+  .qa-ico svg { width: 13px; height: 13px; }
+  .qa-row { padding: 11px 12px; }
+
+  .panel-hd { padding: 11px 13px 9px; }
+  .panel-hd h4 { font-size: 15px; }
+
+  /* Modal slides up from bottom */
+  .modal { padding: 24px 18px 32px; border-radius: 20px 20px 0 0; width: 100%; max-width: 100%; align-self: flex-end; }
+  .modal-bg { align-items: flex-end; }
+  .modal-title { font-size: 20px; }
+
+  .toast { left: 12px; right: 12px; bottom: 72px; }
+}
+
+/* ═══════════════════════════════════════════════
+   BREAKPOINT: EXTRA SMALL (≤ 360px)
+═══════════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .recent-grid { grid-template-columns: 1fr; }
+  .ov-greeting-name { font-size: 22px; }
+  .stat-val { font-size: 26px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- MOBILE TOPBAR -->
+<div class="mobile-topbar">
+  <button class="mob-menu-btn" onclick="openSidebar()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="mob-logo">Frame<span>light</span></div>
+  <div class="mob-avatar">S</div>
+</div>
+
+<!-- BOTTOM TAB BAR -->
+<div class="bottom-tabbar">
+  <div class="bottom-tabbar-inner">
+    <button class="tab-item active" id="tab-overview" onclick="navigate('overview',this);setTab('tab-overview')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Overview</span>
+    </button>
+    <button class="tab-item" id="tab-galleries" onclick="navigate('galleries',this);setTab('tab-galleries')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      <span>Galleries</span>
+      <span class="tab-badge">12</span>
+    </button>
+    <button class="tab-item" id="tab-new" onclick="showToast('New gallery…');setTab('tab-new')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <span>New</span>
+    </button>
+    <button class="tab-item" id="tab-settings" onclick="navigate('settings',this);setTab('tab-settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Settings</span>
+    </button>
+  </div>
+</div>
+
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<!-- MODAL: Share -->
+<div class="modal-bg" id="modal-share">
+  <div class="modal">
+    <div class="modal-title">Share Gallery</div>
+    <div class="modal-sub">Copy the link or send an email invite to your client.</div>
+    <div class="form-group">
+      <label>Gallery Link</label>
+      <div class="share-box">
+        <input type="text" value="framelight.app/g/meghan-desmond-2025" readonly id="share-val"/>
+        <button class="share-copy" onclick="navigator.clipboard?.writeText(document.getElementById('share-val').value);showToast('Link copied!');closeModal('modal-share')">Copy</button>
+      </div>
+    </div>
+    <div class="form-group"><label>Send Email Invite</label><input type="text" placeholder="client@email.com"/></div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('modal-share')">Close</button>
+      <button class="btn primary" onclick="showToast('Invite sent!');closeModal('modal-share')">Send Invite</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Edit -->
+<div class="modal-bg" id="modal-edit">
+  <div class="modal">
+    <div class="modal-title">Edit Gallery</div>
+    <div class="modal-sub">Update the gallery title and client details.</div>
+    <div class="form-group"><label>Gallery Name</label><input type="text" value="Meghan & Desmond Wedding"/></div>
+    <div class="form-group"><label>Client Name</label><input type="text" value="Meghan & Desmond Clarke"/></div>
+    <div class="form-group"><label>Client Email</label><input type="text" value="meghan@email.com"/></div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('modal-edit')">Cancel</button>
+      <button class="btn primary" onclick="showToast('Gallery updated!');closeModal('modal-edit')">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-logo"><div class="logo-mark">Frame<span>light</span></div></div>
+  <div class="sidebar-section">
+    <div class="sidebar-lbl">Main</div>
+    <div class="nav-item active" onclick="navigate('overview',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Overview
+    </div>
+    <div class="nav-item" onclick="navigate('galleries',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      Galleries <span class="nav-badge">12</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      New Gallery
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-lbl">Account</div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      View My Site
+    </div>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="storage-block">
+      <div class="storage-row"><span>Storage</span><span>3.4 / 10 GB</span></div>
+      <div class="storage-bar"><div class="storage-fill"></div></div>
+      <span class="storage-upgrade">Upgrade for more →</span>
+    </div>
+    <div class="user-row">
+      <div class="user-av">S</div>
+      <div><div class="user-name">Sarah Kim</div><div class="user-plan">Basic Plan</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <header class="topbar">
+    <div class="topbar-title">Good morning, <em>Sarah</em></div>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search galleries…"/>
+    </div>
+    <button class="new-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Gallery
+    </button>
+  </header>
+
+  <!-- OVERVIEW -->
+  <div class="page active page-pad" id="page-overview">
+
+    <!-- Greeting -->
+    <div class="ov-header">
+      <div>
+        <div class="ov-greeting-eyebrow">Wednesday, March 18 · Las Vegas, NV</div>
+        <div class="ov-greeting-name">Good morning, <em>Sarah.</em></div>
+        <div class="ov-greeting-sub">
+          <span>3 galleries awaiting review</span>
+          <span class="sep"></span>
+          <span>2 expiring soon</span>
+        </div>
+      </div>
+      <div class="ov-header-actions">
+        <button class="ov-action-btn ghost" onclick="navigate('galleries',document.querySelectorAll('.nav-item')[1])">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          All Galleries
+        </button>
+        <button class="ov-action-btn primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Gallery
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card featured">
+        <div class="stat-top">
+          <div class="stat-lbl">Active Galleries</div>
+          <div class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+        </div>
+        <div class="stat-val">12</div>
+        <div class="stat-sub up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>3 new this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-lbl">Total Photos</div>
+          <div class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        </div>
+        <div class="stat-val">2,841</div>
+        <div class="stat-sub">Across all galleries</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-lbl">Client Views</div>
+          <div class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        </div>
+        <div class="stat-val">541</div>
+        <div class="stat-sub up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>↑ 18% this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-lbl">Downloads</div>
+          <div class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        </div>
+        <div class="stat-val">317</div>
+        <div class="stat-sub warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>2 expiring soon</div>
+      </div>
+    </div>
+
+    <!-- Two-col body -->
+    <div class="overview-cols">
+
+      <!-- LEFT: recent gallery cards -->
+      <div>
+        <div class="section-hd">
+          <h3>Recent <em>Galleries</em></h3>
+          <a onclick="navigate('galleries',document.querySelectorAll('.nav-item')[1])">View all →</a>
+        </div>
+        <div class="recent-grid" id="recent-grid"></div>
+      </div>
+
+      <!-- RIGHT: sidebar -->
+      <div>
+
+        <!-- Expiring soon -->
+        <div class="section-hd" style="margin-top:0"><h3>Expiring Soon</h3></div>
+        <div class="panel-card" style="margin-bottom:20px">
+          <div class="exp-item" onclick="showToast('Opening Rodriguez Newborn…')">
+            <img class="exp-thumb" src="https://images.unsplash.com/photo-1519741497674-611481863552?w=80&q=70" alt=""/>
+            <div class="exp-info">
+              <div class="exp-name">Rodriguez Newborn</div>
+              <div class="exp-days crit">Expires in 7 days</div>
+            </div>
+            <button class="exp-nudge crit" onclick="event.stopPropagation();showToast('Reminder sent!')">Remind</button>
+          </div>
+          <div class="exp-item" onclick="showToast('Opening Emma & James…')">
+            <img class="exp-thumb" src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=80&q=70" alt=""/>
+            <div class="exp-info">
+              <div class="exp-name">Emma & James Wedding</div>
+              <div class="exp-days warn">Expires in 14 days</div>
+            </div>
+            <button class="exp-nudge warn" onclick="event.stopPropagation();showToast('Reminder sent!')">Remind</button>
+          </div>
+          <div class="exp-item" onclick="showToast('Opening Garcia Maternity…')">
+            <img class="exp-thumb" src="https://images.unsplash.com/photo-1513278974582-3e1b4a4fa21e?w=80&q=70" alt=""/>
+            <div class="exp-info">
+              <div class="exp-name">Garcia Maternity</div>
+              <div class="exp-days ok">Expires in 30 days</div>
+            </div>
+            <button class="exp-nudge ok" onclick="event.stopPropagation();showToast('Reminder sent!')">Remind</button>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section-hd"><h3>Quick Actions</h3></div>
+        <div class="panel-card" style="margin-bottom:20px">
+          <button class="qa-row" onclick="showToast('Opening new gallery wizard…')">
+            <div class="qa-ico teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+            <div><div class="qa-lbl">Create New Gallery</div><div class="qa-sub">Upload photos & share with clients</div></div>
+            <div class="qa-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          </button>
+          <button class="qa-row" onclick="openModal('modal-share')">
+            <div class="qa-ico pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
+            <div><div class="qa-lbl">Share a Gallery</div><div class="qa-sub">Copy link or email client</div></div>
+            <div class="qa-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          </button>
+          <button class="qa-row" onclick="showToast('Opening storage settings…')">
+            <div class="qa-ico ink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
+            <div><div class="qa-lbl">Upgrade Storage</div><div class="qa-sub">3.4 GB of 10 GB used</div></div>
+            <div class="qa-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          </button>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="section-hd">
+          <h3>Activity</h3>
+          <a onclick="showToast('Viewing all activity…')">See all</a>
+        </div>
+        <div class="panel-card">
+          <div class="af-row">
+            <div class="af-icon-wrap teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <div class="af-body"><div class="af-msg"><strong>Meghan Clarke</strong> viewed her gallery</div><div class="af-time">2 minutes ago</div></div>
+          </div>
+          <div class="af-row">
+            <div class="af-icon-wrap pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+            <div class="af-body"><div class="af-msg"><strong>Emma Hartley</strong> added 12 favorites</div><div class="af-time">1 hour ago</div></div>
+          </div>
+          <div class="af-row">
+            <div class="af-icon-wrap teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+            <div class="af-body"><div class="af-msg"><strong>Sofia Rodriguez</strong> downloaded ZIP</div><div class="af-time">3 hours ago</div></div>
+          </div>
+          <div class="af-row">
+            <div class="af-icon-wrap amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="af-body"><div class="af-msg"><strong>Rodriguez Newborn</strong> expires in 7 days</div><div class="af-time">Today</div></div>
+          </div>
+          <div class="af-row">
+            <div class="af-icon-wrap muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+            <div class="af-body"><div class="af-msg"><strong>James Hartley</strong> downloaded 3 photos</div><div class="af-time">Yesterday</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Settings placeholder -->
+  <div class="page page-pad" id="page-settings">
+    <div class="ov-header" style="margin-bottom:24px">
+      <div>
+        <div class="ov-greeting-eyebrow">Account</div>
+        <div class="ov-greeting-name">Settings</div>
+      </div>
+    </div>
+    <div class="panel-card">
+      <div class="panel-hd"><h4>Profile</h4></div>
+      <div class="qa-row"><div class="qa-ico teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="qa-lbl">Profile & Studio</div><div class="qa-sub">Sarah Kim Photography</div></div><div class="qa-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+      <div class="qa-row"><div class="qa-ico ink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div><div><div class="qa-lbl">Billing & Plan</div><div class="qa-sub">Basic Plan · 3.4 GB used</div></div><div class="qa-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+      <div class="qa-row"><div class="qa-ico pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div><div><div class="qa-lbl">Branding</div><div class="qa-sub">Logo, colors, domain</div></div><div class="qa-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+      <div class="qa-row"><div class="qa-ico teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div><div><div class="qa-lbl">Notifications</div><div class="qa-sub">Email alerts & reminders</div></div><div class="qa-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+    </div>
+    <div style="margin-top:16px; padding:16px; background:var(--pink); border-radius:14px; border:1px solid var(--pink-d)">
+      <div style="font-family:var(--font-d);font-size:17px;color:var(--ink);margin-bottom:4px">Upgrade to Pro</div>
+      <div style="font-size:12.5px;color:var(--mid);margin-bottom:14px">Unlock custom domains, watermarking, and unlimited storage.</div>
+      <button class="ov-action-btn primary" style="width:100%;justify-content:center" onclick="showToast('Opening upgrade…')">View Plans →</button>
+    </div>
+  </div>
+
+  <!-- placeholder pages -->
+  <div class="page page-pad" id="page-galleries">
+    <div style="padding:80px;text-align:center;color:var(--muted);font-family:var(--font-d);font-size:24px;font-weight:300;font-style:italic">Galleries — open framelight-galleries-page.html</div>
+  </div>
+
+</div>
+</div>
+
+<script>
+/* DATA */
+const recent = [
+  { id:1, name:'Meghan & Desmond', client:'Meghan Clarke', date:'Jun 14, 2025', photos:247, status:'active', pin:true,  expiryDays:58,
+    cover:'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600&q=80' },
+  { id:2, name:'Emma & James Wedding', client:'Emma Hartley', date:'May 22, 2025', photos:312, status:'active', pin:true,  expiryDays:14,
+    cover:'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&q=80' },
+  { id:3, name:'Rodriguez Newborn', client:'Sofia Rodriguez', date:'Apr 18, 2025', photos:63,  status:'active', pin:false, expiryDays:7,
+    cover:'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80' },
+];
+
+function makePills(g) {
+  const status = g.pin
+    ? `<span class="g-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>PIN</span>`
+    : `<span class="g-pill teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Active</span>`;
+  const photos = `<span class="g-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>${g.photos}</span>`;
+  const expiry = g.expiryDays <= 7
+    ? `<span class="g-pill amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${g.expiryDays}d left</span>`
+    : g.expiryDays <= 30
+      ? `<span class="g-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${g.expiryDays}d</span>`
+      : '';
+  return status + photos + expiry;
+}
+
+function renderRecent() {
+  document.getElementById('recent-grid').innerHTML = recent.map(g => `
+    <div class="g-card" onclick="showToast('Opening ${g.name}…')">
+      <img class="g-cover" src="${g.cover}" alt="${g.name}" loading="lazy"/>
+      <div class="g-gradient"></div>
+
+      <button class="g-edit-btn" title="Edit" onclick="event.stopPropagation();openModal('modal-edit')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+
+      <button class="g-menu-btn" onclick="event.stopPropagation();toggleDrop('dd-${g.id}')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+      </button>
+      <div class="g-dropdown" id="dd-${g.id}">
+        <button class="g-dd-item" onclick="showToast('Opening client view…');closeDropdowns()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View Gallery</button>
+        <button class="g-dd-item" onclick="openModal('modal-share');closeDropdowns()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Share Link</button>
+        <button class="g-dd-item" onclick="openModal('modal-edit');closeDropdowns()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit Details</button>
+        <div class="g-dd-divider"></div>
+        <button class="g-dd-item danger" onclick="showToast('Gallery deleted');closeDropdowns()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>Delete</button>
+      </div>
+
+      <div class="g-content">
+        <div class="g-title">${g.name}</div>
+        <div class="g-meta">${g.client} · ${g.date}</div>
+        <div class="g-pills">${makePills(g)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* NAV */
+function navigate(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + page);
+  if (pg) pg.classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+/* DROPDOWNS */
+function closeDropdowns() { document.querySelectorAll('.g-dropdown').forEach(d => d.classList.remove('open')); }
+function toggleDrop(id) { const el = document.getElementById(id); const was = el.classList.contains('open'); closeDropdowns(); if (!was) el.classList.add('open'); }
+document.addEventListener('click', closeDropdowns);
+
+/* MODALS */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('click', function(e) { if (e.target===this) this.classList.remove('open'); }));
+
+/* TOAST */
+let tt;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(tt);
+  tt = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+renderRecent();
+
+/* ── SIDEBAR DRAWER (mobile) ── */
+function openSidebar() {
+  document.querySelector('.sidebar').classList.add('drawer-open');
+  document.getElementById('sidebar-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('drawer-open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ── BOTTOM TAB BAR ── */
+function setTab(id) {
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+/* Close sidebar when a nav item is clicked on mobile */
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    if (window.innerWidth <= 768) closeSidebar();
+  });
+});
+
+/* Close sidebar on ESC */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSidebar();
+});
+
+</script>
+</body>
+</html>
