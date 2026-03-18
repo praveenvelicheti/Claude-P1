@@ -58,8 +58,15 @@ export function useAuth() {
     if (error) throw error
   }
 
-  async function signUp(email: string, password: string) {
-    const { error } = await supabase.auth.signUp({ email, password })
+  async function signUp(email: string, password: string, studioName?: string) {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { studio_name: studioName },
+        emailRedirectTo: `${window.location.origin}/dashboard`,
+      },
+    })
     if (error) throw error
   }
 

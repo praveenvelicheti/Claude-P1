@@ -18,7 +18,7 @@ export function Signup() {
     if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
     setLoading(true)
     try {
-      await signUp(email, password)
+      await signUp(email, password, studio)
       setDone(true)
       setTimeout(() => navigate('/dashboard'), 2000)
     } catch (err: unknown) {
