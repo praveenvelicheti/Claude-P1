@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { Topbar } from '../../components/layout/Topbar'
 import { Button } from '../../components/ui/Button'
@@ -75,6 +75,20 @@ export function Settings() {
       setSaving(false)
     }
   }
+
+  useEffect(() => {
+    if (!profile && !user) return
+    setProfileForm(prev => ({
+      ...prev,
+      studioName: profile?.studio_name ?? '',
+      email: user?.email ?? '',
+    }))
+    setBranding(prev => ({
+      ...prev,
+      studioName: profile?.studio_name ?? '',
+      accentColor: profile?.accent_color ?? '#5cbdb9',
+    }))
+  }, [profile, user])
 
   const initials = (profile?.studio_name ?? user?.email ?? 'U').slice(0, 2).toUpperCase()
 
