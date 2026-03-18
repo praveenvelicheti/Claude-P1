@@ -179,9 +179,9 @@ export function GalleryPage() {
       >
         {/* Left: avatar + photographer + separator + gallery name */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {photographer?.avatar_url ? (
+          {photographer?.logo_url ? (
             <div className={`w-7 h-7 rounded-full overflow-hidden flex-shrink-0 border-[1.5px] transition-all ${navScrolled ? 'border-border' : 'border-white/40'}`}>
-              <img src={photographer.avatar_url} alt="" className="w-full h-full object-cover" />
+              <img src={photographer.logo_url!} alt="" className="w-full h-full object-cover" />
             </div>
           ) : null}
           {photographerName && (

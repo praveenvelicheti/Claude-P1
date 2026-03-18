@@ -25,8 +25,8 @@ function GalleryCard({
   const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
 
-  const expiryDays = gallery.expires_at
-    ? Math.ceil((new Date(gallery.expires_at).getTime() - Date.now()) / 86400000)
+  const expiryDays = gallery.expiry_date
+    ? Math.ceil((new Date(gallery.expiry_date).getTime() - Date.now()) / 86400000)
     : null
 
   return (
@@ -147,13 +147,6 @@ function GalleryCard({
               Draft
             </span>
           )}
-          {/* Photo count pill */}
-          {(gallery.photo_count ?? 0) > 0 && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/14 backdrop-blur-[10px] border border-white/15 text-[10px] text-white/85">
-              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              {gallery.photo_count}
-            </span>
-          )}
           {/* Expiry pill */}
           {expiryDays !== null && expiryDays > 0 && expiryDays <= 30 && (
             <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[rgba(232,164,74,0.25)] border border-[rgba(232,164,74,0.4)] text-[10px] text-[#f5cc80]">
@@ -169,18 +162,16 @@ function GalleryCard({
 
 function GalleryRow({
   gallery,
-  onEdit,
   onDelete,
   onShare,
 }: {
   gallery: Gallery
-  onEdit: () => void
   onDelete: () => void
   onShare: () => void
 }) {
   const navigate = useNavigate()
-  const expiryDays = gallery.expires_at
-    ? Math.ceil((new Date(gallery.expires_at).getTime() - Date.now()) / 86400000)
+  const expiryDays = gallery.expiry_date
+    ? Math.ceil((new Date(gallery.expiry_date).getTime() - Date.now()) / 86400000)
     : null
 
   return (
@@ -208,7 +199,6 @@ function GalleryRow({
           {gallery.client_name ?? ''}
           {gallery.client_name ? ' · ' : ''}
           {new Date(gallery.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-          {(gallery.photo_count ?? 0) > 0 ? ` · ${gallery.photo_count} photos` : ''}
         </div>
       </div>
 
@@ -433,7 +423,6 @@ export function Galleries() {
                 <GalleryRow
                   key={g.id}
                   gallery={g}
-                  onEdit={() => navigate(`/dashboard/gallery/${g.id}`)}
                   onDelete={() => setDeleteId(g.id)}
                   onShare={() => setShareGallery(g)}
                 />

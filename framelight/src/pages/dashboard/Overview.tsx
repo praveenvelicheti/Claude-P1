@@ -22,8 +22,8 @@ function GalleryCard({
   const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
 
-  const expiryDays = gallery.expires_at
-    ? Math.ceil((new Date(gallery.expires_at).getTime() - Date.now()) / 86400000)
+  const expiryDays = gallery.expiry_date
+    ? Math.ceil((new Date(gallery.expiry_date).getTime() - Date.now()) / 86400000)
     : null
 
   return (
@@ -185,13 +185,13 @@ export function Overview() {
 
   const activeCount  = galleries.filter(g => g.status === 'published').length
   const totalViews   = galleries.reduce((s, g) => s + g.view_count, 0)
-  const totalPhotos  = galleries.reduce((s, g) => s + (g.photo_count ?? 0), 0)
+  const totalPhotos  = 0 // photo_count not tracked on gallery row; aggregated separately
   const recent       = galleries.slice(0, 3)
 
   const now = Date.now()
   const expiringSoon = galleries.filter(g => {
-    if (!g.expires_at) return false
-    const days = Math.ceil((new Date(g.expires_at).getTime() - now) / 86400000)
+    if (!g.expiry_date) return false
+    const days = Math.ceil((new Date(g.expiry_date).getTime() - now) / 86400000)
     return days > 0 && days <= 30
   })
 
@@ -403,7 +403,7 @@ export function Overview() {
                   </div>
                   <div className="bg-white border border-border rounded-2xl overflow-hidden mb-5">
                     {expiringSoon.slice(0, 3).map(g => {
-                      const days = Math.ceil((new Date(g.expires_at!).getTime() - now) / 86400000)
+                      const days = Math.ceil((new Date(g.expiry_date!).getTime() - now) / 86400000)
                       const isCrit = days <= 7
                       return (
                         <div
