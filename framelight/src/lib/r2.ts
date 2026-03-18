@@ -19,8 +19,11 @@ export async function getUploadUrl(
   isThumb = false
 ): Promise<UploadUrlResponse> {
   const { supabase } = await import('./supabase')
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error('Not authenticated')
   const { data, error } = await supabase.functions.invoke('get-upload-url', {
     body: { filename, contentType, galleryId, photographerId, isThumb },
+    headers: { Authorization: `Bearer ${session.access_token}` },
   })
   if (error) throw error
   return data as UploadUrlResponse
