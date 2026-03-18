@@ -28,13 +28,26 @@ export function GalleryPage() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [dlFavs, setDlFavs] = useState(false)
   const [dlAll, setDlAll] = useState(false)
+  const [navScrolled, setNavScrolled] = useState(false)
   const sessionToken = getSessionToken()
-  const galleryNavRef = useRef<HTMLDivElement>(null)
+  const coverRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!slug) return
     loadGallery()
   }, [slug])
+
+  useEffect(() => {
+    function handleScroll() {
+      const cover = coverRef.current
+      if (!cover) return
+      const bottom = cover.getBoundingClientRect().bottom
+      setNavScrolled(bottom <= 60)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [loading])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
@@ -108,10 +121,6 @@ export function GalleryPage() {
     } finally { setDlFavs(false) }
   }
 
-  function scrollToGallery() {
-    galleryNavRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -137,204 +146,299 @@ export function GalleryPage() {
 
   const formattedDate = new Date(gallery.created_at).toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', year: 'numeric'
-  }).toUpperCase().replace(/(\d+),/, (_, d) => {
-    const n = parseInt(d)
-    const s = ['TH','ST','ND','RD']
-    const v = n % 100
-    return `${d}${s[(v - 20) % 10] || s[v] || s[0]},`
   })
 
+  const photographerName = photographer?.studio_name ?? ''
+
   return (
-    <div className="min-h-screen bg-white font-ui">
+    <div className="min-h-screen bg-white font-ui" style={{ overflowX: 'hidden' }}>
       <style>{`
-        @keyframes heroZoom { from { transform: scale(1.06); } to { transform: scale(1.0); } }
+        @keyframes coverZoom { from { transform: scale(1.06); } to { transform: scale(1.0); } }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes scrollPulse { 0%,100%{opacity:0.4;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(1.15)} }
         @keyframes lbFade { from{opacity:0;transform:scale(0.97)} to{opacity:1;transform:scale(1)} }
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
-        @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes modalIn { from{opacity:0;transform:scale(0.92) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes gridIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        .photo-item { animation: gridIn 0.5s ease both; }
+        .photo-item:nth-child(1){animation-delay:.04s}.photo-item:nth-child(2){animation-delay:.08s}
+        .photo-item:nth-child(3){animation-delay:.12s}.photo-item:nth-child(4){animation-delay:.16s}
+        .photo-item:nth-child(5){animation-delay:.20s}.photo-item:nth-child(6){animation-delay:.24s}
+        .photo-item:nth-child(7){animation-delay:.28s}.photo-item:nth-child(8){animation-delay:.32s}
+        .photo-item:nth-child(9){animation-delay:.36s}.photo-item:nth-child(10){animation-delay:.40s}
+        .photo-item:nth-child(11){animation-delay:.44s}.photo-item:nth-child(12){animation-delay:.48s}
       `}</style>
 
-      {/* ── Hero ── */}
-      <div className="relative overflow-hidden bg-[#1a1a1a]" style={{ height: '56vh', minHeight: '340px', maxHeight: '680px' }}>
+      {/* ── Floating Nav ── */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-[200] h-[54px] flex items-center transition-all duration-350
+          ${navScrolled
+            ? 'bg-white/96 backdrop-blur-[18px] shadow-[0_1px_0_#ceecea]'
+            : 'bg-transparent'
+          }`}
+        style={{ padding: '0 clamp(16px, 4vw, 48px)' }}
+      >
+        {/* Left: avatar + photographer + separator + gallery name */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {photographer?.logo_url ? (
+            <div className={`w-7 h-7 rounded-full overflow-hidden flex-shrink-0 border-[1.5px] transition-all ${navScrolled ? 'border-border' : 'border-white/40'}`}>
+              <img src={photographer.logo_url!} alt="" className="w-full h-full object-cover" />
+            </div>
+          ) : null}
+          {photographerName && (
+            <span className={`font-display text-[16px] font-normal whitespace-nowrap tracking-[0.03em] transition-colors ${navScrolled ? 'text-ink' : 'text-white/90'}`}>
+              {photographerName}
+            </span>
+          )}
+          {photographerName && (
+            <div className={`w-px h-3.5 flex-shrink-0 transition-colors ${navScrolled ? 'bg-border' : 'bg-white/25'}`} />
+          )}
+          <span className={`text-[12px] font-light tracking-[0.06em] italic whitespace-nowrap overflow-hidden text-ellipsis transition-colors ${navScrolled ? 'text-ink-muted' : 'text-white/55'}`}>
+            {gallery.title}
+          </span>
+        </div>
+
+        {/* Right: action buttons */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* Favorites */}
+          {gallery.favorites_enabled && (
+            <div className="relative">
+              <button
+                className={`relative w-9 h-9 rounded-full flex items-center justify-center border transition-all
+                  ${navScrolled
+                    ? 'border-border bg-white text-ink hover:bg-teal-pale hover:border-teal'
+                    : 'border-white/25 bg-white/10 backdrop-blur-[8px] text-white/85 hover:bg-white/22 hover:border-white/50'
+                  }`}
+                title="Favorites"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                </svg>
+                {favorites.size > 0 && (
+                  <span className="absolute -top-[3px] -right-[3px] w-[15px] h-[15px] rounded-full bg-teal text-white text-[8px] font-semibold flex items-center justify-center border-2 border-white">
+                    {favorites.size}
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Slideshow */}
+          <button
+            className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all
+              ${navScrolled
+                ? 'border-border bg-white text-ink hover:bg-teal-pale hover:border-teal'
+                : 'border-white/25 bg-white/10 backdrop-blur-[8px] text-white/85 hover:bg-white/22 hover:border-white/50'
+              }`}
+            title="Slideshow"
+            onClick={() => photos.length > 0 && setLightboxIdx(0)}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </button>
+
+          {/* Download pill */}
+          {gallery.downloads_enabled && (
+            <button
+              onClick={downloadAll}
+              disabled={dlAll}
+              className={`flex items-center gap-1.5 h-9 px-4 rounded-[18px] border font-ui text-[11.5px] font-normal tracking-[0.07em] uppercase cursor-pointer transition-all disabled:opacity-60 whitespace-nowrap
+                ${navScrolled
+                  ? 'bg-teal border-teal text-white hover:bg-teal-light hover:border-teal-light'
+                  : 'bg-white/15 border-white/30 backdrop-blur-[8px] text-white/90 hover:bg-white/28'
+                }`}
+            >
+              {dlAll ? (
+                <svg className="w-[13px] h-[13px] animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              ) : (
+                <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              )}
+              <span className="hidden sm:inline">Download</span>
+            </button>
+          )}
+        </div>
+      </nav>
+
+      {/* ── Cover — 100vh ── */}
+      <div
+        ref={coverRef}
+        className="relative w-screen overflow-hidden bg-ink"
+        style={{ height: '100vh', minHeight: '600px' }}
+      >
         {gallery.cover_url && (
           <img
             src={gallery.cover_url}
             alt=""
-            className="w-full h-full object-cover block"
-            style={{ animation: 'heroZoom 18s ease-in-out infinite alternate' }}
+            className="absolute inset-0 w-full h-full object-cover object-[center_30%] block"
+            style={{ animation: 'coverZoom 22s ease-in-out infinite alternate', transformOrigin: 'center center' }}
           />
         )}
-        <div className="absolute inset-0 bg-black/30" />
-        {/* Centered content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-          <h1 className="font-display text-[clamp(32px,6vw,72px)] font-light text-white leading-[1.05] tracking-[-0.01em] mb-4">
+        {/* Vignette */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center, transparent 40%, rgba(26,58,58,0.25) 100%), linear-gradient(to bottom, rgba(26,58,58,0.08) 0%, rgba(26,58,58,0.45) 100%)'
+          }}
+        />
+
+        {/* Centered title */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-5">
+          {photographerName && (
+            <div
+              className="font-ui text-[11px] font-normal tracking-[0.22em] uppercase text-white/65 mb-[18px]"
+              style={{ animation: 'fadeUp 1s ease 0.2s both' }}
+            >
+              {photographerName}
+            </div>
+          )}
+          <h1
+            className="font-display font-light text-white leading-[0.95] tracking-[-0.01em]"
+            style={{
+              fontSize: 'clamp(44px, 9vw, 100px)',
+              animation: 'fadeUp 1s ease 0.4s both',
+            }}
+          >
             {gallery.title}
           </h1>
-          <p className="text-[11px] font-medium tracking-[0.18em] text-white/70 uppercase mb-8">
-            {formattedDate}
-          </p>
-          <button
-            onClick={scrollToGallery}
-            className="text-white text-[14px] font-light tracking-[0.04em] border-0 bg-transparent cursor-pointer underline underline-offset-4 decoration-white/60 hover:decoration-white transition-colors"
+          <div
+            className="font-ui text-[12px] font-light tracking-[0.18em] uppercase text-white/50 mt-[22px]"
+            style={{ animation: 'fadeUp 1s ease 0.6s both' }}
           >
-            View Gallery
+            {formattedDate}
+          </div>
+        </div>
+
+        {/* Scroll cue */}
+        <div
+          className="absolute bottom-9 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/45 cursor-pointer hover:text-white/80 transition-colors"
+          style={{ animation: 'fadeUp 1s ease 1s both' }}
+          onClick={() => document.getElementById('gallery-body')?.scrollIntoView({ behavior: 'smooth' })}
+        >
+          <span className="text-[9px] tracking-[0.2em] uppercase font-normal">Scroll</span>
+          <div
+            className="w-px h-10"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.5))',
+              animation: 'scrollPulse 2s ease-in-out infinite',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* ── Gallery body ── */}
+      <div className="bg-white" id="gallery-body">
+
+        {/* Favorites bar */}
+        {gallery.favorites_enabled && (
+          <FavoritesBar
+            count={favorites.size}
+            onDownloadFavorites={downloadFavorites}
+            onClearFavorites={() => setFavorites(new Set())}
+            downloading={dlFavs}
+          />
+        )}
+
+        {/* Sets nav placeholder */}
+        <div
+          className="flex items-center justify-center border-b border-border overflow-x-auto"
+          style={{ padding: '0 clamp(16px,4vw,48px)' }}
+        >
+          <button className="px-[22px] py-4 text-[12px] font-medium tracking-[0.08em] uppercase text-ink border-b-2 border-teal -mb-px whitespace-nowrap bg-transparent border-l-0 border-r-0 border-t-0 cursor-pointer font-ui">
+            All Photos
           </button>
         </div>
-      </div>
 
-      {/* ── Gallery Sticky Nav ── */}
-      <div ref={galleryNavRef} className="sticky top-0 z-[100] bg-white border-b border-[#e8e8e8]">
-        <div className="flex items-center px-6 h-[62px] gap-6">
-          {/* Left: title + photographer */}
-          <div className="flex-shrink-0 pr-6 border-r border-[#e8e8e8]">
-            <div className="font-display text-[16px] font-medium text-ink leading-tight tracking-[0.01em]">
-              {gallery.title}
-            </div>
-            {photographer?.studio_name && (
-              <div className="text-[10px] font-medium tracking-[0.12em] uppercase text-[#999] mt-[1px]">
-                {photographer.studio_name}
-              </div>
-            )}
-          </div>
-
-          {/* Center: section tabs (placeholder with gallery layout) */}
-          <div className="flex items-center gap-6 flex-1 min-w-0 overflow-hidden">
-            <button className="text-[13.5px] font-medium text-ink whitespace-nowrap border-0 bg-transparent cursor-pointer p-0 hover:text-[#555] transition-colors">
-              {gallery.title}
-            </button>
-          </div>
-
-          {/* Right: action buttons */}
-          <div className="flex items-center gap-5 flex-shrink-0">
-            {gallery.favorites_enabled && (
-              <button
-                className="flex items-center gap-1.5 text-[13px] text-[#444] border-0 bg-transparent cursor-pointer p-0 hover:text-ink transition-colors"
-              >
-                <svg className="w-[16px] h-[16px]" viewBox="0 0 24 24" fill={favorites.size > 0 ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.75">
-                  <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-                </svg>
-                <span>Favorites{favorites.size > 0 ? ` (${favorites.size})` : ''}</span>
-              </button>
-            )}
-            {gallery.downloads_enabled && (
-              <button
-                onClick={downloadAll}
-                disabled={dlAll}
-                className="flex items-center gap-1.5 text-[13px] text-[#444] border-0 bg-transparent cursor-pointer p-0 hover:text-ink transition-colors disabled:opacity-50"
-              >
-                {dlAll ? (
-                  <svg className="w-[16px] h-[16px] animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                ) : (
-                  <svg className="w-[16px] h-[16px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                )}
-                <span>Download</span>
-              </button>
-            )}
-            <button className="flex items-center gap-1.5 text-[13px] text-[#444] border-0 bg-transparent cursor-pointer p-0 hover:text-ink transition-colors">
-              <svg className="w-[16px] h-[16px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-              </svg>
-              <span>Share</span>
-            </button>
-            <button className="flex items-center gap-1.5 text-[13px] text-[#444] border-0 bg-transparent cursor-pointer p-0 hover:text-ink transition-colors">
-              <svg className="w-[16px] h-[16px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                <polygon points="5 3 19 12 5 21 5 3"/>
-              </svg>
-              <span>Slideshow</span>
-            </button>
-          </div>
+        {/* Gallery info row */}
+        <div
+          className="flex items-baseline gap-3.5 pt-[clamp(24px,4vw,40px)]"
+          style={{ padding: `clamp(24px,4vw,40px) clamp(16px,4vw,48px) 0` }}
+        >
+          <h2 className="font-display font-light text-ink tracking-[0.01em]" style={{ fontSize: 'clamp(22px,4vw,32px)' }}>
+            {gallery.title}
+          </h2>
+          <span className="text-[12px] text-ink-muted tracking-[0.05em]">{photos.length} photos</span>
         </div>
-      </div>
 
-      {/* ── Favorites Bar ── */}
-      {gallery.favorites_enabled && (
-        <FavoritesBar
-          count={favorites.size}
-          onDownloadFavorites={downloadFavorites}
-          onClearFavorites={() => setFavorites(new Set())}
-          downloading={dlFavs}
-        />
-      )}
-
-      {/* ── Masonry Grid ── */}
-      <div
-        className="px-0 pb-[clamp(40px,5vw,80px)]"
-        style={{ columns: 'var(--cols, 4)', columnGap: '3px' } as React.CSSProperties}
-      >
-        <style>{`
-          @media (max-width: 1100px) { .masonry-grid { --cols: 3 !important; } }
-          @media (max-width: 700px) { .masonry-grid { --cols: 2 !important; } }
-        `}</style>
-        {photos.map((photo, idx) => {
-          const isFav = favorites.has(photo.id)
-          return (
-            <div
-              key={photo.id}
-              className="masonry-grid break-inside-avoid mb-[3px] relative cursor-pointer overflow-hidden bg-[#f0f0f0] block group"
-              onClick={() => setLightboxIdx(idx)}
-            >
-              <img
-                src={photo.thumb_url}
-                alt={photo.filename ?? ''}
-                className="w-full block transition-transform duration-500 group-hover:scale-[1.03]"
-                loading="lazy"
-              />
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end justify-end p-3">
-                <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                  {gallery.favorites_enabled && (
-                    <button
-                      onClick={() => toggleFavorite(photo.id)}
-                      className={`w-8 h-8 rounded-full bg-white/90 border-0 cursor-pointer flex items-center justify-center transition-transform hover:scale-110 ${isFav ? 'text-red-500' : 'text-[#333]'}`}
-                    >
-                      <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill={isFav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-                      </svg>
-                    </button>
-                  )}
-                  {gallery.downloads_enabled && (
-                    <button
-                      onClick={() => downloadPhoto(photo)}
-                      className="w-8 h-8 rounded-full bg-white/90 border-0 cursor-pointer flex items-center justify-center text-[#333] transition-transform hover:scale-110"
-                    >
-                      <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                      </svg>
-                    </button>
-                  )}
-                  <button
-                    className="w-8 h-8 rounded-full bg-white/90 border-0 cursor-pointer flex items-center justify-center text-[#333] transition-transform hover:scale-110"
-                  >
-                    <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                    </svg>
-                  </button>
+        {/* ── Masonry grid — 3 cols ── */}
+        <div
+          style={{
+            padding: `clamp(12px,2vw,24px) clamp(8px,2vw,24px)`,
+            columns: 3,
+            columnGap: 'clamp(4px, 0.6vw, 8px)',
+          }}
+        >
+          <style>{`
+            @media (max-width: 900px) { #masonry { columns: 2 !important; padding-left: 0 !important; padding-right: 0 !important; column-gap: 2px !important; } }
+            @media (max-width: 500px) { #masonry { columns: 2 !important; padding: 0 !important; column-gap: 2px !important; } }
+          `}</style>
+          {photos.map((photo, idx) => {
+            const isFav = favorites.has(photo.id)
+            return (
+              <div
+                key={photo.id}
+                className="photo-item break-inside-avoid relative cursor-pointer overflow-hidden bg-teal-pale block group"
+                style={{ marginBottom: 'clamp(4px, 0.6vw, 8px)' }}
+                onClick={() => setLightboxIdx(idx)}
+              >
+                <img
+                  src={photo.thumb_url}
+                  alt={photo.filename ?? ''}
+                  className="w-full block transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.04]"
+                  loading="lazy"
+                />
+                {/* Hover action layer */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[220ms] flex items-end justify-end p-3"
+                  style={{ background: 'linear-gradient(to top, rgba(26,58,58,0.42) 0%, transparent 60%)' }}
+                >
+                  <div className="flex gap-1.5" onClick={e => e.stopPropagation()}>
+                    {gallery.favorites_enabled && (
+                      <button
+                        onClick={() => toggleFavorite(photo.id)}
+                        className={`w-8 h-8 rounded-full bg-white/90 border-0 cursor-pointer flex items-center justify-center transition-all hover:bg-white hover:scale-[1.08] ${isFav ? 'text-[#d45f7a]' : 'text-ink'}`}
+                      >
+                        <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill={isFav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8">
+                          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                        </svg>
+                      </button>
+                    )}
+                    {gallery.downloads_enabled && (
+                      <button
+                        onClick={() => downloadPhoto(photo)}
+                        className="w-8 h-8 rounded-full bg-white/90 border-0 cursor-pointer flex items-center justify-center text-ink transition-all hover:bg-white hover:scale-[1.08]"
+                      >
+                        <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
+
+        {/* Footer */}
+        <footer
+          className="flex flex-col items-center gap-3 border-t border-border bg-white"
+          style={{ padding: `clamp(28px,4vw,48px) clamp(16px,4vw,48px)` }}
+        >
+          <div className="font-display text-[18px] font-light text-ink tracking-[0.06em]">
+            {photographerName && <>{photographerName} <em className="italic text-teal">Photography</em></>}
+          </div>
+          <div className="text-[11px] text-ink-muted tracking-[0.08em]">
+            Delivered with{' '}
+            <span className="font-display text-[13px] font-medium text-ink">
+              Frame<em className="italic text-teal">light</em>
+            </span>
+          </div>
+        </footer>
       </div>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-[#e8e8e8] px-8 py-8 flex items-center justify-between flex-wrap gap-4">
-        <div className="text-[12px] text-[#888]">
-          Delivered by <strong className="text-ink">{photographer?.studio_name}</strong>
-        </div>
-        <div className="text-[11px] text-[#bbb] flex items-center gap-1">
-          Powered by
-          <span className="font-display text-[13px] font-medium text-ink ml-1">
-            Frame<em className="italic text-teal">light</em>
-          </span>
-        </div>
-      </footer>
-
-      {/* ── Lightbox ── */}
+      {/* Lightbox */}
       {lightboxIdx !== null && (
         <Lightbox
           photos={photos}
