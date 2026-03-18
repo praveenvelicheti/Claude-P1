@@ -186,7 +186,7 @@ export function NewGallery() {
             client_name: details.clientName || null,
             client_email: details.clientEmail || null,
             ...(coverUrl ? { cover_url: coverUrl } : {}),
-          }).eq('id', editId)
+          }).eq('id', editId!)
           if (error) throw error
         } else {
           await ensureGallery()
