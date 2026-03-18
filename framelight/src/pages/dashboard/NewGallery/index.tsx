@@ -71,6 +71,8 @@ export function NewGallery() {
     layout: 'masonry',
     theme: 'framelight',
     showPoweredBy: true,
+    gridCols: 3,
+    gridGutter: 8,
   })
 
   useEffect(() => {
@@ -109,6 +111,8 @@ export function NewGallery() {
         ...prev,
         layout: g.layout,
         theme: g.theme,
+        gridCols: g.grid_cols ?? 3,
+        gridGutter: g.grid_gutter ?? 8,
       }))
 
       const { data: photoData } = await supabase
@@ -149,6 +153,8 @@ export function NewGallery() {
       cover_url: coverUrl || null,
       layout: design.layout,
       theme: design.theme,
+      grid_cols: design.gridCols,
+      grid_gutter: design.gridGutter,
       pin_enabled: settings.pinEnabled,
       pin_code: settings.pinEnabled ? settings.pinCode : null,
       admin_bypass: settings.adminBypass,
@@ -222,6 +228,8 @@ export function NewGallery() {
         client_email: details.clientEmail || null,
         layout: design.layout,
         theme: design.theme,
+        grid_cols: design.gridCols,
+        grid_gutter: design.gridGutter,
         pin_enabled: settings.pinEnabled,
         pin_code: settings.pinEnabled ? settings.pinCode : null,
         admin_bypass: settings.adminBypass,

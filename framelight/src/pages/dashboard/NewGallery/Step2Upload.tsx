@@ -2,6 +2,9 @@ import { useRef, useState, type DragEvent, type ChangeEvent } from 'react'
 import { getUploadUrl, uploadToR2 } from '../../../lib/r2'
 import { supabase } from '../../../lib/supabase'
 
+// Drag-reorder helpers
+let dragSrcId: string | null = null
+
 interface UploadedPhoto {
   id: string
   url: string
@@ -29,6 +32,7 @@ interface Props {
 export function Step2Upload({ galleryId, photographerId, photos, onPhotosChange }: Props) {
   const [uploads, setUploads] = useState<UploadItem[]>([])
   const [dragging, setDragging] = useState(false)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   function updateUpload(id: string, updates: Partial<UploadItem>) {
@@ -101,6 +105,34 @@ export function Step2Upload({ galleryId, photographerId, photos, onPhotosChange 
     await supabase.from('photos').delete().eq('id', photoId)
   }
 
+  function handlePhotoDragStart(id: string) {
+    dragSrcId = id
+  }
+
+  function handlePhotoDragOver(e: DragEvent, id: string) {
+    e.preventDefault()
+    if (dragSrcId && dragSrcId !== id) setDragOverId(id)
+  }
+
+  function handlePhotoDragEnd() {
+    if (!dragSrcId || !dragOverId || dragSrcId === dragOverId) {
+      dragSrcId = null; setDragOverId(null); return
+    }
+    const from = photos.findIndex(p => p.id === dragSrcId)
+    const to = photos.findIndex(p => p.id === dragOverId)
+    if (from === -1 || to === -1) { dragSrcId = null; setDragOverId(null); return }
+    const reordered = [...photos]
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
+    onPhotosChange(reordered)
+    // Persist positions
+    reordered.forEach((p, i) => {
+      supabase.from('photos').update({ position: i } as never).eq('id', p.id)
+    })
+    dragSrcId = null
+    setDragOverId(null)
+  }
+
   return (
     <div className="bg-white border border-border rounded-[14px] p-7 mb-[18px]">
       <div className="font-display text-[17px] font-medium text-ink mb-5 pb-4 border-b border-teal-pale">
@@ -160,11 +192,23 @@ export function Step2Upload({ galleryId, photographerId, photos, onPhotosChange 
       {/* Uploaded photo grid */}
       {photos.length > 0 && (
         <>
-          <div className="text-[12px] font-medium text-ink-muted mb-3">{photos.length} photo{photos.length !== 1 ? 's' : ''} uploaded</div>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[12px] font-medium text-ink-muted">{photos.length} photo{photos.length !== 1 ? 's' : ''} uploaded</span>
+            <span className="text-[11px] text-ink-muted italic">Drag to reorder</span>
+          </div>
           <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))' }}>
             {photos.map(photo => (
-              <div key={photo.id} className="aspect-square rounded-lg overflow-hidden relative cursor-pointer bg-teal-pale group">
-                <img src={photo.url} alt={photo.filename ?? ''} className="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.06]" />
+              <div
+                key={photo.id}
+                draggable
+                onDragStart={() => handlePhotoDragStart(photo.id)}
+                onDragOver={e => handlePhotoDragOver(e, photo.id)}
+                onDragEnd={handlePhotoDragEnd}
+                className={`aspect-square rounded-lg overflow-hidden relative bg-teal-pale group transition-all ${
+                  dragOverId === photo.id ? 'ring-2 ring-teal scale-[0.97]' : 'cursor-grab active:cursor-grabbing'
+                }`}
+              >
+                <img src={photo.url} alt={photo.filename ?? ''} className="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-[1.04]" />
                 <div className="absolute inset-0 bg-transparent group-hover:bg-black/28 transition-colors flex items-center justify-center">
                   <button
                     onClick={() => removePhoto(photo.id)}
@@ -172,6 +216,14 @@ export function Step2Upload({ galleryId, photographerId, photos, onPhotosChange 
                   >
                     <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
+                </div>
+                {/* Drag handle indicator */}
+                <div className="absolute top-1.5 left-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <svg className="w-3.5 h-3.5 text-white drop-shadow-sm" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+                    <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+                    <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+                  </svg>
                 </div>
               </div>
             ))}

@@ -55,6 +55,8 @@ export interface Database {
           expiry_reminder_days: number
           status: string
           view_count: number
+          grid_cols: number
+          grid_gutter: number
           created_at: string
           updated_at: string
         }
@@ -79,6 +81,8 @@ export interface Database {
           expiry_reminder_days?: number
           status?: string
           view_count?: number
+          grid_cols?: number
+          grid_gutter?: number
           created_at?: string
           updated_at?: string
         }
@@ -103,6 +107,8 @@ export interface Database {
           expiry_reminder_days?: number
           status?: string
           view_count?: number
+          grid_cols?: number
+          grid_gutter?: number
           updated_at?: string
         }
         Relationships: []
