@@ -28,6 +28,7 @@ export function GalleryPage() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [dlFavs, setDlFavs] = useState(false)
   const [dlAll, setDlAll] = useState(false)
+  const [dlMenuOpen, setDlMenuOpen] = useState(false)
   const [navScrolled, setNavScrolled] = useState(false)
   const sessionToken = getSessionToken()
   const coverRef = useRef<HTMLDivElement>(null)
@@ -246,26 +247,56 @@ export function GalleryPage() {
             </svg>
           </button>
 
-          {/* Download pill */}
+          {/* Download dropdown */}
           {gallery.downloads_enabled && (
-            <button
-              onClick={downloadAll}
-              disabled={dlAll}
-              className={`flex items-center gap-1.5 h-9 px-4 rounded-[18px] border font-ui text-[11.5px] font-normal tracking-[0.07em] uppercase cursor-pointer transition-all disabled:opacity-60 whitespace-nowrap
-                ${navScrolled
-                  ? 'bg-teal border-teal text-white hover:bg-teal-light hover:border-teal-light'
-                  : 'bg-white/15 border-white/30 backdrop-blur-[8px] text-white/90 hover:bg-white/28'
-                }`}
-            >
-              {dlAll ? (
-                <svg className="w-[13px] h-[13px] animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-              ) : (
-                <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
+            <div className="relative">
+              <button
+                onClick={() => setDlMenuOpen(o => !o)}
+                disabled={dlAll || dlFavs}
+                className={`flex items-center gap-1.5 h-9 px-4 rounded-[18px] border font-ui text-[11.5px] font-normal tracking-[0.07em] uppercase cursor-pointer transition-all disabled:opacity-60 whitespace-nowrap
+                  ${navScrolled
+                    ? 'bg-teal border-teal text-white hover:bg-teal-light hover:border-teal-light'
+                    : 'bg-white/15 border-white/30 backdrop-blur-[8px] text-white/90 hover:bg-white/28'
+                  }`}
+              >
+                {(dlAll || dlFavs) ? (
+                  <svg className="w-[13px] h-[13px] animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                ) : (
+                  <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                )}
+                <span className="hidden sm:inline">Download</span>
+                <svg className="w-[10px] h-[10px] opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              {dlMenuOpen && (
+                <div
+                  className="absolute top-[44px] right-0 bg-white rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(26,58,58,0.18),0_0_0_1px_rgba(26,58,58,0.08)] min-w-[175px] flex flex-col z-[300]"
+                  onMouseLeave={() => setDlMenuOpen(false)}
+                >
+                  <button
+                    onClick={() => { setDlMenuOpen(false); downloadAll() }}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-[12.5px] text-charcoal hover:bg-teal-pale transition-colors text-left font-ui"
+                  >
+                    <svg className="w-[13px] h-[13px] text-teal flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    All Photos
+                  </button>
+                  {gallery.favorites_enabled && favorites.size > 0 && (
+                    <button
+                      onClick={() => { setDlMenuOpen(false); downloadFavorites() }}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-[12.5px] text-charcoal hover:bg-teal-pale transition-colors text-left font-ui border-t border-[#f0f0f0]"
+                    >
+                      <svg className="w-[13px] h-[13px] text-[#d45f7a] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                      </svg>
+                      Favourites ({favorites.size})
+                    </button>
+                  )}
+                </div>
               )}
-              <span className="hidden sm:inline">Download</span>
-            </button>
+            </div>
           )}
         </div>
       </nav>
@@ -370,17 +401,18 @@ export function GalleryPage() {
           <span className="text-[12px] text-ink-muted tracking-[0.05em]">{photos.length} photos</span>
         </div>
 
-        {/* ── Masonry grid — 3 cols ── */}
+        {/* ── Masonry grid ── */}
         <div
+          id="masonry"
           style={{
             padding: `clamp(12px,2vw,24px) clamp(8px,2vw,24px)`,
-            columns: 3,
-            columnGap: 'clamp(4px, 0.6vw, 8px)',
+            columns: gallery.grid_cols ?? 3,
+            columnGap: `${gallery.grid_gutter ?? 8}px`,
           }}
         >
           <style>{`
-            @media (max-width: 900px) { #masonry { columns: 2 !important; padding-left: 0 !important; padding-right: 0 !important; column-gap: 2px !important; } }
-            @media (max-width: 500px) { #masonry { columns: 2 !important; padding: 0 !important; column-gap: 2px !important; } }
+            @media (max-width: 900px) { #masonry { columns: ${Math.min(2, gallery.grid_cols ?? 3)} !important; padding-left: 0 !important; padding-right: 0 !important; } }
+            @media (max-width: 500px) { #masonry { columns: 2 !important; padding: 0 !important; } }
           `}</style>
           {photos.map((photo, idx) => {
             const isFav = favorites.has(photo.id)
@@ -388,7 +420,7 @@ export function GalleryPage() {
               <div
                 key={photo.id}
                 className="photo-item break-inside-avoid relative cursor-pointer overflow-hidden bg-teal-pale block group"
-                style={{ marginBottom: 'clamp(4px, 0.6vw, 8px)' }}
+                style={{ marginBottom: `${gallery.grid_gutter ?? 8}px` }}
                 onClick={() => setLightboxIdx(idx)}
               >
                 <img

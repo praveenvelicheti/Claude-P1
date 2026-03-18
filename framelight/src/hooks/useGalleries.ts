@@ -4,6 +4,7 @@ import type { Gallery } from '../types/database'
 
 export function useGalleries(photographerId?: string) {
   const [galleries, setGalleries] = useState<Gallery[]>([])
+  const [totalPhotoCount, setTotalPhotoCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -20,7 +21,19 @@ export function useGalleries(photographerId?: string) {
       .eq('photographer_id', photographerId!)
       .order('created_at', { ascending: false })
     if (error) setError(error.message)
-    else setGalleries((data ?? []) as Gallery[])
+    else {
+      const fetched = (data ?? []) as Gallery[]
+      setGalleries(fetched)
+      if (fetched.length > 0) {
+        const { count } = await supabase
+          .from('photos')
+          .select('*', { count: 'exact', head: true })
+          .in('gallery_id', fetched.map(g => g.id))
+        setTotalPhotoCount(count ?? 0)
+      } else {
+        setTotalPhotoCount(0)
+      }
+    }
     setLoading(false)
   }
 
@@ -67,5 +80,5 @@ export function useGalleries(photographerId?: string) {
     return data as Gallery
   }
 
-  return { galleries, loading, error, createGallery, updateGallery, deleteGallery, getGalleryBySlug, refetch: fetchGalleries }
+  return { galleries, totalPhotoCount, loading, error, createGallery, updateGallery, deleteGallery, getGalleryBySlug, refetch: fetchGalleries }
 }

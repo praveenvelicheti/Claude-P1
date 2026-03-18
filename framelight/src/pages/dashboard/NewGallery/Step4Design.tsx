@@ -24,6 +24,8 @@ interface DesignData {
   layout: string
   theme: string
   showPoweredBy: boolean
+  gridCols: number
+  gridGutter: number
 }
 
 interface Props {
@@ -140,6 +142,58 @@ export function Step4Design({ data, onChange }: Props) {
               <div className="text-[11px] font-medium text-[#2a5250]">{l.label}</div>
             </button>
           ))}
+        </div>
+
+        {/* Grid controls */}
+        <div className="border-t border-teal-pale pt-5 space-y-5">
+          {/* Images per row */}
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <label className="text-[11px] font-semibold tracking-[0.09em] uppercase text-ink-muted">
+                Images Per Row
+              </label>
+              <span className="text-[13px] font-medium text-teal">{data.gridCols}</span>
+            </div>
+            <div className="flex gap-1.5">
+              {[2, 3, 4, 5, 6].map(n => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => onChange({ gridCols: n })}
+                  className={`flex-1 py-2 rounded-lg border text-[12px] font-medium cursor-pointer transition-all ${
+                    data.gridCols === n ? 'border-teal bg-teal-pale text-teal' : 'border-border text-ink-muted hover:border-ink-muted'
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Gutter */}
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <label className="text-[11px] font-semibold tracking-[0.09em] uppercase text-ink-muted">
+                Gutter / Gap
+              </label>
+              <span className="text-[13px] font-medium text-teal">{data.gridGutter}px</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={24}
+              step={2}
+              value={data.gridGutter}
+              onChange={e => onChange({ gridGutter: Number(e.target.value) })}
+              className="w-full h-[3px] appearance-none bg-teal-pale rounded-full outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-teal [&::-webkit-slider-thumb]:cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-ink-muted mt-1">
+              <span>None</span>
+              <span>Small</span>
+              <span>Medium</span>
+              <span>Large</span>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -153,7 +153,7 @@ function GalleryCard({
 
 export function Overview() {
   const { user, profile } = useAuth()
-  const { galleries, loading, deleteGallery } = useGalleries(user?.id)
+  const { galleries, totalPhotoCount, loading, deleteGallery } = useGalleries(user?.id)
   const navigate = useNavigate()
   const toast = useToast()
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -184,7 +184,7 @@ export function Overview() {
 
   const activeCount  = galleries.filter(g => g.status === 'published').length
   const totalViews   = galleries.reduce((s, g) => s + g.view_count, 0)
-  const totalPhotos  = 0 // photo_count not tracked on gallery row; aggregated separately
+  const totalPhotos  = totalPhotoCount
   const recent       = galleries.slice(0, 3)
 
   const now = Date.now()
