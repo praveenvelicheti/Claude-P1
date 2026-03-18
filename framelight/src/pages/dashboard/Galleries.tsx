@@ -112,70 +112,43 @@ export function Galleries() {
               {filtered.map(g => (
                 <div
                   key={g.id}
-                  className="bg-white border border-border rounded-[14px] overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-[3px] hover:shadow-card hover:border-teal-pale group"
+                  className="bg-white rounded-[12px] overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-[2px] group"
+                  onClick={() => navigate(`/dashboard/gallery/${g.id}`)}
                 >
-                  <div
-                    className="h-[185px] relative overflow-hidden bg-teal-pale"
-                    onClick={() => navigate(`/dashboard/gallery/${g.id}`)}
-                  >
+                  {/* Image */}
+                  <div className="relative overflow-hidden rounded-[12px] bg-[#e8eeee]" style={{ aspectRatio: '4/3' }}>
                     {g.cover_url ? (
-                      <img src={g.cover_url} alt={g.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.05]" />
+                      <img src={g.cover_url} alt={g.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <svg className="w-10 h-10 text-teal/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <svg className="w-10 h-10 text-teal/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                           <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
                         </svg>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-ink/55 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end p-3.5">
-                      <div className="flex gap-1.5">
-                        <button onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/gallery/${g.id}`) }} className="px-3 py-1.5 rounded-md border border-white/30 bg-white/15 backdrop-blur-sm text-white text-[11px] font-medium font-ui hover:bg-white/28 transition-colors">Edit</button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); window.open(`/g/${g.slug}`, '_blank') }}
-                          className="px-3 py-1.5 rounded-md border border-white/30 bg-white/15 backdrop-blur-sm text-white text-[11px] font-medium font-ui hover:bg-white/28 transition-colors"
-                        >
-                          Preview
-                        </button>
-                      </div>
-                    </div>
-                    <div className="absolute top-3 left-3 flex gap-1.5">
-                      <span className={`text-[10px] font-semibold tracking-[0.07em] uppercase px-2.5 py-[3px] rounded-full backdrop-blur-sm ${statusTag(g.status)}`}>{g.status}</span>
-                      {g.pin_enabled && <span className="text-[10px] font-semibold tracking-[0.07em] uppercase px-2.5 py-[3px] rounded-full backdrop-blur-sm bg-teal/90 text-ink">PIN</span>}
+                    {/* Hover action buttons */}
+                    <div className="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setShareGallery(g) }}
+                        className="w-7 h-7 rounded-md bg-white/90 backdrop-blur-sm border-0 cursor-pointer flex items-center justify-center text-ink/70 hover:text-teal transition-colors"
+                        title="Share"
+                      >
+                        <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDeleteId(g.id) }}
+                        className="w-7 h-7 rounded-md bg-white/90 backdrop-blur-sm border-0 cursor-pointer flex items-center justify-center text-ink/70 hover:text-red transition-colors"
+                        title="Delete"
+                      >
+                        <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                      </button>
                     </div>
                   </div>
 
-                  <div className="px-[18px] pt-4 pb-[18px]">
-                    <div
-                      className="font-display text-[17px] font-medium text-ink mb-[3px] cursor-pointer"
-                      onClick={() => navigate(`/dashboard/gallery/${g.id}`)}
-                    >
-                      {g.title}
-                    </div>
-                    <div className="text-[12px] text-ink-muted mb-3.5">
-                      {g.client_name ?? 'No client'} · {new Date(g.created_at).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center justify-between border-t border-teal-pale pt-3">
-                      <span className="flex items-center gap-1 text-[12px] text-ink-mid">
-                        <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        {g.view_count} views
-                      </span>
-                      <div className="flex gap-1.5">
-                        <button
-                          onClick={() => setShareGallery(g)}
-                          className="w-7 h-7 rounded-md border border-border bg-transparent cursor-pointer flex items-center justify-center text-ink-muted transition-all hover:border-teal hover:text-teal hover:bg-teal-pale"
-                          title="Share"
-                        >
-                          <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                        </button>
-                        <button
-                          onClick={() => setDeleteId(g.id)}
-                          className="w-7 h-7 rounded-md border border-border bg-transparent cursor-pointer flex items-center justify-center text-ink-muted transition-all hover:border-red hover:text-red hover:bg-pink"
-                          title="Delete"
-                        >
-                          <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-                        </button>
-                      </div>
-                    </div>
+                  {/* Text */}
+                  <div className="pt-3 pb-1">
+                    <div className="font-display text-[20px] font-normal text-ink leading-snug">{g.title}</div>
+                    <div className="text-[14px] text-ink-muted mt-0.5">{g.client_name ?? g.layout}</div>
                   </div>
                 </div>
               ))}
