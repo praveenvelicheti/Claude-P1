@@ -4,13 +4,18 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      screens: {
+        xs: '480px',
+      },
       colors: {
-        pink:   { DEFAULT: '#fbe3e8', dark: '#f5c8d2' },
-        teal:   { DEFAULT: '#5cbdb9', light: '#89d0cd', pale: '#ebf6f5' },
-        ink:    { DEFAULT: '#1a3a3a', mid: '#3d7a78', muted: '#7aadab' },
-        border: '#ceecea',
-        appbg:  '#f8fdfc',
-        red:    '#e07878',
+        pink:     { DEFAULT: '#fbe3e8', dark: '#f5c8d2' },
+        teal:     { DEFAULT: '#5cbdb9', light: '#89d0cd', pale: '#ebf6f5' },
+        ink:      { DEFAULT: '#1a3a3a', mid: '#3d7a78', muted: '#7aadab' },
+        charcoal: '#2a5250',
+        amber:    '#e8a44a',
+        border:   '#ceecea',
+        appbg:    '#f8fdfc',
+        red:      '#e07878',
       },
       fontFamily: {
         display: ['Cormorant', 'Georgia', 'serif'],

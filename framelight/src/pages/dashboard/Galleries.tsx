@@ -23,7 +23,6 @@ function GalleryCard({
   onShare: () => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const navigate = useNavigate()
 
   const expiryDays = gallery.expiry_date
     ? Math.ceil((new Date(gallery.expiry_date).getTime() - Date.now()) / 86400000)
@@ -33,7 +32,7 @@ function GalleryCard({
     <div
       className="relative rounded-[18px] overflow-hidden cursor-pointer group bg-ink"
       style={{ aspectRatio: '3/4' }}
-      onClick={() => navigate(`/dashboard/gallery/${gallery.id}`)}
+      onClick={() => window.open(`/g/${gallery.slug}`, '_blank')}
     >
       {gallery.cover_url ? (
         <img
@@ -169,7 +168,6 @@ function GalleryRow({
   onDelete: () => void
   onShare: () => void
 }) {
-  const navigate = useNavigate()
   const expiryDays = gallery.expiry_date
     ? Math.ceil((new Date(gallery.expiry_date).getTime() - Date.now()) / 86400000)
     : null
@@ -177,7 +175,7 @@ function GalleryRow({
   return (
     <div
       className="flex items-center gap-4 px-5 py-3.5 border-b border-teal-pale last:border-b-0 hover:bg-teal-pale/50 transition-colors cursor-pointer group"
-      onClick={() => navigate(`/dashboard/gallery/${gallery.id}`)}
+      onClick={() => window.open(`/g/${gallery.slug}`, '_blank')}
     >
       {/* Thumb */}
       <div className="w-[52px] h-[52px] rounded-xl overflow-hidden flex-shrink-0 bg-ink">
@@ -312,11 +310,11 @@ export function Galleries() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col md:overflow-hidden">
       <Topbar title="My Galleries" showNew />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
+      <main className="flex-1 md:overflow-y-auto">
+        <div className="px-4 pt-5 pb-[88px] xs:px-5 md:p-8 md:pb-8">
           {/* Toolbar */}
           <div className="flex items-center gap-2.5 mb-6 flex-wrap">
             {/* Filter pills */}
@@ -382,7 +380,7 @@ export function Galleries() {
 
           {loading ? (
             view === 'grid' ? (
-              <div className="grid grid-cols-4 gap-3.5">
+              <div className="grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3.5">
                 {[...Array(8)].map((_, i) => (
                   <div key={i} className="bg-white border border-border rounded-[18px] animate-pulse" style={{ aspectRatio: '3/4' }} />
                 ))}
@@ -406,7 +404,7 @@ export function Galleries() {
               <Button variant="teal" onClick={() => navigate('/dashboard/new')}>Create Gallery</Button>
             </div>
           ) : view === 'grid' ? (
-            <div className="grid grid-cols-4 gap-3.5">
+            <div className="grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3.5">
               {filtered.map(g => (
                 <GalleryCard
                   key={g.id}

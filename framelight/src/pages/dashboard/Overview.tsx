@@ -20,7 +20,6 @@ function GalleryCard({
   onShare: () => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const navigate = useNavigate()
 
   const expiryDays = gallery.expiry_date
     ? Math.ceil((new Date(gallery.expiry_date).getTime() - Date.now()) / 86400000)
@@ -30,7 +29,7 @@ function GalleryCard({
     <div
       className="relative rounded-[18px] overflow-hidden cursor-pointer group bg-ink"
       style={{ aspectRatio: '3/4' }}
-      onClick={() => navigate(`/dashboard/gallery/${gallery.id}`)}
+      onClick={() => window.open(`/g/${gallery.slug}`, '_blank')}
     >
       {gallery.cover_url ? (
         <img
@@ -253,19 +252,19 @@ export function Overview() {
   ]
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col md:overflow-hidden">
       <Topbar title="Dashboard" showNew />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
+      <main className="flex-1 md:overflow-y-auto">
+        <div className="px-4 pt-5 pb-[88px] xs:px-5 md:p-8 md:pb-8">
 
           {/* ── Greeting header ── */}
-          <div className="flex items-end justify-between mb-6 gap-4 flex-wrap">
+          <div className="flex items-end justify-between mb-6 gap-4 flex-wrap md:flex-nowrap">
             <div>
               <div className="text-[10.5px] font-normal tracking-[0.18em] uppercase text-ink-muted mb-1.5">
                 {today}
               </div>
-              <div className="font-display text-[40px] font-light text-ink leading-none tracking-[-0.01em]">
+              <div className="font-display text-[30px] md:text-[32px] lg:text-[40px] font-light text-ink leading-none tracking-[-0.01em]">
                 {greeting}, <em className="italic text-teal">{firstName}.</em>
               </div>
               <div className="text-[13px] text-ink-muted mt-1.5 flex items-center gap-2">
@@ -302,7 +301,7 @@ export function Overview() {
           </div>
 
           {/* ── Stat cards ── */}
-          <div className="grid grid-cols-4 gap-3.5 mb-7">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3.5 mb-5 md:mb-7">
             {stats.map(stat => (
               <div
                 key={stat.label}
@@ -323,7 +322,7 @@ export function Overview() {
                     {stat.icon}
                   </div>
                 </div>
-                <div className={`font-display text-[44px] font-light leading-none mb-1.5 ${stat.featured ? 'text-white' : 'text-ink'}`}>
+                <div className={`font-display text-[34px] xs:text-[38px] md:text-[44px] font-light leading-none mb-1.5 ${stat.featured ? 'text-white' : 'text-ink'}`}>
                   {stat.val}
                 </div>
                 <div className={`text-[11.5px] flex items-center gap-1
@@ -344,7 +343,7 @@ export function Overview() {
           </div>
 
           {/* ── Two-col layout ── */}
-          <div className="grid gap-6" style={{ gridTemplateColumns: '1fr 290px' }}>
+          <div className="grid gap-5 md:gap-6 grid-cols-1 lg:grid-cols-[1fr_290px]">
 
             {/* LEFT — recent gallery cards */}
             <div>
@@ -361,7 +360,7 @@ export function Overview() {
               </div>
 
               {loading ? (
-                <div className="grid grid-cols-3 gap-3.5">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-3.5">
                   {[...Array(3)].map((_, i) => (
                     <div key={i} className="bg-white border border-border rounded-[18px] animate-pulse" style={{ aspectRatio: '3/4' }} />
                   ))}
@@ -378,7 +377,7 @@ export function Overview() {
                   <Button variant="teal" onClick={() => navigate('/dashboard/new')}>Create Gallery</Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-3.5">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-3.5">
                   {recent.map(g => (
                     <GalleryCard
                       key={g.id}
