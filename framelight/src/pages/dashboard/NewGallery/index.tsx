@@ -79,7 +79,7 @@ export function NewGallery() {
       const { data, error } = await supabase
         .from('galleries')
         .select('*')
-        .eq('id', editId)
+        .eq('id', editId!)
         .single()
       if (error || !data) {
         toast.show('Gallery not found', 'error')
