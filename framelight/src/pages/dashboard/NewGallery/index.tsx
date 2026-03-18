@@ -123,7 +123,7 @@ export function NewGallery() {
         await ensureGallery()
         setStep(2)
       } catch (e) {
-        toast.show('Failed to create gallery', 'error')
+        toast.show('Failed to create gallery — check the title and try again', 'error')
       } finally {
         setSaving(false)
       }
@@ -157,7 +157,7 @@ export function NewGallery() {
       toast.show('Gallery published!')
       navigate(`/dashboard/gallery/${gid}`)
     } catch {
-      toast.show('Failed to publish gallery', 'error')
+      toast.show('Failed to publish gallery — check your settings and try again', 'error')
     } finally {
       setSaving(false)
     }

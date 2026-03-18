@@ -38,7 +38,7 @@ export function Galleries() {
       await deleteGallery(deleteId)
       toast.show('Gallery deleted')
     } catch {
-      toast.show('Failed to delete gallery', 'error')
+      toast.show('Failed to delete gallery — try again or refresh the page', 'error')
     } finally {
       setDeleteId(null)
       setDeleteConfirm('')
