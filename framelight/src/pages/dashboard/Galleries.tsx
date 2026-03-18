@@ -129,7 +129,7 @@ export function Galleries() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-ink/55 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end p-3.5">
                       <div className="flex gap-1.5">
-                        <button className="px-3 py-1.5 rounded-md border border-white/30 bg-white/15 backdrop-blur-sm text-white text-[11px] font-medium font-ui hover:bg-white/28 transition-colors">Edit</button>
+                        <button onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/gallery/${g.id}`) }} className="px-3 py-1.5 rounded-md border border-white/30 bg-white/15 backdrop-blur-sm text-white text-[11px] font-medium font-ui hover:bg-white/28 transition-colors">Edit</button>
                         <button
                           onClick={(e) => { e.stopPropagation(); window.open(`/g/${g.slug}`, '_blank') }}
                           className="px-3 py-1.5 rounded-md border border-white/30 bg-white/15 backdrop-blur-sm text-white text-[11px] font-medium font-ui hover:bg-white/28 transition-colors"
