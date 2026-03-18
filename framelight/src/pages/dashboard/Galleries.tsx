@@ -53,14 +53,6 @@ export function Galleries() {
     toast.show('Link copied!')
   }
 
-  const statusTag = (status: string) => {
-    const map: Record<string, string> = {
-      published: 'bg-ink/60 text-white/90',
-      draft:     'bg-white/75 text-ink-mid',
-      expired:   'bg-red/85 text-white',
-    }
-    return map[status] ?? map.draft
-  }
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
