@@ -281,14 +281,16 @@ export function GalleryPage() {
           ...(navScrolled ? { backgroundColor: theme.navBg, backdropFilter: 'blur(18px)', boxShadow: `0 1px 0 ${theme.navShadow}` } : {}),
         }}
       >
-        {/* Left: avatar + photographer + separator + gallery name */}
+        {/* Left: logo + photographer + separator + gallery name */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {photographer?.logo_url ? (
-            <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 border-[1.5px] transition-all"
-              style={{ borderColor: navScrolled ? theme.border : 'rgba(255,255,255,0.4)' }}>
-              <img src={photographer.logo_url!} alt="" className="w-full h-full object-cover" />
-            </div>
-          ) : null}
+          {(photographer?.logo_url || photographer?.logo_url_light) ? (() => {
+            const navLogoUrl = navScrolled
+              ? (photographer.logo_url || photographer.logo_url_light)
+              : (photographer.logo_url_light || photographer.logo_url)
+            return navLogoUrl ? (
+              <img src={navLogoUrl} alt="" className="h-7 max-w-[120px] object-contain flex-shrink-0 transition-all" />
+            ) : null
+          })() : null}
           {photographerName && (
             <span className="font-display text-[16px] font-normal whitespace-nowrap tracking-[0.03em] transition-colors"
               style={{ color: navScrolled ? theme.text : 'rgba(255,255,255,0.9)' }}>
@@ -424,6 +426,16 @@ export function GalleryPage() {
 
         {/* Centered title */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-5">
+          {/* Brand logo — prefer light/white version on dark cover */}
+          {(photographer?.logo_url_light || photographer?.logo_url) && (
+            <div style={{ animation: 'fadeUp 1s ease 0.1s both' }} className="mb-5">
+              <img
+                src={photographer.logo_url_light || photographer.logo_url!}
+                alt=""
+                className="h-10 max-w-[180px] object-contain"
+              />
+            </div>
+          )}
           {photographerName && (
             <div className="font-ui text-[11px] font-normal tracking-[0.22em] uppercase text-white/65 mb-[18px]"
               style={{ animation: 'fadeUp 1s ease 0.2s both' }}>
@@ -475,18 +487,6 @@ export function GalleryPage() {
             style={{ color: theme.text, borderBottomColor: theme.accent }}>
             All Photos
           </button>
-        </div>
-
-        {/* Gallery info row */}
-        <div className="flex items-baseline gap-3.5"
-          style={{ padding: `clamp(24px,4vw,40px) clamp(16px,4vw,48px) 0` }}>
-          <h2 className="font-display font-light tracking-[0.01em]"
-            style={{ fontSize: 'clamp(22px,4vw,32px)', color: theme.text }}>
-            {gallery.title}
-          </h2>
-          <span className="text-[12px] tracking-[0.05em]" style={{ color: theme.muted }}>
-            {photos.length} photos
-          </span>
         </div>
 
         {/* ── Photo grid — layout-aware ── */}
