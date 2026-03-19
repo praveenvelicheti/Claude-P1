@@ -428,17 +428,18 @@ export function GalleryPage() {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-5">
           {/* Brand logo — prefer light/white version on dark cover */}
           {(photographer?.logo_url_light || photographer?.logo_url) && (
-            <div style={{ animation: 'fadeUp 1s ease 0.1s both' }} className="mb-5">
+            <div style={{ animation: 'fadeUp 1s ease 0.1s both' }} className="mb-6">
               <img
                 src={photographer.logo_url_light || photographer.logo_url!}
                 alt=""
-                className="h-10 max-w-[180px] object-contain"
+                style={{ height: 'clamp(44px, 7vw, 80px)', maxWidth: 'clamp(160px, 28vw, 320px)' }}
+                className="object-contain opacity-85"
               />
             </div>
           )}
           {photographerName && (
-            <div className="font-ui text-[11px] font-normal tracking-[0.22em] uppercase text-white/65 mb-[18px]"
-              style={{ animation: 'fadeUp 1s ease 0.2s both' }}>
+            <div style={{ fontSize: 'clamp(11px, 1.6vw, 15px)', animation: 'fadeUp 1s ease 0.2s both' }}
+              className="font-ui font-normal tracking-[0.22em] uppercase text-white/85 mb-[18px]">
               {photographerName}
             </div>
           )}
@@ -448,8 +449,8 @@ export function GalleryPage() {
           >
             {gallery.title}
           </h1>
-          <div className="font-ui text-[12px] font-light tracking-[0.18em] uppercase text-white/50 mt-[22px]"
-            style={{ animation: 'fadeUp 1s ease 0.6s both' }}>
+          <div style={{ fontSize: 'clamp(11px, 1.4vw, 13px)', animation: 'fadeUp 1s ease 0.6s both' }}
+            className="font-ui font-normal tracking-[0.18em] uppercase text-white/50 mt-[22px]">
             {formattedDate}
           </div>
         </div>
