@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Meghan & Desmond — Chris Ruth Photography</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;0,400;0,500;1,200;1,300;1,400;1,500&family=Jost:wght@300;400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 /* ════════════════════════════════════════════════════
    FRAMELIGHT GALLERY — Full Redesign
@@ -510,6 +510,76 @@ body {
   .lb-thumb { width: 44px; height: 44px; }
   .toast { left: 12px; right: 12px; white-space: normal; text-align: center; border-radius: 14px; }
 }
+
+/* ════════════════════════════════════════
+   WELCOME OVERLAY — Slow Burn
+════════════════════════════════════════ */
+#fl-welcome {
+  position: fixed; inset: 0; z-index: 100;
+  background: #000; overflow: hidden;
+}
+#fl-welcome-photo {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center 35%;
+  filter: blur(28px) brightness(0.3) saturate(0.4);
+  transform: scale(1.08);
+  will-change: filter, transform;
+}
+#fl-welcome-photo.burn {
+  filter: blur(0px) brightness(0.82) saturate(1.0);
+  transform: scale(1.0);
+  transition:
+    filter 3.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s,
+    transform 9s ease 0s;
+}
+#fl-welcome-gradient {
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: linear-gradient(to bottom,
+    rgba(0,0,0,0.05)  0%,
+    rgba(0,0,0,0.0)   30%,
+    rgba(0,0,0,0.45)  72%,
+    rgba(0,0,0,0.78)  100%);
+}
+#fl-welcome-text {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end;
+  padding: 0 24px clamp(52px, 10vw, 110px);
+  text-align: center;
+  opacity: 0; transform: translateY(12px);
+  transition: opacity 1.2s ease 2.0s, transform 1.2s ease 2.0s;
+}
+#fl-welcome-text.show { opacity: 1; transform: translateY(0); }
+#fl-welcome-eyebrow {
+  font-family: 'Jost', sans-serif; font-size: 10px; font-weight: 300;
+  letter-spacing: 0.28em; text-transform: uppercase;
+  color: rgba(255,255,255,0.55); margin-bottom: 20px;
+}
+#fl-welcome-names {
+  font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 200;
+  color: #fff; line-height: 0.9; letter-spacing: -0.02em;
+  font-size: clamp(52px, 11vw, 120px);
+}
+#fl-welcome-names em { font-style: italic; display: block; }
+#fl-welcome-date {
+  font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 300;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(255,255,255,0.42); margin-top: 28px;
+}
+#fl-welcome-badge {
+  position: absolute; bottom: clamp(16px, 3vw, 28px);
+  left: 50%; transform: translateX(-50%);
+  font-family: 'Jost', sans-serif; font-size: 9px; font-weight: 300;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: #fff; opacity: 0; z-index: 3; white-space: nowrap;
+  transition: opacity 0.8s ease 3.2s;
+}
+#fl-welcome-badge.show { opacity: 0.15; }
+#fl-welcome.slide-up {
+  transform: translateY(-100%);
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
 </style>
 </head>
 <body>
@@ -673,6 +743,76 @@ body {
 </div>
 
 <script>
+/* ══════════════════════════════════════
+   WELCOME OVERLAY — Slow Burn
+══════════════════════════════════════ */
+(function () {
+  // Gallery data — pulled once, used by both welcome and gallery
+  var GALLERY = {
+    slug:         'meghan-desmond',
+    photographer: 'Chris Ruth Photography',
+    name1:        'Meghan',
+    name2:        '& Desmond',
+    dateLocation: 'June 14, 2025 · Las Vegas, Nevada',
+    coverSrc:     'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1800&q=90'
+  };
+
+  var storageKey   = 'fl_welcomed_' + GALLERY.slug;
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Return visit or reduced motion → skip welcome entirely
+  if (localStorage.getItem(storageKey) || reducedMotion) return;
+
+  // Build overlay (gallery already rendered underneath)
+  var overlay = document.createElement('div');
+  overlay.id = 'fl-welcome';
+  overlay.innerHTML =
+    '<img id="fl-welcome-photo" src="' + GALLERY.coverSrc + '" alt=""/>' +
+    '<div id="fl-welcome-gradient"></div>' +
+    '<div id="fl-welcome-text">' +
+      '<div id="fl-welcome-eyebrow">' + GALLERY.photographer + '</div>' +
+      '<div id="fl-welcome-names">' + GALLERY.name1 + '<em>' + GALLERY.name2 + '</em></div>' +
+      '<div id="fl-welcome-date">' + GALLERY.dateLocation + '</div>' +
+    '</div>' +
+    '<div id="fl-welcome-badge">Delivered with Framelight</div>';
+  document.body.appendChild(overlay);
+
+  // Lock gallery scroll during welcome
+  document.body.style.overflow = 'hidden';
+
+  // 0.0s → 0.2s: trigger burn (double-rAF ensures paint before transition starts)
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      var photo = document.getElementById('fl-welcome-photo');
+      if (photo) photo.classList.add('burn');
+    });
+  });
+
+  // 2.0s: text fade-up
+  setTimeout(function () {
+    var text = document.getElementById('fl-welcome-text');
+    if (text) text.classList.add('show');
+  }, 2000);
+
+  // 3.2s: "Delivered with Framelight" badge fades in
+  setTimeout(function () {
+    var badge = document.getElementById('fl-welcome-badge');
+    if (badge) badge.classList.add('show');
+  }, 3200);
+
+  // 4.8s: overlay slides up off screen
+  setTimeout(function () {
+    if (overlay && overlay.parentNode) overlay.classList.add('slide-up');
+  }, 4800);
+
+  // 5.5s: remove overlay from DOM, restore scroll, mark visited
+  setTimeout(function () {
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    document.body.style.overflow = '';
+    localStorage.setItem(storageKey, '1');
+  }, 5500);
+}());
+
 /* ══════════════════════════════════════
    DATA
 ══════════════════════════════════════ */
