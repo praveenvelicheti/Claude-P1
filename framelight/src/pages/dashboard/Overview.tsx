@@ -113,7 +113,7 @@ function GalleryCard({
 
       {/* Card content — bottom overlay */}
       <div className="absolute bottom-0 left-0 right-0 p-4 pb-3.5 z-[2] flex flex-col gap-2">
-        <div className="font-display text-[18px] font-normal text-white leading-[1.1]">{gallery.title}</div>
+        <div className="font-display text-[24px] font-normal text-white leading-[1.1]">{gallery.title}</div>
         <div className="text-[11px] text-white/50 font-light">
           {gallery.client_name ?? ''}
           {gallery.client_name && gallery.created_at ? ' · ' : ''}
