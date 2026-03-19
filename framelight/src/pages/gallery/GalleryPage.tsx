@@ -57,6 +57,7 @@ export function GalleryPage() {
 
   useEffect(() => {
     if (!photos.length || loading) return
+    // Re-run whenever the displayed set changes so newly mounted cards get observed
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach(e => {
@@ -68,9 +69,12 @@ export function GalleryPage() {
       },
       { rootMargin: '0px 0px -40px 0px', threshold: 0.01 }
     )
-    document.querySelectorAll('.photo-reveal').forEach(el => obs.observe(el))
-    return () => obs.disconnect()
-  }, [photos, loading])
+    // Small tick so React has flushed the DOM before we query
+    const timer = setTimeout(() => {
+      document.querySelectorAll('.photo-reveal:not(.visible)').forEach(el => obs.observe(el))
+    }, 0)
+    return () => { clearTimeout(timer); obs.disconnect() }
+  }, [photos, loading, showFavoritesOnly])
 
   // Admin bypass: let the photographer skip the PIN when logged in as the owner
   useEffect(() => {
