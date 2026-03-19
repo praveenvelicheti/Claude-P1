@@ -57,6 +57,7 @@ export function GalleryPage() {
 
   useEffect(() => {
     if (!photos.length || loading) return
+    // Re-run whenever the displayed set changes so newly mounted cards get observed
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach(e => {
@@ -68,9 +69,12 @@ export function GalleryPage() {
       },
       { rootMargin: '0px 0px -40px 0px', threshold: 0.01 }
     )
-    document.querySelectorAll('.photo-reveal').forEach(el => obs.observe(el))
-    return () => obs.disconnect()
-  }, [photos, loading])
+    // Small tick so React has flushed the DOM before we query
+    const timer = setTimeout(() => {
+      document.querySelectorAll('.photo-reveal:not(.visible)').forEach(el => obs.observe(el))
+    }, 0)
+    return () => { clearTimeout(timer); obs.disconnect() }
+  }, [photos, loading, showFavoritesOnly])
 
   // Admin bypass: let the photographer skip the PIN when logged in as the owner
   useEffect(() => {
@@ -507,7 +511,7 @@ export function GalleryPage() {
           <FavoritesBar
             count={favorites.size}
             onDownloadFavorites={downloadFavorites}
-            onClearFavorites={() => setFavorites(new Set())}
+            onClearFavorites={() => { setFavorites(new Set()); setShowFavoritesOnly(false) }}
             downloading={dlFavs}
           />
         )}
@@ -549,11 +553,11 @@ export function GalleryPage() {
               @media (max-width: 900px) { #photo-grid { columns: ${Math.min(2, cols)} !important; padding-left: 0 !important; padding-right: 0 !important; } }
               @media (max-width: 500px) { #photo-grid { columns: 2 !important; padding: 0 !important; } }
             `}</style>
-            {displayedPhotos.map((photo, idx) => (
+            {displayedPhotos.map((photo) => (
               <div key={photo.id}
                 className="photo-reveal break-inside-avoid relative cursor-pointer overflow-hidden block group"
                 style={{ marginBottom: `${gutter}px`, backgroundColor: theme.card }}
-                onClick={() => setLightboxIdx(idx)}
+                onClick={() => setLightboxIdx(photos.findIndex(p => p.id === photo.id))}
               >
                 <img src={photo.thumb_url} alt={photo.filename ?? ''}
                   className="w-full block transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.04]"
@@ -579,11 +583,11 @@ export function GalleryPage() {
               @media (max-width: 900px) { #photo-grid { grid-template-columns: repeat(${Math.min(2, cols)}, 1fr) !important; padding-left: 0 !important; padding-right: 0 !important; } }
               @media (max-width: 500px) { #photo-grid { grid-template-columns: repeat(2, 1fr) !important; padding: 0 !important; gap: ${Math.min(gutter, 4)}px !important; } }
             `}</style>
-            {displayedPhotos.map((photo, idx) => (
+            {displayedPhotos.map((photo) => (
               <div key={photo.id}
                 className="photo-reveal relative cursor-pointer overflow-hidden group"
                 style={{ aspectRatio: '1', backgroundColor: theme.card }}
-                onClick={() => setLightboxIdx(idx)}
+                onClick={() => setLightboxIdx(photos.findIndex(p => p.id === photo.id))}
               >
                 <img src={photo.thumb_url} alt={photo.filename ?? ''}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.04]"
@@ -609,13 +613,13 @@ export function GalleryPage() {
               @media (max-width: 500px) { #photo-grid { padding: 0 !important; gap: ${Math.min(gutter, 4)}px !important; } }
               @media (max-width: 500px) { #photo-grid > * { height: 160px !important; } }
             `}</style>
-            {displayedPhotos.map((photo, idx) => {
+            {displayedPhotos.map((photo) => {
               const ratio = (photo.width && photo.height) ? photo.width / photo.height : 1.5
               return (
                 <div key={photo.id}
                   className="photo-reveal relative cursor-pointer overflow-hidden group"
                   style={{ height: '220px', flex: `${ratio} 1 ${Math.round(ratio * 220)}px`, backgroundColor: theme.card }}
-                  onClick={() => setLightboxIdx(idx)}
+                  onClick={() => setLightboxIdx(photos.findIndex(p => p.id === photo.id))}
                 >
                   <img src={photo.thumb_url} alt={photo.filename ?? ''}
                     className="w-full h-full object-cover transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.04]"
@@ -702,7 +706,28 @@ export function GalleryPage() {
             {/* Social share */}
             <div className="px-5 pb-5 pt-2">
               <p className="text-[10.5px] tracking-[0.1em] uppercase mb-3" style={{ color: theme.muted }}>Share via</p>
-              <div className="grid grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-5 gap-2"  style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
+                {/* Instagram */}
+                <a href={`https://www.instagram.com/`} target="_blank" rel="noopener noreferrer"
+                  onClick={() => { navigator.clipboard.writeText(window.location.href); }}
+                  className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl transition-all no-underline cursor-pointer"
+                  style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}
+                  title="Copy link then open Instagram">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                    <defs>
+                      <radialGradient id="ig-grad" cx="30%" cy="107%" r="150%">
+                        <stop offset="0%" stopColor="#fdf497"/>
+                        <stop offset="15%" stopColor="#fd5949"/>
+                        <stop offset="44%" stopColor="#d6249f"/>
+                        <stop offset="100%" stopColor="#285AEB"/>
+                      </radialGradient>
+                    </defs>
+                    <rect x="2" y="2" width="20" height="20" rx="5.5" fill="url(#ig-grad)"/>
+                    <circle cx="12" cy="12" r="4.5" stroke="white" strokeWidth="1.7" fill="none"/>
+                    <circle cx="17.2" cy="6.8" r="1.1" fill="white"/>
+                  </svg>
+                  <span className="text-[10px] tracking-[0.04em]" style={{ color: theme.muted }}>Instagram</span>
+                </a>
                 {/* WhatsApp */}
                 <a href={`https://wa.me/?text=${encodeURIComponent(gallery.title + ' — ' + window.location.href)}`} target="_blank" rel="noopener noreferrer"
                   className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl transition-all no-underline cursor-pointer"
