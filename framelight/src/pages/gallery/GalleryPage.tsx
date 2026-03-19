@@ -361,7 +361,7 @@ export function GalleryPage() {
 
         {/* Scroll cue */}
         <div
-          className="absolute bottom-9 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/45 cursor-pointer hover:text-white/80 transition-colors"
+          className="absolute bottom-9 left-0 right-0 flex flex-col items-center gap-2 text-white/45 cursor-pointer hover:text-white/80 transition-colors"
           style={{ animation: 'fadeUp 1s ease 1s both' }}
           onClick={() => document.getElementById('gallery-body')?.scrollIntoView({ behavior: 'smooth' })}
         >
