@@ -47,6 +47,12 @@ export function GalleryPage() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
+  // Welcome overlay state
+  const [showWelcome, setShowWelcome] = useState(false)
+  const [welcomeBurn, setWelcomeBurn] = useState(false)
+  const [welcomeTextVisible, setWelcomeTextVisible] = useState(false)
+  const [welcomeBadgeVisible, setWelcomeBadgeVisible] = useState(false)
+  const [welcomeSlideUp, setWelcomeSlideUp] = useState(false)
   const sessionToken = getSessionToken()
   const coverRef = useRef<HTMLDivElement>(null)
 
@@ -95,6 +101,42 @@ export function GalleryPage() {
     handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
   }, [loading])
+
+  // Trigger welcome overlay on first visit, after gallery + PIN unlock
+  useEffect(() => {
+    if (loading || !unlocked || !gallery || !slug) return
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reducedMotion || localStorage.getItem(`fl_welcomed_${slug}`)) return
+    setShowWelcome(true)
+  }, [loading, unlocked, gallery, slug])
+
+  // Orchestrate welcome animation sequence
+  useEffect(() => {
+    if (!showWelcome) return
+    document.body.style.overflow = 'hidden'
+    // Double-rAF so initial paint happens before transition kicks in
+    let rafId: number
+    rafId = requestAnimationFrame(() => {
+      rafId = requestAnimationFrame(() => setWelcomeBurn(true))
+    })
+    const t1 = window.setTimeout(() => setWelcomeTextVisible(true), 2000)
+    const t2 = window.setTimeout(() => setWelcomeBadgeVisible(true), 3200)
+    const t3 = window.setTimeout(() => setWelcomeSlideUp(true), 4800)
+    const t4 = window.setTimeout(() => {
+      setShowWelcome(false)
+      setWelcomeBurn(false)
+      setWelcomeTextVisible(false)
+      setWelcomeBadgeVisible(false)
+      setWelcomeSlideUp(false)
+      document.body.style.overflow = ''
+      localStorage.setItem(`fl_welcomed_${slug}`, '1')
+    }, 5500)
+    return () => {
+      cancelAnimationFrame(rafId)
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4)
+      document.body.style.overflow = ''
+    }
+  }, [showWelcome])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
@@ -287,6 +329,20 @@ export function GalleryPage() {
         @keyframes scrollPulse { 0%,100%{opacity:0.4;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(1.15)} }
         @keyframes lbFade { from{opacity:0;transform:scale(0.97)} to{opacity:1;transform:scale(1)} }
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+        .fl-welcome-photo {
+          position:absolute; inset:0; width:100%; height:100%;
+          object-fit:cover; object-position:center 35%;
+          filter:blur(28px) brightness(0.3) saturate(0.4);
+          transform:scale(1.08);
+          will-change:filter,transform;
+        }
+        .fl-welcome-photo.burn {
+          filter:blur(0px) brightness(0.82) saturate(1.0);
+          transform:scale(1.0);
+          transition:
+            filter 3.6s cubic-bezier(0.25,0.46,0.45,0.94) 0.2s,
+            transform 9s ease 0s;
+        }
       `}</style>
 
       {/* ── Floating Nav ── */}
@@ -766,6 +822,91 @@ export function GalleryPage() {
           </div>
         </div>
       )}
+
+      {/* ── Welcome Overlay — Slow Burn ── */}
+      {showWelcome && (() => {
+        const ampIdx = gallery.title.indexOf(' & ')
+        const name1 = ampIdx > 0 ? gallery.title.slice(0, ampIdx) : gallery.title
+        const name2 = ampIdx > 0 ? '& ' + gallery.title.slice(ampIdx + 3) : ''
+        const welcomeDate = new Date(gallery.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        return (
+          <div
+            style={{
+              position: 'fixed', inset: 0, zIndex: 100, background: '#000', overflow: 'hidden',
+              transform: welcomeSlideUp ? 'translateY(-100%)' : 'translateY(0)',
+              transition: welcomeSlideUp ? 'transform 0.7s cubic-bezier(0.4,0,0.2,1)' : 'none',
+            }}
+          >
+            {/* Cover photo — same URL as hero, served from cache */}
+            {gallery.cover_url && (
+              <img
+                src={gallery.cover_url}
+                alt=""
+                className={`fl-welcome-photo${welcomeBurn ? ' burn' : ''}`}
+              />
+            )}
+
+            {/* Text gradient */}
+            <div style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.45) 72%, rgba(0,0,0,0.78) 100%)',
+            }} />
+
+            {/* Text content */}
+            <div style={{
+              position: 'absolute', inset: 0, zIndex: 2,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
+              padding: '0 24px clamp(52px,10vw,110px)',
+              textAlign: 'center',
+              opacity: welcomeTextVisible ? 1 : 0,
+              transform: welcomeTextVisible ? 'translateY(0)' : 'translateY(12px)',
+              transition: 'opacity 1.2s ease 0s, transform 1.2s ease 0s',
+            }}>
+              {/* Eyebrow — photographer name */}
+              {photographerName && (
+                <div style={{
+                  fontFamily: "'Outfit', sans-serif", fontSize: '10px', fontWeight: 300,
+                  letterSpacing: '0.28em', textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.55)', marginBottom: '20px',
+                }}>
+                  {photographerName}
+                </div>
+              )}
+
+              {/* Names */}
+              <div style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 200,
+                color: '#fff', lineHeight: 0.9, letterSpacing: '-0.02em',
+                fontSize: 'clamp(52px,11vw,120px)',
+              }}>
+                {name1}
+                {name2 && <em style={{ fontStyle: 'italic', display: 'block' }}>{name2}</em>}
+              </div>
+
+              {/* Date */}
+              <div style={{
+                fontFamily: "'Outfit', sans-serif", fontSize: '11px', fontWeight: 300,
+                letterSpacing: '0.2em', textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.42)', marginTop: '28px',
+              }}>
+                {welcomeDate}
+              </div>
+            </div>
+
+            {/* "Delivered with Framelight" badge */}
+            <div style={{
+              position: 'absolute', bottom: 'clamp(16px,3vw,28px)', left: '50%', transform: 'translateX(-50%)',
+              fontFamily: "'Outfit', sans-serif", fontSize: '9px', fontWeight: 300,
+              letterSpacing: '0.2em', textTransform: 'uppercase',
+              color: '#fff', zIndex: 3, whiteSpace: 'nowrap',
+              opacity: welcomeBadgeVisible ? 0.15 : 0,
+              transition: 'opacity 0.8s ease 0s',
+            }}>
+              Delivered with Framelight
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Lightbox */}
       {lightboxIdx !== null && (
