@@ -480,7 +480,7 @@ export function GalleryPage() {
           )}
           <h1
             className="font-display font-light text-white leading-[0.95] tracking-[-0.01em]"
-            style={{ fontSize: 'clamp(44px, 9vw, 100px)', animation: 'fadeUp 1s ease 0.4s both' }}
+            style={{ fontSize: 'clamp(44px, 9vw, 140px)', animation: 'fadeUp 1s ease 0.4s both' }}
           >
             {gallery.title}
           </h1>
@@ -517,13 +517,13 @@ export function GalleryPage() {
         )}
 
         {/* Sets nav */}
-        <div className="flex items-center justify-center overflow-x-auto"
+        <div className="flex items-center justify-start overflow-x-auto"
           style={{ padding: '0 clamp(16px,4vw,48px)', borderBottom: `1px solid ${theme.border}` }}>
           <button
             onClick={() => setShowFavoritesOnly(false)}
             className="px-[22px] py-4 text-[12px] font-medium tracking-[0.08em] uppercase border-b-2 -mb-px whitespace-nowrap bg-transparent border-l-0 border-r-0 border-t-0 cursor-pointer font-ui"
             style={{ color: showFavoritesOnly ? theme.muted : theme.text, borderBottomColor: showFavoritesOnly ? 'transparent' : theme.accent }}>
-            All Photos
+            Gallery
           </button>
           {gallery.favorites_enabled && favorites.size > 0 && (
             <button
