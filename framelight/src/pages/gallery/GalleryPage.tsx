@@ -75,12 +75,16 @@ export function GalleryPage() {
       },
       { rootMargin: '0px 0px -40px 0px', threshold: 0.01 }
     )
-    // Small tick so React has flushed the DOM before we query
-    const timer = setTimeout(() => {
-      document.querySelectorAll('.photo-reveal:not(.visible)').forEach(el => obs.observe(el))
-    }, 0)
-    return () => { clearTimeout(timer); obs.disconnect() }
-  }, [photos, loading, showFavoritesOnly])
+    // Use rAF + setTimeout so React has painted before we query
+    let rafId: number
+    let timerId: ReturnType<typeof setTimeout>
+    rafId = requestAnimationFrame(() => {
+      timerId = setTimeout(() => {
+        document.querySelectorAll('.photo-reveal:not(.visible)').forEach(el => obs.observe(el))
+      }, 50)
+    })
+    return () => { cancelAnimationFrame(rafId); clearTimeout(timerId); obs.disconnect() }
+  }, [photos, loading, showFavoritesOnly, unlocked])
 
   // Admin bypass: let the photographer skip the PIN when logged in as the owner
   useEffect(() => {
