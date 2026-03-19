@@ -22,7 +22,7 @@ export function Step3Settings({ data, onChange }: Props) {
   return (
     <div className="space-y-[18px]">
       {/* Privacy */}
-      <div className="bg-white border border-border rounded-[14px] p-7">
+      <div className="bg-white border border-border rounded-[14px] p-5 md:p-7">
         <div className="font-display text-[17px] font-medium text-ink mb-5 pb-4 border-b border-teal-pale">
           Privacy & Access
         </div>
@@ -69,7 +69,7 @@ export function Step3Settings({ data, onChange }: Props) {
       </div>
 
       {/* Downloads */}
-      <div className="bg-white border border-border rounded-[14px] p-7">
+      <div className="bg-white border border-border rounded-[14px] p-5 md:p-7">
         <div className="font-display text-[17px] font-medium text-ink mb-5 pb-4 border-b border-teal-pale">
           Downloads & Interactions
         </div>
@@ -112,11 +112,11 @@ export function Step3Settings({ data, onChange }: Props) {
       </div>
 
       {/* Expiry */}
-      <div className="bg-white border border-border rounded-[14px] p-7">
+      <div className="bg-white border border-border rounded-[14px] p-5 md:p-7">
         <div className="font-display text-[17px] font-medium text-ink mb-5 pb-4 border-b border-teal-pale">
           Gallery Expiry
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="Expiry Date"
             type="date"

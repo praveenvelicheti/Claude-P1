@@ -39,6 +39,23 @@ export function GalleryPage() {
   }, [slug])
 
   useEffect(() => {
+    if (!photos.length) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible')
+            obs.unobserve(e.target)
+          }
+        })
+      },
+      { rootMargin: '0px 0px -40px 0px', threshold: 0.01 }
+    )
+    document.querySelectorAll('.photo-reveal').forEach(el => obs.observe(el))
+    return () => obs.disconnect()
+  }, [photos])
+
+  useEffect(() => {
     function handleScroll() {
       const cover = coverRef.current
       if (!cover) return
@@ -168,14 +185,6 @@ export function GalleryPage() {
         @keyframes scrollPulse { 0%,100%{opacity:0.4;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(1.15)} }
         @keyframes lbFade { from{opacity:0;transform:scale(0.97)} to{opacity:1;transform:scale(1)} }
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
-        @keyframes gridIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        .photo-item { animation: gridIn 0.5s ease both; }
-        .photo-item:nth-child(1){animation-delay:.04s}.photo-item:nth-child(2){animation-delay:.08s}
-        .photo-item:nth-child(3){animation-delay:.12s}.photo-item:nth-child(4){animation-delay:.16s}
-        .photo-item:nth-child(5){animation-delay:.20s}.photo-item:nth-child(6){animation-delay:.24s}
-        .photo-item:nth-child(7){animation-delay:.28s}.photo-item:nth-child(8){animation-delay:.32s}
-        .photo-item:nth-child(9){animation-delay:.36s}.photo-item:nth-child(10){animation-delay:.40s}
-        .photo-item:nth-child(11){animation-delay:.44s}.photo-item:nth-child(12){animation-delay:.48s}
       `}</style>
 
       {/* ── Floating Nav ── */}
@@ -352,7 +361,7 @@ export function GalleryPage() {
 
         {/* Scroll cue */}
         <div
-          className="absolute bottom-9 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/45 cursor-pointer hover:text-white/80 transition-colors"
+          className="absolute bottom-9 left-0 right-0 flex flex-col items-center gap-2 text-white/45 cursor-pointer hover:text-white/80 transition-colors"
           style={{ animation: 'fadeUp 1s ease 1s both' }}
           onClick={() => document.getElementById('gallery-body')?.scrollIntoView({ behavior: 'smooth' })}
         >
@@ -419,7 +428,7 @@ export function GalleryPage() {
             return (
               <div
                 key={photo.id}
-                className="photo-item break-inside-avoid relative cursor-pointer overflow-hidden bg-teal-pale block group"
+                className="photo-reveal break-inside-avoid relative cursor-pointer overflow-hidden bg-teal-pale block group"
                 style={{ marginBottom: `${gallery.grid_gutter ?? 8}px` }}
                 onClick={() => setLightboxIdx(idx)}
               >

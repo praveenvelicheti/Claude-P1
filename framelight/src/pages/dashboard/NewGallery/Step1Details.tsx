@@ -26,7 +26,7 @@ export function Step1Details({ data, onChange }: Props) {
   }
 
   return (
-    <div className="bg-white border border-border rounded-[14px] p-7 mb-[18px]">
+    <div className="bg-white border border-border rounded-[14px] p-5 md:p-7 mb-[18px]">
       <div className="font-display text-[17px] font-medium text-ink mb-5 pb-4 border-b border-teal-pale">
         Gallery Details
       </div>
@@ -39,7 +39,7 @@ export function Step1Details({ data, onChange }: Props) {
         required
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
           label="Client Name"
           value={data.clientName}
@@ -55,7 +55,7 @@ export function Step1Details({ data, onChange }: Props) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
           label="Event Date"
           type="date"

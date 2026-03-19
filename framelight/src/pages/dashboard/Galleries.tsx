@@ -264,6 +264,12 @@ export function Galleries() {
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [shareGallery, setShareGallery] = useState<Gallery | null>(null)
   const [copied, setCopied] = useState(false)
+  const [gridVisible, setGridVisible] = useState(true)
+
+  function animateFilterChange(fn: () => void) {
+    setGridVisible(false)
+    setTimeout(() => { fn(); setGridVisible(true) }, 160)
+  }
 
   const filtered = galleries
     .filter(g => filter === 'all' || g.status === filter)
@@ -310,7 +316,7 @@ export function Galleries() {
   }
 
   return (
-    <div className="flex-1 flex flex-col md:overflow-hidden">
+    <div className="flex-1 flex flex-col md:overflow-hidden page-enter">
       <Topbar title="My Galleries" showNew />
 
       <main className="flex-1 md:overflow-y-auto">
@@ -322,7 +328,7 @@ export function Galleries() {
               {STATUS_FILTERS.map(f => (
                 <button
                   key={f}
-                  onClick={() => setFilter(f)}
+                  onClick={() => animateFilterChange(() => setFilter(f))}
                   className={`flex items-center gap-1.5 px-4 py-[7px] rounded-full border font-ui text-[12.5px] font-medium cursor-pointer transition-all
                     ${filter === f
                       ? 'bg-ink text-white border-ink'
@@ -341,7 +347,7 @@ export function Galleries() {
             <div className="ml-auto flex items-center gap-2">
               <select
                 value={sort}
-                onChange={e => setSort(e.target.value)}
+                onChange={e => animateFilterChange(() => setSort(e.target.value))}
                 className="px-3 py-[7px] rounded-lg border border-border bg-white font-ui text-[12.5px] text-ink outline-none cursor-pointer"
               >
                 <option value="newest">Newest First</option>
@@ -353,7 +359,7 @@ export function Galleries() {
               {/* Grid / List toggle */}
               <div className="flex border border-border rounded-lg overflow-hidden bg-white">
                 <button
-                  onClick={() => setView('grid')}
+                  onClick={() => animateFilterChange(() => setView('grid'))}
                   className={`w-8 h-[34px] flex items-center justify-center transition-colors ${view === 'grid' ? 'bg-ink text-white' : 'text-ink-muted hover:bg-teal-pale hover:text-ink'}`}
                   title="Grid view"
                 >
@@ -363,7 +369,7 @@ export function Galleries() {
                   </svg>
                 </button>
                 <button
-                  onClick={() => setView('list')}
+                  onClick={() => animateFilterChange(() => setView('list'))}
                   className={`w-8 h-[34px] flex items-center justify-center transition-colors border-l border-border ${view === 'list' ? 'bg-ink text-white' : 'text-ink-muted hover:bg-teal-pale hover:text-ink'}`}
                   title="List view"
                 >
@@ -404,7 +410,10 @@ export function Galleries() {
               <Button variant="primary" onClick={() => navigate('/dashboard/new')}>Create Gallery</Button>
             </div>
           ) : view === 'grid' ? (
-            <div className="grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3.5">
+            <div
+              className="grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3.5 transition-[opacity,transform] duration-[250ms]"
+              style={{ opacity: gridVisible ? 1 : 0, transform: gridVisible ? 'translateY(0)' : 'translateY(8px)' }}
+            >
               {filtered.map(g => (
                 <GalleryCard
                   key={g.id}
@@ -416,7 +425,10 @@ export function Galleries() {
               ))}
             </div>
           ) : (
-            <div className="bg-white border border-border rounded-2xl overflow-hidden">
+            <div
+              className="bg-white border border-border rounded-2xl overflow-hidden transition-[opacity,transform] duration-[250ms]"
+              style={{ opacity: gridVisible ? 1 : 0, transform: gridVisible ? 'translateY(0)' : 'translateY(8px)' }}
+            >
               {filtered.map(g => (
                 <GalleryRow
                   key={g.id}

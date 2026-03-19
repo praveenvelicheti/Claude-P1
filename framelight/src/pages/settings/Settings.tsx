@@ -19,6 +19,12 @@ export function Settings() {
   const { user, profile, updateProfile } = useAuth()
   const toast = useToast()
   const [activeTab, setActiveTab] = useState<Tab>('Profile')
+  const [sectionKey, setSectionKey] = useState(0)
+
+  function switchTab(tab: Tab) {
+    setActiveTab(tab)
+    setSectionKey(k => k + 1)
+  }
   const [saving, setSaving] = useState(false)
   const avatarRef = useRef<HTMLInputElement>(null)
 
@@ -96,18 +102,36 @@ export function Settings() {
     <div className="flex-1 flex flex-col overflow-hidden">
       <Topbar title="Settings" />
 
+      {/* Mobile pill nav — visible only on mobile */}
+      <div className="md:hidden sticky top-[58px] z-40 bg-white border-b border-border px-4 py-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]">
+        <div className="flex gap-1.5">
+          {TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => switchTab(tab)}
+              className={`px-3.5 py-[7px] rounded-full border font-ui text-[12px] font-medium whitespace-nowrap cursor-pointer transition-all ${
+                activeTab === tab
+                  ? 'bg-ink text-white border-ink'
+                  : 'bg-white text-ink-mid border-border hover:bg-teal-pale hover:border-teal hover:text-teal'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
-          <div className="grid grid-cols-[200px_1fr] gap-7">
-            {/* Sidebar nav */}
-            <nav className="flex flex-col gap-0.5">
+        <div className="md:grid md:grid-cols-[210px_1fr] min-h-full">
+            {/* Sidebar nav — hidden on mobile */}
+            <nav className="hidden md:flex flex-col gap-0.5 border-r border-border px-3.5 py-7 bg-white sticky top-0 self-start">
               {TABS.map(tab => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-3.5 py-[9px] rounded-lg text-[13.5px] cursor-pointer text-left font-ui transition-all bg-transparent border-0 ${
+                  onClick={() => switchTab(tab)}
+                  className={`px-3 py-[9px] rounded-lg text-[13px] cursor-pointer text-left font-ui transition-all bg-transparent border-0 ${
                     activeTab === tab
-                      ? 'bg-teal-pale text-ink font-medium border-l-[3px] border-teal pl-3'
+                      ? 'bg-teal-pale text-ink font-medium border-l-[3px] border-teal pl-[9px]'
                       : 'text-ink-mid hover:bg-teal-pale hover:text-ink'
                   }`}
                 >
@@ -117,31 +141,33 @@ export function Settings() {
             </nav>
 
             {/* Content */}
-            <div>
+            <div key={sectionKey} className="px-4 py-5 md:px-9 md:py-8 section-enter">
               {/* ── Profile ── */}
               {activeTab === 'Profile' && (
                 <div>
-                  <h2 className="font-display text-[24px] font-light text-ink mb-6">Profile</h2>
+                  <h2 className="font-display text-[22px] sm:text-[24px] md:text-[28px] font-light text-ink mb-6">My <em className="italic text-teal">Profile</em></h2>
 
                   {/* Avatar */}
-                  <div className="flex items-center gap-5 mb-6 p-5 bg-teal-pale rounded-xl">
-                    <div className="w-[72px] h-[72px] rounded-full bg-teal flex items-center justify-center text-[26px] font-semibold text-white flex-shrink-0 font-display">
+                  <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left gap-5 mb-6 p-5 bg-gradient-to-br from-teal-pale to-white border border-border rounded-xl">
+                    <div className="w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] rounded-full bg-teal flex items-center justify-center text-[26px] sm:text-[32px] font-semibold text-white flex-shrink-0 font-display shadow-teal">
                       {initials}
                     </div>
                     <div>
+                      <p className="font-display text-[20px] sm:text-[22px] text-ink mb-0.5">{profile?.studio_name || user?.email?.split('@')[0] || 'Your Studio'}</p>
+                      <p className="text-[13px] text-ink-muted mb-3">{user?.email}</p>
                       <button
                         onClick={() => avatarRef.current?.click()}
-                        className="px-4 py-2 rounded-lg border border-border bg-white font-ui text-[12.5px] font-medium text-ink cursor-pointer hover:border-teal hover:text-teal transition-all"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border bg-white font-ui text-[12.5px] font-medium text-ink cursor-pointer hover:border-teal hover:text-teal transition-all"
                       >
-                        Upload Photo
+                        <svg className="w-[13px] h-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Change Photo
                       </button>
-                      <p className="text-[11.5px] text-ink-muted mt-1.5">JPG, PNG or GIF · Max 2MB</p>
                     </div>
                     <input ref={avatarRef} type="file" accept="image/*" className="hidden" />
                   </div>
 
-                  <div className="bg-white border border-border rounded-[14px] p-7">
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white border border-border rounded-[14px] p-5 md:p-7">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {[
                         { label: 'Studio / Business Name', key: 'studioName', placeholder: 'Ember & Light Studio' },
                         { label: 'Email', key: 'email', placeholder: 'you@studio.com', type: 'email' },
@@ -170,8 +196,8 @@ export function Settings() {
               {/* ── Branding ── */}
               {activeTab === 'Branding' && (
                 <div>
-                  <h2 className="font-display text-[24px] font-light text-ink mb-6">Branding</h2>
-                  <div className="bg-white border border-border rounded-[14px] p-7 mb-4">
+                  <h2 className="font-display text-[22px] sm:text-[24px] md:text-[28px] font-light text-ink mb-6">Studio <em className="italic text-teal">Branding</em></h2>
+                  <div className="bg-white border border-border rounded-[14px] p-5 md:p-7 mb-4">
                     <div className="mb-[18px]">
                       <label className="block text-[11px] font-semibold tracking-[0.09em] uppercase text-ink-muted mb-[7px]">Studio Name</label>
                       <input
@@ -219,8 +245,9 @@ export function Settings() {
               {/* ── Billing ── */}
               {activeTab === 'Billing' && (
                 <div>
-                  <h2 className="font-display text-[24px] font-light text-ink mb-6">Billing</h2>
-                  <div className="bg-ink rounded-[14px] px-7 py-6 flex items-center justify-between mb-6">
+                  <h2 className="font-display text-[22px] sm:text-[24px] md:text-[28px] font-light text-ink mb-6">Billing <em className="italic text-teal">&amp; Plan</em></h2>
+                  <div className="bg-ink rounded-[14px] px-5 py-5 md:px-7 md:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 relative overflow-hidden">
+                    <div className="absolute -top-10 -right-5 w-48 h-48 rounded-full pointer-events-none" style={{background:'radial-gradient(circle,rgba(92,189,185,0.2) 0%,transparent 70%)'}} />
                     <div>
                       <h4 className="font-display text-[20px] font-light text-white mb-1 capitalize">
                         {profile?.plan ?? 'free'} Plan
@@ -234,7 +261,7 @@ export function Settings() {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     {PLANS.map(plan => (
                       <div
                         key={plan.id}
@@ -264,8 +291,8 @@ export function Settings() {
               {/* ── Gallery Defaults ── */}
               {activeTab === 'Gallery Defaults' && (
                 <div>
-                  <h2 className="font-display text-[24px] font-light text-ink mb-6">Gallery Defaults</h2>
-                  <div className="bg-white border border-border rounded-[14px] p-7">
+                  <h2 className="font-display text-[22px] sm:text-[24px] md:text-[28px] font-light text-ink mb-6">Gallery <em className="italic text-teal">Defaults</em></h2>
+                  <div className="bg-white border border-border rounded-[14px] p-5 md:p-7">
                     <p className="text-[13px] text-ink-muted mb-5">These settings will be pre-filled when creating a new gallery.</p>
                     <Toggle label="Enable Downloads by default" checked={defaults.downloadsEnabled} onChange={v => setDefaults(d => ({ ...d, downloadsEnabled: v }))} />
                     <Toggle label="Enable ZIP download by default" checked={defaults.zipEnabled} onChange={v => setDefaults(d => ({ ...d, zipEnabled: v }))} />
@@ -279,8 +306,8 @@ export function Settings() {
               {/* ── Notifications ── */}
               {activeTab === 'Notifications' && (
                 <div>
-                  <h2 className="font-display text-[24px] font-light text-ink mb-6">Notifications</h2>
-                  <div className="bg-white border border-border rounded-[14px] p-7">
+                  <h2 className="font-display text-[22px] sm:text-[24px] md:text-[28px] font-light text-ink mb-6">Email <em className="italic text-teal">Notifications</em></h2>
+                  <div className="bg-white border border-border rounded-[14px] p-5 md:p-7">
                     <Toggle label="Gallery viewed" description="Email when a client views your gallery" checked={notifications.galleryViewed} onChange={v => setNotifications(n => ({ ...n, galleryViewed: v }))} />
                     <Toggle label="Photo downloaded" description="Email when photos are downloaded" checked={notifications.photoDownloaded} onChange={v => setNotifications(n => ({ ...n, photoDownloaded: v }))} />
                     <Toggle label="Gallery expiring" description="Email reminder before a gallery expires" checked={notifications.galleryExpiring} onChange={v => setNotifications(n => ({ ...n, galleryExpiring: v }))} />
@@ -292,8 +319,8 @@ export function Settings() {
               {/* ── Security ── */}
               {activeTab === 'Security' && (
                 <div>
-                  <h2 className="font-display text-[24px] font-light text-ink mb-6">Security</h2>
-                  <div className="bg-white border border-border rounded-[14px] p-7 mb-4">
+                  <h2 className="font-display text-[22px] sm:text-[24px] md:text-[28px] font-light text-ink mb-6">Security <em className="italic text-teal">&amp; Access</em></h2>
+                  <div className="bg-white border border-border rounded-[14px] p-5 md:p-7 mb-4">
                     <div className="font-display text-[17px] font-medium text-ink mb-5 pb-4 border-b border-teal-pale">
                       Change Password
                     </div>
@@ -306,7 +333,7 @@ export function Settings() {
                     <Button variant="primary">Update Password</Button>
                   </div>
 
-                  <div className="bg-white border border-border rounded-[14px] p-7">
+                  <div className="bg-white border border-border rounded-[14px] p-5 md:p-7">
                     <div className="font-display text-[17px] font-medium text-ink mb-5 pb-4 border-b border-teal-pale">
                       Two-Factor Authentication
                     </div>
@@ -321,7 +348,6 @@ export function Settings() {
               )}
             </div>
           </div>
-        </div>
       </main>
     </div>
   )
