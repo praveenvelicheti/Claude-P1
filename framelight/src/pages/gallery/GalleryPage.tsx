@@ -39,7 +39,7 @@ export function GalleryPage() {
   }, [slug])
 
   useEffect(() => {
-    if (!photos.length) return
+    if (!photos.length || loading) return
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach(e => {
@@ -53,7 +53,7 @@ export function GalleryPage() {
     )
     document.querySelectorAll('.photo-reveal').forEach(el => obs.observe(el))
     return () => obs.disconnect()
-  }, [photos])
+  }, [photos, loading])
 
   useEffect(() => {
     function handleScroll() {
