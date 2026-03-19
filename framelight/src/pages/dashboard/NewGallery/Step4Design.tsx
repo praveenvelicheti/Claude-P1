@@ -45,7 +45,7 @@ export function Step4Design({ data, onChange }: Props) {
   return (
     <div className="space-y-[18px]">
       {/* Branding */}
-      <div className="bg-white border border-border rounded-[14px] p-7">
+      <div className="bg-white border border-border rounded-[14px] p-5 md:p-7">
         <div className="font-display text-[17px] font-medium text-ink mb-5 pb-4 border-b border-teal-pale">
           Studio Branding
         </div>
@@ -126,7 +126,7 @@ export function Step4Design({ data, onChange }: Props) {
       </div>
 
       {/* Layout */}
-      <div className="bg-white border border-border rounded-[14px] p-7">
+      <div className="bg-white border border-border rounded-[14px] p-5 md:p-7">
         <div className="font-display text-[17px] font-medium text-ink mb-5 pb-4 border-b border-teal-pale">
           Gallery Layout
         </div>
@@ -198,11 +198,11 @@ export function Step4Design({ data, onChange }: Props) {
       </div>
 
       {/* Theme */}
-      <div className="bg-white border border-border rounded-[14px] p-7">
+      <div className="bg-white border border-border rounded-[14px] p-5 md:p-7">
         <div className="font-display text-[17px] font-medium text-ink mb-5 pb-4 border-b border-teal-pale">
           Gallery Theme
         </div>
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
           {THEMES.map(theme => (
             <button
               key={theme.id}

@@ -274,15 +274,15 @@ export function NewGallery() {
       <Topbar title={isEdit ? 'Edit Gallery' : 'New Gallery'} />
 
       <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
+        <div className="px-4 py-5 md:px-8 md:py-8">
           {/* Step tabs */}
-          <div className="flex border-b border-border mb-7">
+          <div className="flex border-b border-border mb-7 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]">
             {STEPS.map(s => (
               <button
                 key={s.num}
                 type="button"
                 onClick={() => (isEdit || step > s.num) && setStep(s.num)}
-                className={`flex items-center gap-2 px-5 py-3 text-[13px] font-ui transition-colors border-b-2 -mb-px cursor-pointer bg-transparent ${
+                className={`flex items-center gap-2 px-4 py-3 sm:px-5 text-[11.5px] sm:text-[13px] font-ui transition-colors border-b-2 -mb-px cursor-pointer bg-transparent whitespace-nowrap ${
                   step === s.num
                     ? 'text-ink font-medium border-teal'
                     : (isEdit || step > s.num)
@@ -303,7 +303,7 @@ export function NewGallery() {
           </div>
 
           {/* Two-column layout */}
-          <div className="grid grid-cols-[1fr_300px] gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_288px] gap-6 items-start">
             <div>
               {step === 1 && <Step1Details data={details} onChange={p => setDetails(prev => ({ ...prev, ...p }))} />}
               {step === 2 && <Step2Upload galleryId={gid} photographerId={user?.id ?? ''} photos={photos} onPhotosChange={setPhotos} />}
@@ -343,7 +343,7 @@ export function NewGallery() {
             </div>
 
             {/* Preview panel */}
-            <div className="bg-white border border-border rounded-[14px] p-5 sticky top-6">
+            <div className="bg-white border border-border rounded-[14px] p-5 lg:sticky lg:top-6">
               <div className="font-display text-[15px] font-medium text-ink mb-4 pb-3 border-b border-teal-pale">
                 Gallery Preview
               </div>
