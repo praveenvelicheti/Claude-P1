@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Meghan & Desmond — Chris Ruth Photography</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;0,400;1,200;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --teal:   #5cbdb9;
+  --teal-l: #89d0cd;
+  --font-d: 'Cormorant Garamond', Georgia, serif;
+  --font-ui:'Jost', sans-serif;
+}
+
+html, body {
+  width:100%; height:100%;
+  background:#000;
+  overflow:hidden;
+  font-family:var(--font-ui);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ══════════════════════════════════════
+   WELCOME SCREEN — full viewport
+══════════════════════════════════════ */
+.welcome {
+  position:fixed; inset:0; z-index:10;
+  overflow:hidden;
+}
+
+/* ── The photo — starts blurred dark, burns into clarity ── */
+.burn-photo {
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover; object-position:center 30%;
+  display:block;
+  /* Initial state: heavily blurred, dark, desaturated */
+  filter: blur(28px) brightness(0.3) saturate(0.4);
+  transform: scale(1.08);
+  /* Both properties animate on the same timeline */
+  transition:
+    filter    3.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s,
+    transform 9s   ease                                  0s;
+  will-change: filter, transform;
+}
+/* Revealed state: sharp, correctly exposed, natural color */
+.burn-photo.reveal {
+  filter: blur(0px) brightness(0.82) saturate(1.0);
+  transform: scale(1.0);
+}
+
+/* Gradient overlay — stays throughout, frames the text */
+.burn-overlay {
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    linear-gradient(to bottom,
+      rgba(0,0,0,0.05) 0%,
+      rgba(0,0,0,0.0)  30%,
+      rgba(0,0,0,0.45) 72%,
+      rgba(0,0,0,0.78) 100%),
+    radial-gradient(ellipse at center,
+      transparent 42%,
+      rgba(0,0,0,0.18) 100%);
+}
+
+/* ── Text block — fades in during the burn ── */
+.burn-text {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center;
+  padding:0 clamp(20px,5vw,60px) clamp(60px,12vh,100px);
+  /* Text starts invisible, rises in at ~40% through the burn */
+  opacity:0;
+  transform: translateY(12px);
+  transition:
+    opacity   1.2s ease 2.0s,
+    transform 1.2s ease 2.0s;
+  pointer-events:none;
+}
+.burn-text.reveal {
+  opacity:1;
+  transform: translateY(0);
+}
+
+.text-eyebrow {
+  font-family:var(--font-ui);
+  font-size:clamp(8px, 1.6vw, 10px); font-weight:300;
+  letter-spacing:0.28em; text-transform:uppercase;
+  color:rgba(255,255,255,0.45);
+  margin-bottom:clamp(14px,3vh,24px);
+}
+
+.text-names {
+  font-family:var(--font-d);
+  font-size:clamp(48px, 11vw, 112px);
+  font-weight:200; color:#fff;
+  line-height:0.87; letter-spacing:-0.025em;
+  text-shadow: 0 4px 48px rgba(0,0,0,0.5);
+}
+.text-names em {
+  font-style:italic; display:block;
+  color:rgba(255,255,255,0.92);
+}
+
+.text-date {
+  font-family:var(--font-ui);
+  font-size:clamp(8px, 1.5vw, 10px); font-weight:300;
+  letter-spacing:0.2em; text-transform:uppercase;
+  color:rgba(255,255,255,0.38);
+  margin-top:clamp(18px,3.5vh,30px);
+  display:flex; align-items:center; gap:14px;
+}
+.text-date .sep { width:3px; height:3px; border-radius:50%; background:rgba(255,255,255,0.25); }
+
+/* ── Powered by badge ── */
+.powered {
+  position:absolute; bottom:clamp(10px,2vh,18px);
+  left:50%; transform:translateX(-50%);
+  font-size:9px; letter-spacing:0.1em;
+  color:rgba(255,255,255,0.15);
+  white-space:nowrap; pointer-events:none;
+  opacity:0; transition:opacity 0.8s ease 3.2s;
+}
+.powered.show { opacity:1; }
+.powered a { color:rgba(92,189,185,0.35); text-decoration:none; }
+
+/* ══════════════════════════════════════
+   GALLERY FRAME — slides up over welcome
+══════════════════════════════════════ */
+.gallery-wrap {
+  position:fixed; inset:0; z-index:20;
+  transform:translateY(100%);
+  transition:transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  background:#fff;
+  /* Prevent flash of white before iframe loads */
+  background:var(--ink, #1a3a3a);
+}
+.gallery-wrap.show { transform:translateY(0); }
+
+.gallery-frame {
+  width:100%; height:100%;
+  border:none; display:block;
+}
+
+/* ══════════════════════════════════════
+   REDUCED MOTION — instant reveal
+══════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .burn-photo    { transition:none; filter:brightness(0.82); transform:scale(1.0); }
+  .burn-text     { transition:none; opacity:1; transform:none; }
+  .powered       { transition:none; opacity:1; }
+  .gallery-wrap  { transition:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ WELCOME ══ -->
+<div class="welcome" id="welcome">
+
+  <img
+    class="burn-photo"
+    id="burn-photo"
+    src="https://images.unsplash.com/photo-1606800052052-a08af7148866?w=1800&q=90"
+    alt="Meghan & Desmond"
+    fetchpriority="high"
+  />
+
+  <div class="burn-overlay"></div>
+
+  <div class="burn-text" id="burn-text">
+    <div class="text-eyebrow">Chris Ruth Photography</div>
+    <div class="text-names">
+      Meghan
+      <em>&amp; Desmond</em>
+    </div>
+    <div class="text-date">
+      <span>June 14, 2025</span>
+      <span class="sep"></span>
+      <span>Las Vegas, Nevada</span>
+    </div>
+  </div>
+
+  <div class="powered" id="powered">
+    Delivered with <a href="#">Framelight</a>
+  </div>
+
+</div>
+
+<!-- ══ GALLERY ══ -->
+<div class="gallery-wrap" id="gallery-wrap">
+  <iframe
+    class="gallery-frame"
+    id="gallery-frame"
+    src=""
+    title="Meghan & Desmond — Gallery"
+    allow="fullscreen"
+  ></iframe>
+</div>
+
+<script>
+/*
+  SEQUENCE TIMELINE
+  ─────────────────────────────────────────────────────
+  0.0s  Page loads → photo starts blurring into focus
+  0.2s  Burn transition begins (via CSS delay)
+  2.0s  Names + date fade up (text reveal via CSS delay)
+  3.2s  "Powered by" badge fades in
+  3.8s  Gallery iframe src set (preloads in background)
+  4.8s  Gallery slides up from bottom
+  ─────────────────────────────────────────────────────
+  Total welcome duration: ~4.8s
+*/
+
+const GALLERY_SRC     = 'framelight-gallery-v3.html';
+const TEXT_DELAY      = 200;    // ms — start burn
+const GALLERY_PRELOAD = 3800;   // ms — set iframe src
+const GALLERY_REVEAL  = 4800;   // ms — slide gallery up
+
+function init() {
+  const photo      = document.getElementById('burn-photo');
+  const text       = document.getElementById('burn-text');
+  const powered    = document.getElementById('powered');
+  const frame      = document.getElementById('gallery-frame');
+  const galleryWrap= document.getElementById('gallery-wrap');
+
+  // Kick off the burn (tiny delay so browser paints the initial blurred state first)
+  setTimeout(() => {
+    photo.classList.add('reveal');
+    text.classList.add('reveal');
+  }, TEXT_DELAY);
+
+  // Powered by fades in later
+  setTimeout(() => powered.classList.add('show'), 3200);
+
+  // Preload gallery in background (src set before it becomes visible)
+  setTimeout(() => {
+    frame.src = GALLERY_SRC;
+  }, GALLERY_PRELOAD);
+
+  // Slide gallery up — this is the automatic transition, no button needed
+  setTimeout(() => {
+    galleryWrap.classList.add('show');
+  }, GALLERY_REVEAL);
+}
+
+// Start as soon as possible — don't wait for full load
+// (the photo itself handles its own progressive loading)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
