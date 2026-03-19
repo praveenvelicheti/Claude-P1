@@ -480,7 +480,7 @@ export function GalleryPage() {
           )}
           <h1
             className="font-display font-light text-white leading-[0.95] tracking-[-0.01em]"
-            style={{ fontSize: 'clamp(44px, 9vw, 100px)', animation: 'fadeUp 1s ease 0.4s both' }}
+            style={{ fontSize: 'clamp(44px, 9vw, 140px)', animation: 'fadeUp 1s ease 0.4s both' }}
           >
             {gallery.title}
           </h1>
