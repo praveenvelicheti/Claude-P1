@@ -44,6 +44,9 @@ export function GalleryPage() {
   const [dlAll, setDlAll] = useState(false)
   const [dlMenuOpen, setDlMenuOpen] = useState(false)
   const [navScrolled, setNavScrolled] = useState(false)
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
   const sessionToken = getSessionToken()
   const coverRef = useRef<HTMLDivElement>(null)
 
@@ -230,6 +233,15 @@ export function GalleryPage() {
   const cols = gallery.grid_cols ?? 3
   const gutter = gallery.grid_gutter ?? 8
 
+  const displayedPhotos = showFavoritesOnly ? photos.filter(p => favorites.has(p.id)) : photos
+
+  function copyShareLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2200)
+    })
+  }
+
   // Shared hover overlay rendered inside each photo card
   function PhotoActions({ photo, isFav }: { photo: Photo; isFav: boolean }) {
     return (
@@ -313,17 +325,20 @@ export function GalleryPage() {
           {gallery.favorites_enabled && (
             <div className="relative">
               <button
+                onClick={() => setShowFavoritesOnly(o => !o)}
                 className="relative w-9 h-9 rounded-full flex items-center justify-center border transition-all"
-                style={navScrolled
-                  ? { borderColor: theme.border, backgroundColor: theme.bg, color: theme.text }
-                  : { borderColor: 'rgba(255,255,255,0.25)', backgroundColor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', color: 'rgba(255,255,255,0.85)' }
+                style={showFavoritesOnly
+                  ? { borderColor: '#d45f7a', backgroundColor: '#d45f7a', color: '#fff' }
+                  : navScrolled
+                    ? { borderColor: theme.border, backgroundColor: theme.bg, color: theme.text }
+                    : { borderColor: 'rgba(255,255,255,0.25)', backgroundColor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', color: 'rgba(255,255,255,0.85)' }
                 }
-                title="Favorites"
+                title={showFavoritesOnly ? 'Show all photos' : 'Show favourites only'}
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill={showFavoritesOnly ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8">
                   <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
                 </svg>
-                {favorites.size > 0 && (
+                {favorites.size > 0 && !showFavoritesOnly && (
                   <span className="absolute -top-[3px] -right-[3px] w-[15px] h-[15px] rounded-full text-white text-[8px] font-semibold flex items-center justify-center border-2 border-white"
                     style={{ backgroundColor: theme.accent }}>
                     {favorites.size}
@@ -345,6 +360,22 @@ export function GalleryPage() {
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </button>
+
+          {/* Share */}
+          <button
+            className="w-9 h-9 rounded-full flex items-center justify-center border transition-all"
+            style={navScrolled
+              ? { borderColor: theme.border, backgroundColor: theme.bg, color: theme.text }
+              : { borderColor: 'rgba(255,255,255,0.25)', backgroundColor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', color: 'rgba(255,255,255,0.85)' }
+            }
+            title="Share"
+            onClick={() => setShareOpen(true)}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
             </svg>
           </button>
 
@@ -484,10 +515,24 @@ export function GalleryPage() {
         {/* Sets nav */}
         <div className="flex items-center justify-center overflow-x-auto"
           style={{ padding: '0 clamp(16px,4vw,48px)', borderBottom: `1px solid ${theme.border}` }}>
-          <button className="px-[22px] py-4 text-[12px] font-medium tracking-[0.08em] uppercase border-b-2 -mb-px whitespace-nowrap bg-transparent border-l-0 border-r-0 border-t-0 cursor-pointer font-ui"
-            style={{ color: theme.text, borderBottomColor: theme.accent }}>
+          <button
+            onClick={() => setShowFavoritesOnly(false)}
+            className="px-[22px] py-4 text-[12px] font-medium tracking-[0.08em] uppercase border-b-2 -mb-px whitespace-nowrap bg-transparent border-l-0 border-r-0 border-t-0 cursor-pointer font-ui"
+            style={{ color: showFavoritesOnly ? theme.muted : theme.text, borderBottomColor: showFavoritesOnly ? 'transparent' : theme.accent }}>
             All Photos
           </button>
+          {gallery.favorites_enabled && favorites.size > 0 && (
+            <button
+              onClick={() => setShowFavoritesOnly(true)}
+              className="px-[22px] py-4 text-[12px] font-medium tracking-[0.08em] uppercase border-b-2 -mb-px whitespace-nowrap bg-transparent border-l-0 border-r-0 border-t-0 cursor-pointer font-ui flex items-center gap-1.5"
+              style={{ color: showFavoritesOnly ? theme.text : theme.muted, borderBottomColor: showFavoritesOnly ? theme.accent : 'transparent' }}>
+              <svg className="w-[11px] h-[11px]" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#d45f7a' }}>
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+              </svg>
+              Favourites
+              <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold text-white" style={{ backgroundColor: '#d45f7a' }}>{favorites.size}</span>
+            </button>
+          )}
         </div>
 
         {/* ── Photo grid — layout-aware ── */}
@@ -504,7 +549,7 @@ export function GalleryPage() {
               @media (max-width: 900px) { #photo-grid { columns: ${Math.min(2, cols)} !important; padding-left: 0 !important; padding-right: 0 !important; } }
               @media (max-width: 500px) { #photo-grid { columns: 2 !important; padding: 0 !important; } }
             `}</style>
-            {photos.map((photo, idx) => (
+            {displayedPhotos.map((photo, idx) => (
               <div key={photo.id}
                 className="photo-reveal break-inside-avoid relative cursor-pointer overflow-hidden block group"
                 style={{ marginBottom: `${gutter}px`, backgroundColor: theme.card }}
@@ -534,7 +579,7 @@ export function GalleryPage() {
               @media (max-width: 900px) { #photo-grid { grid-template-columns: repeat(${Math.min(2, cols)}, 1fr) !important; padding-left: 0 !important; padding-right: 0 !important; } }
               @media (max-width: 500px) { #photo-grid { grid-template-columns: repeat(2, 1fr) !important; padding: 0 !important; gap: ${Math.min(gutter, 4)}px !important; } }
             `}</style>
-            {photos.map((photo, idx) => (
+            {displayedPhotos.map((photo, idx) => (
               <div key={photo.id}
                 className="photo-reveal relative cursor-pointer overflow-hidden group"
                 style={{ aspectRatio: '1', backgroundColor: theme.card }}
@@ -564,7 +609,7 @@ export function GalleryPage() {
               @media (max-width: 500px) { #photo-grid { padding: 0 !important; gap: ${Math.min(gutter, 4)}px !important; } }
               @media (max-width: 500px) { #photo-grid > * { height: 160px !important; } }
             `}</style>
-            {photos.map((photo, idx) => {
+            {displayedPhotos.map((photo, idx) => {
               const ratio = (photo.width && photo.height) ? photo.width / photo.height : 1.5
               return (
                 <div key={photo.id}
@@ -605,6 +650,97 @@ export function GalleryPage() {
           </div>
         </footer>
       </div>
+
+      {/* Favourites empty state */}
+      {showFavoritesOnly && favorites.size === 0 && (
+        <div className="flex flex-col items-center justify-center py-24 gap-4" style={{ color: theme.muted }}>
+          <svg className="w-10 h-10 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+          </svg>
+          <p className="text-[13px] tracking-[0.05em]">No favourites yet — tap the heart on any photo</p>
+        </div>
+      )}
+
+      {/* Share dialog */}
+      {shareOpen && (
+        <div
+          className="fixed inset-0 z-[500] flex items-end sm:items-center justify-center"
+          style={{ backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setShareOpen(false)}
+        >
+          <div
+            className="w-full sm:w-auto sm:min-w-[360px] sm:max-w-[440px] rounded-t-2xl sm:rounded-2xl overflow-hidden font-ui"
+            style={{ backgroundColor: theme.bg, boxShadow: '0 24px 64px rgba(0,0,0,0.28)', border: `1px solid ${theme.border}` }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+              <span className="font-display text-[17px] font-light tracking-[0.02em]" style={{ color: theme.text }}>Share Gallery</span>
+              <button onClick={() => setShareOpen(false)} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer border-0 bg-transparent" style={{ color: theme.muted }}>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            {/* Copy link */}
+            <div className="px-5 pt-4 pb-3">
+              <p className="text-[10.5px] tracking-[0.1em] uppercase mb-2.5" style={{ color: theme.muted }}>Gallery link</p>
+              <div className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
+                <svg className="w-3.5 h-3.5 flex-shrink-0 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                </svg>
+                <span className="flex-1 text-[12px] truncate select-all" style={{ color: theme.muted }}>{window.location.href}</span>
+                <button
+                  onClick={copyShareLink}
+                  className="flex-shrink-0 px-3 py-1 rounded-lg text-[11px] font-medium tracking-[0.05em] uppercase transition-all cursor-pointer border-0"
+                  style={{ backgroundColor: linkCopied ? '#22c55e' : theme.accent, color: '#fff' }}
+                >
+                  {linkCopied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
+
+            {/* Social share */}
+            <div className="px-5 pb-5 pt-2">
+              <p className="text-[10.5px] tracking-[0.1em] uppercase mb-3" style={{ color: theme.muted }}>Share via</p>
+              <div className="grid grid-cols-4 gap-2.5">
+                {/* WhatsApp */}
+                <a href={`https://wa.me/?text=${encodeURIComponent(gallery.title + ' — ' + window.location.href)}`} target="_blank" rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl transition-all no-underline cursor-pointer"
+                  style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.85L0 24l6.335-1.527A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.011-1.371l-.36-.213-3.727.898.927-3.638-.234-.373A9.776 9.776 0 012.182 12C2.182 6.575 6.575 2.182 12 2.182S21.818 6.575 21.818 12 17.425 21.818 12 21.818z"/></svg>
+                  <span className="text-[10px] tracking-[0.04em]" style={{ color: theme.muted }}>WhatsApp</span>
+                </a>
+                {/* Facebook */}
+                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl transition-all no-underline cursor-pointer"
+                  style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  <span className="text-[10px] tracking-[0.04em]" style={{ color: theme.muted }}>Facebook</span>
+                </a>
+                {/* X / Twitter */}
+                <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(gallery.title)}&url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl transition-all no-underline cursor-pointer"
+                  style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" style={{ color: theme.text }}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  <span className="text-[10px] tracking-[0.04em]" style={{ color: theme.muted }}>X</span>
+                </a>
+                {/* Email */}
+                <a href={`mailto:?subject=${encodeURIComponent(gallery.title)}&body=${encodeURIComponent('Check out this gallery: ' + window.location.href)}`}
+                  className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl transition-all no-underline cursor-pointer"
+                  style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" style={{ color: theme.accent }}>
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                  <span className="text-[10px] tracking-[0.04em]" style={{ color: theme.muted }}>Email</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Bottom safe-area spacer on mobile */}
+            <div className="h-safe-bottom sm:hidden" style={{ height: 'env(safe-area-inset-bottom, 0px)' }} />
+          </div>
+        </div>
+      )}
 
       {/* Lightbox */}
       {lightboxIdx !== null && (
