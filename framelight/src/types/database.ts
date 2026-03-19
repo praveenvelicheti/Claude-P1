@@ -8,6 +8,7 @@ export interface Database {
           id: string
           studio_name: string | null
           logo_url: string | null
+          logo_url_light: string | null
           accent_color: string
           plan: string
           storage_used_bytes: number
@@ -17,6 +18,7 @@ export interface Database {
           id: string
           studio_name?: string | null
           logo_url?: string | null
+          logo_url_light?: string | null
           accent_color?: string
           plan?: string
           storage_used_bytes?: number
@@ -26,6 +28,7 @@ export interface Database {
           id?: string
           studio_name?: string | null
           logo_url?: string | null
+          logo_url_light?: string | null
           accent_color?: string
           plan?: string
           storage_used_bytes?: number

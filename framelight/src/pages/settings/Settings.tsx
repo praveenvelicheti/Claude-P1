@@ -4,6 +4,7 @@ import { Topbar } from '../../components/layout/Topbar'
 import { Button } from '../../components/ui/Button'
 import { Toggle } from '../../components/ui/Toggle'
 import { useToast } from '../../components/ui/Toast'
+import { getUploadUrl, uploadToR2 } from '../../lib/r2'
 
 const TABS = ['Profile', 'Branding', 'Billing', 'Gallery Defaults', 'Notifications', 'Security'] as const
 type Tab = (typeof TABS)[number]
@@ -26,7 +27,10 @@ export function Settings() {
     setSectionKey(k => k + 1)
   }
   const [saving, setSaving] = useState(false)
+  const [logoUploading, setLogoUploading] = useState<'dark' | 'light' | null>(null)
   const avatarRef = useRef<HTMLInputElement>(null)
+  const logoDarkRef = useRef<HTMLInputElement>(null)
+  const logoLightRef = useRef<HTMLInputElement>(null)
 
   const [profileForm, setProfileForm] = useState({
     studioName: profile?.studio_name ?? '',
@@ -40,6 +44,8 @@ export function Settings() {
     accentColor: profile?.accent_color ?? '#5cbdb9',
     defaultTheme: 'framelight',
     customDomain: '',
+    logoDarkUrl: profile?.logo_url ?? '',
+    logoLightUrl: profile?.logo_url_light ?? '',
   })
 
   const [defaults, setDefaults] = useState({
@@ -73,12 +79,42 @@ export function Settings() {
   async function saveBranding() {
     setSaving(true)
     try {
-      await updateProfile({ studio_name: branding.studioName, accent_color: branding.accentColor })
+      await updateProfile({
+        studio_name: branding.studioName,
+        accent_color: branding.accentColor,
+        logo_url: branding.logoDarkUrl || null,
+        logo_url_light: branding.logoLightUrl || null,
+      })
       toast.show('Branding saved')
     } catch {
       toast.show('Failed to save branding — check your studio name and accent color', 'error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleLogoUpload(file: File, variant: 'dark' | 'light') {
+    if (!user) return
+    setLogoUploading(variant)
+    try {
+      const ext = file.name.split('.').pop() ?? 'png'
+      const { uploadUrl, publicUrl } = await getUploadUrl(
+        `logo_${variant}.${ext}`,
+        file.type,
+        'logos',
+        user.id,
+      )
+      await uploadToR2(uploadUrl, file)
+      if (variant === 'dark') {
+        setBranding(b => ({ ...b, logoDarkUrl: publicUrl }))
+      } else {
+        setBranding(b => ({ ...b, logoLightUrl: publicUrl }))
+      }
+      toast.show(`${variant === 'dark' ? 'Dark' : 'Light'} logo uploaded`)
+    } catch {
+      toast.show('Logo upload failed', 'error')
+    } finally {
+      setLogoUploading(null)
     }
   }
 
@@ -93,6 +129,8 @@ export function Settings() {
       ...prev,
       studioName: profile?.studio_name ?? '',
       accentColor: profile?.accent_color ?? '#5cbdb9',
+      logoDarkUrl: profile?.logo_url ?? '',
+      logoLightUrl: profile?.logo_url_light ?? '',
     }))
   }, [profile, user])
 
@@ -198,6 +236,56 @@ export function Settings() {
                 <div>
                   <h2 className="font-display text-[22px] sm:text-[24px] md:text-[28px] font-light text-ink mb-6">Studio <em className="italic text-teal">Branding</em></h2>
                   <div className="bg-white border border-border rounded-[14px] p-5 md:p-7 mb-4">
+
+                    {/* Brand Logos */}
+                    <div className="mb-6 pb-6 border-b border-border">
+                      <label className="block text-[11px] font-semibold tracking-[0.09em] uppercase text-ink-muted mb-3">Brand Logo</label>
+                      <p className="text-[12px] text-ink-muted mb-4">Upload a dark version (for light backgrounds) and a light/white version (for dark backgrounds). PNG with transparency recommended.</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Dark logo */}
+                        {(['dark', 'light'] as const).map(variant => {
+                          const url = variant === 'dark' ? branding.logoDarkUrl : branding.logoLightUrl
+                          const ref = variant === 'dark' ? logoDarkRef : logoLightRef
+                          const isUploading = logoUploading === variant
+                          return (
+                            <div key={variant}>
+                              <div className="text-[11px] font-medium text-ink-mid mb-2 capitalize">
+                                {variant === 'dark' ? 'Dark logo' : 'Light / White logo'}
+                                <span className="text-ink-muted font-normal ml-1">
+                                  {variant === 'dark' ? '(for light backgrounds)' : '(for dark backgrounds)'}
+                                </span>
+                              </div>
+                              <div
+                                className={`relative flex flex-col items-center justify-center gap-2 h-28 rounded-xl border-2 border-dashed cursor-pointer transition-all hover:border-teal group ${url ? 'border-border' : 'border-border'} ${variant === 'light' ? 'bg-ink' : 'bg-teal-pale'}`}
+                                onClick={() => ref.current?.click()}
+                              >
+                                {isUploading ? (
+                                  <svg className="w-5 h-5 animate-spin text-teal" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                ) : url ? (
+                                  <>
+                                    <img src={url} alt="" className="max-h-16 max-w-full object-contain" />
+                                    <span className={`text-[10px] tracking-[0.06em] uppercase opacity-0 group-hover:opacity-100 transition-opacity ${variant === 'light' ? 'text-white/60' : 'text-ink-muted'}`}>Click to replace</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg className={`w-5 h-5 ${variant === 'light' ? 'text-white/40' : 'text-ink-muted'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    <span className={`text-[11px] ${variant === 'light' ? 'text-white/50' : 'text-ink-muted'}`}>Upload PNG</span>
+                                  </>
+                                )}
+                              </div>
+                              <input
+                                ref={ref}
+                                type="file"
+                                accept="image/png,image/svg+xml,image/webp"
+                                className="hidden"
+                                onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f, variant); e.target.value = '' }}
+                              />
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+
                     <div className="mb-[18px]">
                       <label className="block text-[11px] font-semibold tracking-[0.09em] uppercase text-ink-muted mb-[7px]">Studio Name</label>
                       <input
