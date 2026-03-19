@@ -252,7 +252,7 @@ export function Overview() {
   ]
 
   return (
-    <div className="flex-1 flex flex-col md:overflow-hidden">
+    <div className="flex-1 flex flex-col md:overflow-hidden page-enter">
       <Topbar title="Dashboard" showNew />
 
       <main className="flex-1 md:overflow-y-auto">
@@ -261,13 +261,22 @@ export function Overview() {
           {/* ── Greeting header ── */}
           <div className="flex items-end justify-between mb-6 gap-4 flex-wrap md:flex-nowrap">
             <div>
-              <div className="text-[10.5px] font-normal tracking-[0.18em] uppercase text-ink-muted mb-1.5">
+              <div
+                className="text-[10.5px] font-normal tracking-[0.18em] uppercase text-ink-muted mb-1.5"
+                style={{ animation: 'fadeUp 0.5s ease 0.05s both' }}
+              >
                 {today}
               </div>
-              <div className="font-display text-[30px] md:text-[32px] lg:text-[40px] font-light text-ink leading-none tracking-[-0.01em]">
+              <div
+                className="font-display text-[30px] md:text-[32px] lg:text-[40px] font-light text-ink leading-none tracking-[-0.01em]"
+                style={{ animation: 'fadeUp 0.6s ease 0.12s both' }}
+              >
                 {greeting}, <em className="italic text-teal">{firstName}.</em>
               </div>
-              <div className="text-[13px] text-ink-muted mt-1.5 flex items-center gap-2">
+              <div
+                className="text-[13px] text-ink-muted mt-1.5 flex items-center gap-2"
+                style={{ animation: 'fadeUp 0.5s ease 0.2s both' }}
+              >
                 {galleries.length > 0 && (
                   <>
                     <span>{activeCount} active {activeCount === 1 ? 'gallery' : 'galleries'}</span>
@@ -281,7 +290,7 @@ export function Overview() {
                 )}
               </div>
             </div>
-            <div className="flex gap-2.5 flex-shrink-0">
+            <div className="flex gap-2.5 flex-shrink-0" style={{ animation: 'fadeUp 0.5s ease 0.28s both' }}>
               <button
                 onClick={() => navigate('/dashboard/galleries')}
                 className="flex items-center gap-1.5 px-[18px] py-2.5 rounded-[10px] bg-white text-charcoal border border-border text-[13px] font-medium cursor-pointer hover:border-teal hover:text-teal hover:bg-teal-pale transition-all"
@@ -302,9 +311,10 @@ export function Overview() {
 
           {/* ── Stat cards ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3.5 mb-5 md:mb-7">
-            {stats.map(stat => (
+            {stats.map((stat, i) => (
               <div
                 key={stat.label}
+                style={{ animation: `slideUp 0.5s ease ${0.18 + i * 0.06}s both` }}
                 className={`relative overflow-hidden border rounded-2xl px-[22px] pt-[22px] pb-[18px] transition-all duration-[220ms] cursor-default
                   before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:rounded-tl-[2px] before:rounded-tr-[2px]
                   before:bg-gradient-to-r before:from-teal before:to-teal-light before:scale-x-0 before:origin-left before:transition-transform before:duration-300
@@ -378,14 +388,15 @@ export function Overview() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-3.5">
-                  {recent.map(g => (
+                  {recent.map((g, i) => (
+                    <div key={g.id} style={{ animation: `slideUp 0.5s ease ${0.38 + i * 0.06}s both` }}>
                     <GalleryCard
-                      key={g.id}
                       gallery={g}
                       onEdit={() => navigate(`/dashboard/gallery/${g.id}`)}
                       onDelete={() => setDeleteId(g.id)}
                       onShare={() => setShareGallery(g)}
                     />
+                    </div>
                   ))}
                 </div>
               )}

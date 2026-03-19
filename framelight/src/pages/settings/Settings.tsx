@@ -19,6 +19,12 @@ export function Settings() {
   const { user, profile, updateProfile } = useAuth()
   const toast = useToast()
   const [activeTab, setActiveTab] = useState<Tab>('Profile')
+  const [sectionKey, setSectionKey] = useState(0)
+
+  function switchTab(tab: Tab) {
+    setActiveTab(tab)
+    setSectionKey(k => k + 1)
+  }
   const [saving, setSaving] = useState(false)
   const avatarRef = useRef<HTMLInputElement>(null)
 
@@ -102,7 +108,7 @@ export function Settings() {
           {TABS.map(tab => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => switchTab(tab)}
               className={`px-3.5 py-[7px] rounded-full border font-ui text-[12px] font-medium whitespace-nowrap cursor-pointer transition-all ${
                 activeTab === tab
                   ? 'bg-ink text-white border-ink'
@@ -122,7 +128,7 @@ export function Settings() {
               {TABS.map(tab => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => switchTab(tab)}
                   className={`px-3 py-[9px] rounded-lg text-[13px] cursor-pointer text-left font-ui transition-all bg-transparent border-0 ${
                     activeTab === tab
                       ? 'bg-teal-pale text-ink font-medium border-l-[3px] border-teal pl-[9px]'
@@ -135,7 +141,7 @@ export function Settings() {
             </nav>
 
             {/* Content */}
-            <div className="px-4 py-5 md:px-9 md:py-8">
+            <div key={sectionKey} className="px-4 py-5 md:px-9 md:py-8 section-enter">
               {/* ── Profile ── */}
               {activeTab === 'Profile' && (
                 <div>

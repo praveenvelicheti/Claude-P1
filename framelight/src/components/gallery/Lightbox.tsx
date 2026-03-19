@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState, useRef } from 'react'
 import type { Photo } from '../../types/database'
 
 interface Props {
@@ -13,6 +13,8 @@ interface Props {
 
 export function Lightbox({ photos, currentIndex, onClose, onNav, favorites, onToggleFavorite, onDownload }: Props) {
   const [visible, setVisible] = useState(false)
+  const [slideDir, setSlideDir] = useState<'initial' | 'right' | 'left'>('initial')
+  const prevIndexRef = useRef(currentIndex)
   const photo = photos[currentIndex]
 
   useEffect(() => {
@@ -28,6 +30,13 @@ export function Lightbox({ photos, currentIndex, onClose, onNav, favorites, onTo
     setVisible(false)
     setTimeout(onClose, 250)
   }, [onClose])
+
+  useEffect(() => {
+    if (currentIndex !== prevIndexRef.current) {
+      setSlideDir(currentIndex > prevIndexRef.current ? 'right' : 'left')
+      prevIndexRef.current = currentIndex
+    }
+  }, [currentIndex])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -104,7 +113,14 @@ export function Lightbox({ photos, currentIndex, onClose, onNav, favorites, onTo
           key={photo.id}
           src={photo.url}
           alt={photo.filename ?? ''}
-          className="max-w-full max-h-full object-contain rounded-[4px] shadow-[0_32px_80px_rgba(0,0,0,0.6)] px-[clamp(50px,6vw,80px)] py-[clamp(10px,2vw,28px)] animate-[lbFade_0.3s_ease]"
+          className="max-w-full max-h-full object-contain rounded-[4px] shadow-[0_32px_80px_rgba(0,0,0,0.6)] px-[clamp(50px,6vw,80px)] py-[clamp(10px,2vw,28px)]"
+          style={{
+            animation: slideDir === 'right'
+              ? 'slideFromRight 0.28s cubic-bezier(0.25,0.46,0.45,0.94) both'
+              : slideDir === 'left'
+              ? 'slideFromLeft 0.28s cubic-bezier(0.25,0.46,0.45,0.94) both'
+              : 'lbFade 0.3s ease both'
+          }}
         />
 
         {/* Next */}

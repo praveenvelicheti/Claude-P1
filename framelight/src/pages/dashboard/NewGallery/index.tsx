@@ -33,6 +33,8 @@ export function NewGallery() {
   const toast = useToast()
 
   const [step, setStep] = useState(1)
+  const [stepKey, setStepKey] = useState(0)
+  const [animDir, setAnimDir] = useState<1 | -1>(1)
   const [galleryId, setGalleryId] = useState<string | null>(editId ?? null)
   const [saving, setSaving] = useState(false)
   const [loadingGallery, setLoadingGallery] = useState(isEdit)
@@ -205,7 +207,7 @@ export function NewGallery() {
         } else {
           await ensureGallery()
         }
-        setStep(2)
+        goStep(2)
       } catch {
         toast.show('Failed to save changes — try again', 'error')
       } finally {
@@ -214,7 +216,7 @@ export function NewGallery() {
       return
     }
 
-    if (step < 4) { setStep(s => s + 1); return }
+    if (step < 4) { goStep(step + 1); return }
 
     // Final save / publish
     setSaving(true)
@@ -254,6 +256,12 @@ export function NewGallery() {
     }
   }
 
+  function goStep(n: number) {
+    setAnimDir(n > step ? 1 : -1)
+    setStep(n)
+    setStepKey(k => k + 1)
+  }
+
   function handleSaveDraft() {
     toast.show('Draft saved')
     navigate('/dashboard/galleries')
@@ -281,7 +289,7 @@ export function NewGallery() {
               <button
                 key={s.num}
                 type="button"
-                onClick={() => (isEdit || step > s.num) && setStep(s.num)}
+                onClick={() => (isEdit || step > s.num) && goStep(s.num)}
                 className={`flex items-center gap-2 px-4 py-3 sm:px-5 text-[11.5px] sm:text-[13px] font-ui transition-colors border-b-2 -mb-px cursor-pointer bg-transparent whitespace-nowrap ${
                   step === s.num
                     ? 'text-ink font-medium border-teal'
@@ -305,16 +313,18 @@ export function NewGallery() {
           {/* Two-column layout */}
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_288px] gap-6 items-start">
             <div>
-              {step === 1 && <Step1Details data={details} onChange={p => setDetails(prev => ({ ...prev, ...p }))} />}
-              {step === 2 && <Step2Upload galleryId={gid} photographerId={user?.id ?? ''} photos={photos} onPhotosChange={setPhotos} />}
-              {step === 3 && <Step3Settings data={settings} onChange={p => setSettings(prev => ({ ...prev, ...p }))} />}
-              {step === 4 && <Step4Design data={design} onChange={p => setDesign(prev => ({ ...prev, ...p }))} />}
+              <div key={stepKey} className={animDir > 0 ? 'step-enter-right' : 'step-enter-left'}>
+                {step === 1 && <Step1Details data={details} onChange={p => setDetails(prev => ({ ...prev, ...p }))} />}
+                {step === 2 && <Step2Upload galleryId={gid} photographerId={user?.id ?? ''} photos={photos} onPhotosChange={setPhotos} />}
+                {step === 3 && <Step3Settings data={settings} onChange={p => setSettings(prev => ({ ...prev, ...p }))} />}
+                {step === 4 && <Step4Design data={design} onChange={p => setDesign(prev => ({ ...prev, ...p }))} />}
+              </div>
 
               {/* Navigation */}
               <div className="flex items-center justify-between mt-2">
                 <Button
                   variant="secondary"
-                  onClick={() => step > 1 ? setStep(s => s - 1) : navigate('/dashboard/galleries')}
+                  onClick={() => step > 1 ? goStep(step - 1) : navigate('/dashboard/galleries')}
                 >
                   <svg className="w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="15 18 9 12 15 6"/>
