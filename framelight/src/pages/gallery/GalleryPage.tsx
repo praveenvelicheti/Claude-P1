@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../hooks/useAuth'
+import { useToast } from '../../components/ui/Toast'
 import { downloadZip } from '../../lib/zip'
 import { PinGate } from '../../components/gallery/PinGate'
 import { Lightbox } from '../../components/gallery/Lightbox'
@@ -18,6 +20,8 @@ function getSessionToken() {
 
 export function GalleryPage() {
   const { slug } = useParams<{ slug: string }>()
+  const { user, loading: authLoading } = useAuth()
+  const toast = useToast()
   const [gallery, setGallery] = useState<Gallery | null>(null)
   const [photographer, setPhotographer] = useState<Profile | null>(null)
   const [photos, setPhotos] = useState<Photo[]>([])
@@ -54,6 +58,14 @@ export function GalleryPage() {
     document.querySelectorAll('.photo-reveal').forEach(el => obs.observe(el))
     return () => obs.disconnect()
   }, [photos, loading])
+
+  // Admin bypass: let the photographer skip the PIN when logged in as the owner
+  useEffect(() => {
+    if (authLoading || !gallery) return
+    if (gallery.admin_bypass && user?.id === gallery.photographer_id) {
+      setUnlocked(true)
+    }
+  }, [gallery, user, authLoading])
 
   useEffect(() => {
     function handleScroll() {
@@ -136,7 +148,12 @@ export function GalleryPage() {
     db.from('downloads').insert({ gallery_id: gallery.id, session_token: sessionToken, is_bulk: true })
     try {
       await downloadZip(photos.map(p => ({ url: p.url, filename: p.filename ?? undefined })), `${gallery.title}.zip`)
-    } finally { setDlAll(false) }
+    } catch (err) {
+      console.error('[downloadAll]', err)
+      toast.show('Download failed — please try again', 'error')
+    } finally {
+      setDlAll(false)
+    }
   }
 
   async function downloadFavorites() {

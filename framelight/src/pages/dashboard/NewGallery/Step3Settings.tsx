@@ -42,18 +42,26 @@ export function Step3Settings({ data, onChange }: Props) {
                 {[0,1,2,3].map(i => (
                   <input
                     key={i}
-                    type="text"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     maxLength={1}
                     value={data.pinCode[i] ?? ''}
                     onChange={e => {
+                      const val = e.target.value.replace(/\D/g, '').slice(-1)
                       const chars = data.pinCode.split('')
-                      chars[i] = e.target.value.replace(/\D/, '')
+                      chars[i] = val
                       onChange({ pinCode: chars.join('') })
-                      if (e.target.value && e.target.nextElementSibling) {
+                      if (val && e.target.nextElementSibling) {
                         (e.target.nextElementSibling as HTMLInputElement).focus()
                       }
                     }}
-                    className="flex-1 h-[46px] border border-border rounded-lg bg-teal-pale text-center font-display text-[22px] text-ink outline-none focus:border-teal focus:shadow-[0_0_0_3px_rgba(92,189,185,0.15)]"
+                    onKeyDown={e => {
+                      if (e.key === 'Backspace' && !data.pinCode[i] && e.currentTarget.previousElementSibling) {
+                        (e.currentTarget.previousElementSibling as HTMLInputElement).focus()
+                      }
+                    }}
+                    className="flex-1 min-w-0 h-[46px] border border-border rounded-lg bg-teal-pale text-center font-display text-[22px] text-ink outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 focus:ring-inset"
                   />
                 ))}
               </div>
