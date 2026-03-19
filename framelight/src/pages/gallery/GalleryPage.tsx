@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../hooks/useAuth'
+import { useToast } from '../../components/ui/Toast'
 import { downloadZip } from '../../lib/zip'
 import { PinGate } from '../../components/gallery/PinGate'
 import { Lightbox } from '../../components/gallery/Lightbox'
@@ -16,13 +18,25 @@ function getSessionToken() {
   return token
 }
 
+const GALLERY_THEMES = {
+  framelight: { bg: '#ffffff', text: '#1a3a3a', muted: '#5a8e8c', border: '#ceecea', card: '#ebf6f5', cover: '#1a3a3a', navBg: 'rgba(255,255,255,0.96)', navShadow: '#ceecea', accent: '#5cbdb9' },
+  dark:       { bg: '#141414', text: '#e0e0e0', muted: '#888888', border: '#2a2a2a', card: '#222222', cover: '#000000', navBg: 'rgba(20,20,20,0.96)',   navShadow: '#2a2a2a', accent: '#888888' },
+  minimal:    { bg: '#f8f8f8', text: '#1a1a1a', muted: '#888888', border: '#e5e5e5', card: '#f0f0f0', cover: '#222222', navBg: 'rgba(248,248,248,0.96)', navShadow: '#e5e5e5', accent: '#777777' },
+  terracotta: { bg: '#fdf0e8', text: '#3d1c04', muted: '#8b5e3c', border: '#e8b897', card: '#ffd5b2', cover: '#8b4513', navBg: 'rgba(253,240,232,0.96)', navShadow: '#e8b897', accent: '#d2691e' },
+  lavender:   { bg: '#f3f0fa', text: '#2a1f4a', muted: '#6e5f9a', border: '#c9bfe8', card: '#e8e4f3', cover: '#4a4080', navBg: 'rgba(243,240,250,0.96)', navShadow: '#c9bfe8', accent: '#9b89c4' },
+  gold:       { bg: '#fffdf0', text: '#1a1200', muted: '#7a6010', border: '#e8d78a', card: '#fdf5d0', cover: '#2c2000', navBg: 'rgba(255,253,240,0.96)', navShadow: '#e8d78a', accent: '#b8860b' },
+}
+
 export function GalleryPage() {
   const { slug } = useParams<{ slug: string }>()
+  const { user, loading: authLoading } = useAuth()
+  const toast = useToast()
   const [gallery, setGallery] = useState<Gallery | null>(null)
   const [photographer, setPhotographer] = useState<Profile | null>(null)
   const [photos, setPhotos] = useState<Photo[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [expired, setExpired] = useState(false)
   const [unlocked, setUnlocked] = useState(false)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
@@ -39,7 +53,7 @@ export function GalleryPage() {
   }, [slug])
 
   useEffect(() => {
-    if (!photos.length) return
+    if (!photos.length || loading) return
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach(e => {
@@ -53,7 +67,15 @@ export function GalleryPage() {
     )
     document.querySelectorAll('.photo-reveal').forEach(el => obs.observe(el))
     return () => obs.disconnect()
-  }, [photos])
+  }, [photos, loading])
+
+  // Admin bypass: let the photographer skip the PIN when logged in as the owner
+  useEffect(() => {
+    if (authLoading || !gallery) return
+    if (gallery.admin_bypass && user?.id === gallery.photographer_id) {
+      setUnlocked(true)
+    }
+  }, [gallery, user, authLoading])
 
   useEffect(() => {
     function handleScroll() {
@@ -80,6 +102,12 @@ export function GalleryPage() {
 
     if (error || !gal) { setNotFound(true); setLoading(false); return }
     const gallery = gal as Gallery
+
+    // Enforce expiry date
+    if (gallery.expiry_date && new Date(gallery.expiry_date) < new Date()) {
+      setExpired(true); setLoading(false); return
+    }
+
     setGallery(gallery)
 
     db.from('galleries').update({ view_count: (gallery.view_count ?? 0) + 1 }).eq('id', gallery.id)
@@ -136,7 +164,12 @@ export function GalleryPage() {
     db.from('downloads').insert({ gallery_id: gallery.id, session_token: sessionToken, is_bulk: true })
     try {
       await downloadZip(photos.map(p => ({ url: p.url, filename: p.filename ?? undefined })), `${gallery.title}.zip`)
-    } finally { setDlAll(false) }
+    } catch (err) {
+      console.error('[downloadAll]', err)
+      toast.show('Download failed — please try again', 'error')
+    } finally {
+      setDlAll(false)
+    }
   }
 
   async function downloadFavorites() {
@@ -152,6 +185,22 @@ export function GalleryPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="w-10 h-10 border-[3px] border-[#aaa] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (expired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white font-ui">
+        <div className="text-center max-w-sm px-6">
+          <div className="w-14 h-14 rounded-full bg-[#fff3e0] border border-[#f0c080] flex items-center justify-center mx-auto mb-5">
+            <svg className="w-6 h-6 text-[#b8860b]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div className="font-display text-[28px] font-light text-ink mb-2">Gallery Expired</div>
+          <p className="text-[14px] text-[#888]">This gallery is no longer available. Please contact the photographer for access.</p>
+        </div>
       </div>
     )
   }
@@ -176,9 +225,46 @@ export function GalleryPage() {
   })
 
   const photographerName = photographer?.studio_name ?? ''
+  const theme = GALLERY_THEMES[(gallery.theme ?? 'framelight') as keyof typeof GALLERY_THEMES] ?? GALLERY_THEMES.framelight
+  const layout = gallery.layout ?? 'masonry'
+  const cols = gallery.grid_cols ?? 3
+  const gutter = gallery.grid_gutter ?? 8
+
+  // Shared hover overlay rendered inside each photo card
+  function PhotoActions({ photo, isFav }: { photo: Photo; isFav: boolean }) {
+    return (
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[220ms] flex items-end justify-end p-3"
+        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)' }}
+      >
+        <div className="flex gap-1.5" onClick={e => e.stopPropagation()}>
+          {gallery!.favorites_enabled && (
+            <button
+              onClick={() => toggleFavorite(photo.id)}
+              className={`w-8 h-8 rounded-full bg-white/90 border-0 cursor-pointer flex items-center justify-center transition-all hover:bg-white hover:scale-[1.08] ${isFav ? 'text-[#d45f7a]' : 'text-ink'}`}
+            >
+              <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill={isFav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8">
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+              </svg>
+            </button>
+          )}
+          {gallery!.downloads_enabled && (
+            <button
+              onClick={() => downloadPhoto(photo)}
+              className="w-8 h-8 rounded-full bg-white/90 border-0 cursor-pointer flex items-center justify-center text-ink transition-all hover:bg-white hover:scale-[1.08]"
+            >
+              <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-white font-ui" style={{ overflowX: 'hidden' }}>
+    <div className="min-h-screen font-ui" style={{ backgroundColor: theme.bg, color: theme.text, overflowX: 'hidden' }}>
       <style>{`
         @keyframes coverZoom { from { transform: scale(1.06); } to { transform: scale(1.0); } }
         @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
@@ -189,29 +275,32 @@ export function GalleryPage() {
 
       {/* ── Floating Nav ── */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-[200] h-[54px] flex items-center transition-all duration-350
-          ${navScrolled
-            ? 'bg-white/96 backdrop-blur-[18px] shadow-[0_1px_0_#ceecea]'
-            : 'bg-transparent'
-          }`}
-        style={{ padding: '0 clamp(16px, 4vw, 48px)' }}
+        className="fixed top-0 left-0 right-0 z-[200] h-[54px] flex items-center transition-all duration-350"
+        style={{
+          padding: '0 clamp(16px, 4vw, 48px)',
+          ...(navScrolled ? { backgroundColor: theme.navBg, backdropFilter: 'blur(18px)', boxShadow: `0 1px 0 ${theme.navShadow}` } : {}),
+        }}
       >
         {/* Left: avatar + photographer + separator + gallery name */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {photographer?.logo_url ? (
-            <div className={`w-7 h-7 rounded-full overflow-hidden flex-shrink-0 border-[1.5px] transition-all ${navScrolled ? 'border-border' : 'border-white/40'}`}>
+            <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 border-[1.5px] transition-all"
+              style={{ borderColor: navScrolled ? theme.border : 'rgba(255,255,255,0.4)' }}>
               <img src={photographer.logo_url!} alt="" className="w-full h-full object-cover" />
             </div>
           ) : null}
           {photographerName && (
-            <span className={`font-display text-[16px] font-normal whitespace-nowrap tracking-[0.03em] transition-colors ${navScrolled ? 'text-ink' : 'text-white/90'}`}>
+            <span className="font-display text-[16px] font-normal whitespace-nowrap tracking-[0.03em] transition-colors"
+              style={{ color: navScrolled ? theme.text : 'rgba(255,255,255,0.9)' }}>
               {photographerName}
             </span>
           )}
           {photographerName && (
-            <div className={`w-px h-3.5 flex-shrink-0 transition-colors ${navScrolled ? 'bg-border' : 'bg-white/25'}`} />
+            <div className="w-px h-3.5 flex-shrink-0 transition-colors"
+              style={{ backgroundColor: navScrolled ? theme.border : 'rgba(255,255,255,0.25)' }} />
           )}
-          <span className={`text-[12px] font-light tracking-[0.06em] italic whitespace-nowrap overflow-hidden text-ellipsis transition-colors ${navScrolled ? 'text-ink-muted' : 'text-white/55'}`}>
+          <span className="text-[12px] font-light tracking-[0.06em] italic whitespace-nowrap overflow-hidden text-ellipsis transition-colors"
+            style={{ color: navScrolled ? theme.muted : 'rgba(255,255,255,0.55)' }}>
             {gallery.title}
           </span>
         </div>
@@ -222,18 +311,19 @@ export function GalleryPage() {
           {gallery.favorites_enabled && (
             <div className="relative">
               <button
-                className={`relative w-9 h-9 rounded-full flex items-center justify-center border transition-all
-                  ${navScrolled
-                    ? 'border-border bg-white text-ink hover:bg-teal-pale hover:border-teal'
-                    : 'border-white/25 bg-white/10 backdrop-blur-[8px] text-white/85 hover:bg-white/22 hover:border-white/50'
-                  }`}
+                className="relative w-9 h-9 rounded-full flex items-center justify-center border transition-all"
+                style={navScrolled
+                  ? { borderColor: theme.border, backgroundColor: theme.bg, color: theme.text }
+                  : { borderColor: 'rgba(255,255,255,0.25)', backgroundColor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', color: 'rgba(255,255,255,0.85)' }
+                }
                 title="Favorites"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
                 </svg>
                 {favorites.size > 0 && (
-                  <span className="absolute -top-[3px] -right-[3px] w-[15px] h-[15px] rounded-full bg-teal text-white text-[8px] font-semibold flex items-center justify-center border-2 border-white">
+                  <span className="absolute -top-[3px] -right-[3px] w-[15px] h-[15px] rounded-full text-white text-[8px] font-semibold flex items-center justify-center border-2 border-white"
+                    style={{ backgroundColor: theme.accent }}>
                     {favorites.size}
                   </span>
                 )}
@@ -243,11 +333,11 @@ export function GalleryPage() {
 
           {/* Slideshow */}
           <button
-            className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all
-              ${navScrolled
-                ? 'border-border bg-white text-ink hover:bg-teal-pale hover:border-teal'
-                : 'border-white/25 bg-white/10 backdrop-blur-[8px] text-white/85 hover:bg-white/22 hover:border-white/50'
-              }`}
+            className="w-9 h-9 rounded-full flex items-center justify-center border transition-all"
+            style={navScrolled
+              ? { borderColor: theme.border, backgroundColor: theme.bg, color: theme.text }
+              : { borderColor: 'rgba(255,255,255,0.25)', backgroundColor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', color: 'rgba(255,255,255,0.85)' }
+            }
             title="Slideshow"
             onClick={() => photos.length > 0 && setLightboxIdx(0)}
           >
@@ -262,11 +352,11 @@ export function GalleryPage() {
               <button
                 onClick={() => setDlMenuOpen(o => !o)}
                 disabled={dlAll || dlFavs}
-                className={`flex items-center gap-1.5 h-9 px-4 rounded-[18px] border font-ui text-[11.5px] font-normal tracking-[0.07em] uppercase cursor-pointer transition-all disabled:opacity-60 whitespace-nowrap
-                  ${navScrolled
-                    ? 'bg-teal border-teal text-white hover:bg-teal-light hover:border-teal-light'
-                    : 'bg-white/15 border-white/30 backdrop-blur-[8px] text-white/90 hover:bg-white/28'
-                  }`}
+                className="flex items-center gap-1.5 h-9 px-4 rounded-[18px] border font-ui text-[11.5px] font-normal tracking-[0.07em] uppercase cursor-pointer transition-all disabled:opacity-60 whitespace-nowrap"
+                style={navScrolled
+                  ? { backgroundColor: theme.accent, borderColor: theme.accent, color: '#fff' }
+                  : { backgroundColor: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)', backdropFilter: 'blur(8px)', color: 'rgba(255,255,255,0.9)' }
+                }
               >
                 {(dlAll || dlFavs) ? (
                   <svg className="w-[13px] h-[13px] animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
@@ -283,15 +373,18 @@ export function GalleryPage() {
                   className="absolute top-[44px] right-0 bg-white rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(26,58,58,0.18),0_0_0_1px_rgba(26,58,58,0.08)] min-w-[175px] flex flex-col z-[300]"
                   onMouseLeave={() => setDlMenuOpen(false)}
                 >
-                  <button
-                    onClick={() => { setDlMenuOpen(false); downloadAll() }}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-[12.5px] text-charcoal hover:bg-teal-pale transition-colors text-left font-ui"
-                  >
-                    <svg className="w-[13px] h-[13px] text-teal flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-                    </svg>
-                    All Photos
-                  </button>
+                  {/* All Photos — only shown when zip is enabled */}
+                  {gallery.zip_enabled && (
+                    <button
+                      onClick={() => { setDlMenuOpen(false); downloadAll() }}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-[12.5px] text-charcoal hover:bg-teal-pale transition-colors text-left font-ui"
+                    >
+                      <svg className="w-[13px] h-[13px] text-teal flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                      </svg>
+                      All Photos
+                    </button>
+                  )}
                   {gallery.favorites_enabled && favorites.size > 0 && (
                     <button
                       onClick={() => { setDlMenuOpen(false); downloadFavorites() }}
@@ -313,8 +406,8 @@ export function GalleryPage() {
       {/* ── Cover — 100vh ── */}
       <div
         ref={coverRef}
-        className="relative w-screen overflow-hidden bg-ink"
-        style={{ height: 'clamp(380px, 56.25vw, 100vh)' }}
+        className="relative w-screen overflow-hidden"
+        style={{ height: 'clamp(380px, 56.25vw, 100vh)', backgroundColor: theme.cover }}
       >
         {gallery.cover_url && (
           <img
@@ -325,36 +418,26 @@ export function GalleryPage() {
           />
         )}
         {/* Vignette */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse at center, transparent 40%, rgba(26,58,58,0.25) 100%), linear-gradient(to bottom, rgba(26,58,58,0.08) 0%, rgba(26,58,58,0.45) 100%)'
-          }}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.2) 100%), linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.4) 100%)' }}
         />
 
         {/* Centered title */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-5">
           {photographerName && (
-            <div
-              className="font-ui text-[11px] font-normal tracking-[0.22em] uppercase text-white/65 mb-[18px]"
-              style={{ animation: 'fadeUp 1s ease 0.2s both' }}
-            >
+            <div className="font-ui text-[11px] font-normal tracking-[0.22em] uppercase text-white/65 mb-[18px]"
+              style={{ animation: 'fadeUp 1s ease 0.2s both' }}>
               {photographerName}
             </div>
           )}
           <h1
             className="font-display font-light text-white leading-[0.95] tracking-[-0.01em]"
-            style={{
-              fontSize: 'clamp(44px, 9vw, 100px)',
-              animation: 'fadeUp 1s ease 0.4s both',
-            }}
+            style={{ fontSize: 'clamp(44px, 9vw, 100px)', animation: 'fadeUp 1s ease 0.4s both' }}
           >
             {gallery.title}
           </h1>
-          <div
-            className="font-ui text-[12px] font-light tracking-[0.18em] uppercase text-white/50 mt-[22px]"
-            style={{ animation: 'fadeUp 1s ease 0.6s both' }}
-          >
+          <div className="font-ui text-[12px] font-light tracking-[0.18em] uppercase text-white/50 mt-[22px]"
+            style={{ animation: 'fadeUp 1s ease 0.6s both' }}>
             {formattedDate}
           </div>
         </div>
@@ -366,18 +449,14 @@ export function GalleryPage() {
           onClick={() => document.getElementById('gallery-body')?.scrollIntoView({ behavior: 'smooth' })}
         >
           <span className="text-[9px] tracking-[0.2em] uppercase font-normal">Scroll</span>
-          <div
-            className="w-px h-10"
-            style={{
-              background: 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.5))',
-              animation: 'scrollPulse 2s ease-in-out infinite',
-            }}
+          <div className="w-px h-10"
+            style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.5))', animation: 'scrollPulse 2s ease-in-out infinite' }}
           />
         </div>
       </div>
 
       {/* ── Gallery body ── */}
-      <div className="bg-white" id="gallery-body">
+      <div id="gallery-body" style={{ backgroundColor: theme.bg }}>
 
         {/* Favorites bar */}
         {gallery.favorites_enabled && (
@@ -389,100 +468,138 @@ export function GalleryPage() {
           />
         )}
 
-        {/* Sets nav placeholder */}
-        <div
-          className="flex items-center justify-center border-b border-border overflow-x-auto"
-          style={{ padding: '0 clamp(16px,4vw,48px)' }}
-        >
-          <button className="px-[22px] py-4 text-[12px] font-medium tracking-[0.08em] uppercase text-ink border-b-2 border-teal -mb-px whitespace-nowrap bg-transparent border-l-0 border-r-0 border-t-0 cursor-pointer font-ui">
+        {/* Sets nav */}
+        <div className="flex items-center justify-center overflow-x-auto"
+          style={{ padding: '0 clamp(16px,4vw,48px)', borderBottom: `1px solid ${theme.border}` }}>
+          <button className="px-[22px] py-4 text-[12px] font-medium tracking-[0.08em] uppercase border-b-2 -mb-px whitespace-nowrap bg-transparent border-l-0 border-r-0 border-t-0 cursor-pointer font-ui"
+            style={{ color: theme.text, borderBottomColor: theme.accent }}>
             All Photos
           </button>
         </div>
 
         {/* Gallery info row */}
-        <div
-          className="flex items-baseline gap-3.5 pt-[clamp(24px,4vw,40px)]"
-          style={{ padding: `clamp(24px,4vw,40px) clamp(16px,4vw,48px) 0` }}
-        >
-          <h2 className="font-display font-light text-ink tracking-[0.01em]" style={{ fontSize: 'clamp(22px,4vw,32px)' }}>
+        <div className="flex items-baseline gap-3.5"
+          style={{ padding: `clamp(24px,4vw,40px) clamp(16px,4vw,48px) 0` }}>
+          <h2 className="font-display font-light tracking-[0.01em]"
+            style={{ fontSize: 'clamp(22px,4vw,32px)', color: theme.text }}>
             {gallery.title}
           </h2>
-          <span className="text-[12px] text-ink-muted tracking-[0.05em]">{photos.length} photos</span>
+          <span className="text-[12px] tracking-[0.05em]" style={{ color: theme.muted }}>
+            {photos.length} photos
+          </span>
         </div>
 
-        {/* ── Masonry grid ── */}
-        <div
-          id="masonry"
-          style={{
-            padding: `clamp(12px,2vw,24px) clamp(8px,2vw,24px)`,
-            columns: gallery.grid_cols ?? 3,
-            columnGap: `${gallery.grid_gutter ?? 8}px`,
-          }}
-        >
-          <style>{`
-            @media (max-width: 900px) { #masonry { columns: ${Math.min(2, gallery.grid_cols ?? 3)} !important; padding-left: 0 !important; padding-right: 0 !important; } }
-            @media (max-width: 500px) { #masonry { columns: 2 !important; padding: 0 !important; } }
-          `}</style>
-          {photos.map((photo, idx) => {
-            const isFav = favorites.has(photo.id)
-            return (
-              <div
-                key={photo.id}
-                className="photo-reveal break-inside-avoid relative cursor-pointer overflow-hidden bg-teal-pale block group"
-                style={{ marginBottom: `${gallery.grid_gutter ?? 8}px` }}
+        {/* ── Photo grid — layout-aware ── */}
+        {layout === 'masonry' && (
+          <div
+            id="photo-grid"
+            style={{
+              padding: `clamp(12px,2vw,24px) clamp(8px,2vw,24px)`,
+              columns: cols,
+              columnGap: `${gutter}px`,
+            }}
+          >
+            <style>{`
+              @media (max-width: 900px) { #photo-grid { columns: ${Math.min(2, cols)} !important; padding-left: 0 !important; padding-right: 0 !important; } }
+              @media (max-width: 500px) { #photo-grid { columns: 2 !important; padding: 0 !important; } }
+            `}</style>
+            {photos.map((photo, idx) => (
+              <div key={photo.id}
+                className="photo-reveal break-inside-avoid relative cursor-pointer overflow-hidden block group"
+                style={{ marginBottom: `${gutter}px`, backgroundColor: theme.card }}
                 onClick={() => setLightboxIdx(idx)}
               >
-                <img
-                  src={photo.thumb_url}
-                  alt={photo.filename ?? ''}
+                <img src={photo.thumb_url} alt={photo.filename ?? ''}
                   className="w-full block transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.04]"
                   loading="lazy"
                 />
-                {/* Hover action layer */}
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[220ms] flex items-end justify-end p-3"
-                  style={{ background: 'linear-gradient(to top, rgba(26,58,58,0.42) 0%, transparent 60%)' }}
-                >
-                  <div className="flex gap-1.5" onClick={e => e.stopPropagation()}>
-                    {gallery.favorites_enabled && (
-                      <button
-                        onClick={() => toggleFavorite(photo.id)}
-                        className={`w-8 h-8 rounded-full bg-white/90 border-0 cursor-pointer flex items-center justify-center transition-all hover:bg-white hover:scale-[1.08] ${isFav ? 'text-[#d45f7a]' : 'text-ink'}`}
-                      >
-                        <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill={isFav ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8">
-                          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-                        </svg>
-                      </button>
-                    )}
-                    {gallery.downloads_enabled && (
-                      <button
-                        onClick={() => downloadPhoto(photo)}
-                        className="w-8 h-8 rounded-full bg-white/90 border-0 cursor-pointer flex items-center justify-center text-ink transition-all hover:bg-white hover:scale-[1.08]"
-                      >
-                        <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                </div>
+                <PhotoActions photo={photo} isFav={favorites.has(photo.id)} />
               </div>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+        )}
+
+        {layout === 'square' && (
+          <div
+            id="photo-grid"
+            style={{
+              padding: `clamp(12px,2vw,24px) clamp(8px,2vw,24px)`,
+              display: 'grid',
+              gridTemplateColumns: `repeat(${cols}, 1fr)`,
+              gap: `${gutter}px`,
+            }}
+          >
+            <style>{`
+              @media (max-width: 900px) { #photo-grid { grid-template-columns: repeat(${Math.min(2, cols)}, 1fr) !important; padding-left: 0 !important; padding-right: 0 !important; } }
+              @media (max-width: 500px) { #photo-grid { grid-template-columns: repeat(2, 1fr) !important; padding: 0 !important; gap: ${Math.min(gutter, 4)}px !important; } }
+            `}</style>
+            {photos.map((photo, idx) => (
+              <div key={photo.id}
+                className="photo-reveal relative cursor-pointer overflow-hidden group"
+                style={{ aspectRatio: '1', backgroundColor: theme.card }}
+                onClick={() => setLightboxIdx(idx)}
+              >
+                <img src={photo.thumb_url} alt={photo.filename ?? ''}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.04]"
+                  loading="lazy"
+                />
+                <PhotoActions photo={photo} isFav={favorites.has(photo.id)} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {layout === 'justified' && (
+          <div
+            id="photo-grid"
+            style={{
+              padding: `clamp(12px,2vw,24px) clamp(8px,2vw,24px)`,
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: `${gutter}px`,
+            }}
+          >
+            <style>{`
+              @media (max-width: 500px) { #photo-grid { padding: 0 !important; gap: ${Math.min(gutter, 4)}px !important; } }
+              @media (max-width: 500px) { #photo-grid > * { height: 160px !important; } }
+            `}</style>
+            {photos.map((photo, idx) => {
+              const ratio = (photo.width && photo.height) ? photo.width / photo.height : 1.5
+              return (
+                <div key={photo.id}
+                  className="photo-reveal relative cursor-pointer overflow-hidden group"
+                  style={{ height: '220px', flex: `${ratio} 1 ${Math.round(ratio * 220)}px`, backgroundColor: theme.card }}
+                  onClick={() => setLightboxIdx(idx)}
+                >
+                  <img src={photo.thumb_url} alt={photo.filename ?? ''}
+                    className="w-full h-full object-cover transition-transform duration-[550ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.04]"
+                    loading="lazy"
+                  />
+                  <PhotoActions photo={photo} isFav={favorites.has(photo.id)} />
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* Footer */}
         <footer
-          className="flex flex-col items-center gap-3 border-t border-border bg-white"
-          style={{ padding: `clamp(28px,4vw,48px) clamp(16px,4vw,48px)` }}
+          className="flex flex-col items-center gap-3"
+          style={{
+            padding: `clamp(28px,4vw,48px) clamp(16px,4vw,48px)`,
+            borderTop: `1px solid ${theme.border}`,
+            backgroundColor: theme.bg,
+          }}
         >
-          <div className="font-display text-[18px] font-light text-ink tracking-[0.06em]">
-            {photographerName && <>{photographerName} <em className="italic text-teal">Photography</em></>}
+          <div className="font-display text-[18px] font-light tracking-[0.06em]" style={{ color: theme.text }}>
+            {photographerName && (
+              <>{photographerName} <em className="italic" style={{ color: theme.accent }}>Photography</em></>
+            )}
           </div>
-          <div className="text-[11px] text-ink-muted tracking-[0.08em]">
+          <div className="text-[11px] tracking-[0.08em]" style={{ color: theme.muted }}>
             Delivered with{' '}
-            <span className="font-display text-[13px] font-medium text-ink">
-              Frame<em className="italic text-teal">light</em>
+            <span className="font-display text-[13px] font-medium" style={{ color: theme.text }}>
+              Frame<em className="italic" style={{ color: theme.accent }}>light</em>
             </span>
           </div>
         </footer>
