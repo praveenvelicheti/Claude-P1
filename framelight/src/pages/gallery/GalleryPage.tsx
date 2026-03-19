@@ -477,18 +477,6 @@ export function GalleryPage() {
           </button>
         </div>
 
-        {/* Gallery info row */}
-        <div className="flex items-baseline gap-3.5"
-          style={{ padding: `clamp(24px,4vw,40px) clamp(16px,4vw,48px) 0` }}>
-          <h2 className="font-display font-light tracking-[0.01em]"
-            style={{ fontSize: 'clamp(22px,4vw,32px)', color: theme.text }}>
-            {gallery.title}
-          </h2>
-          <span className="text-[12px] tracking-[0.05em]" style={{ color: theme.muted }}>
-            {photos.length} photos
-          </span>
-        </div>
-
         {/* ── Photo grid — layout-aware ── */}
         {layout === 'masonry' && (
           <div
