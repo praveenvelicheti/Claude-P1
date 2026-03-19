@@ -50,8 +50,11 @@ export function Signup() {
       <div className="hidden lg:flex w-[480px] flex-shrink-0 bg-ink flex-col relative overflow-hidden">
         <div className="absolute -top-16 -right-10 w-72 h-72 rounded-full bg-[radial-gradient(circle,rgba(92,189,185,0.2)_0%,transparent_70%)]" />
         <div className="p-10 relative z-10">
-          <div className="font-display text-[28px] font-medium text-white tracking-[0.04em]">
-            Frame<em className="text-teal-light italic">light</em>
+          <div className="flex items-center gap-2.5">
+            <img src="/favicon.svg" alt="Framelight logo" className="w-8 h-8 brightness-0 invert" />
+            <div className="font-display text-[28px] font-medium text-white tracking-[0.04em]">
+              Frame<em className="text-teal-light italic">light</em>
+            </div>
           </div>
         </div>
         <div className="flex-1 flex flex-col justify-center px-10 relative z-10">
@@ -84,8 +87,11 @@ export function Signup() {
       {/* Right panel */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-[400px]">
-          <div className="lg:hidden font-display text-[26px] font-medium text-ink tracking-[0.04em] mb-10 text-center">
-            Frame<em className="text-teal italic">light</em>
+          <div className="lg:hidden flex items-center justify-center gap-2.5 mb-10">
+            <img src="/favicon.svg" alt="Framelight logo" className="w-7 h-7" />
+            <div className="font-display text-[26px] font-medium text-ink tracking-[0.04em]">
+              Frame<em className="text-teal italic">light</em>
+            </div>
           </div>
 
           <div className="mb-8">

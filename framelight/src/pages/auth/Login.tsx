@@ -34,8 +34,11 @@ export function Login() {
 
         {/* Logo */}
         <div className="p-10 relative z-10">
-          <div className="font-display text-[28px] font-medium text-white tracking-[0.04em]">
-            Frame<em className="text-teal-light italic">light</em>
+          <div className="flex items-center gap-2.5">
+            <img src="/favicon.svg" alt="Framelight logo" className="w-8 h-8 brightness-0 invert" />
+            <div className="font-display text-[28px] font-medium text-white tracking-[0.04em]">
+              Frame<em className="text-teal-light italic">light</em>
+            </div>
           </div>
         </div>
 
@@ -70,8 +73,11 @@ export function Login() {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-[400px]">
           {/* Mobile logo */}
-          <div className="lg:hidden font-display text-[26px] font-medium text-ink tracking-[0.04em] mb-10 text-center">
-            Frame<em className="text-teal italic">light</em>
+          <div className="lg:hidden flex items-center justify-center gap-2.5 mb-10">
+            <img src="/favicon.svg" alt="Framelight logo" className="w-7 h-7" />
+            <div className="font-display text-[26px] font-medium text-ink tracking-[0.04em]">
+              Frame<em className="text-teal italic">light</em>
+            </div>
           </div>
 
           <div className="mb-8">
