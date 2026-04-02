@@ -28,11 +28,20 @@ export function useAuth() {
   }, [])
 
   async function loadProfile(userId: string) {
-    const { data } = await supabase
+    let { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single()
+    // Safety net: profile missing (e.g. OAuth user where trigger was blocked by RLS)
+    if (!data) {
+      const { data: created } = await supabase
+        .from('profiles')
+        .upsert({ id: userId }, { onConflict: 'id' })
+        .select()
+        .single()
+      data = created
+    }
     setProfile(data as Profile | null)
     setLoading(false)
   }
