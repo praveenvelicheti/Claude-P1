@@ -75,12 +75,16 @@ export function GalleryPage() {
       },
       { rootMargin: '0px 0px -40px 0px', threshold: 0.01 }
     )
-    // Small tick so React has flushed the DOM before we query
-    const timer = setTimeout(() => {
-      document.querySelectorAll('.photo-reveal:not(.visible)').forEach(el => obs.observe(el))
-    }, 0)
-    return () => { clearTimeout(timer); obs.disconnect() }
-  }, [photos, loading, showFavoritesOnly])
+    // Use rAF + setTimeout so React has painted before we query
+    let rafId: number
+    let timerId: ReturnType<typeof setTimeout>
+    rafId = requestAnimationFrame(() => {
+      timerId = setTimeout(() => {
+        document.querySelectorAll('.photo-reveal:not(.visible)').forEach(el => obs.observe(el))
+      }, 50)
+    })
+    return () => { cancelAnimationFrame(rafId); clearTimeout(timerId); obs.disconnect() }
+  }, [photos, loading, showFavoritesOnly, unlocked])
 
   // Admin bypass: let the photographer skip the PIN when logged in as the owner
   useEffect(() => {
@@ -280,6 +284,16 @@ export function GalleryPage() {
   const gutter = gallery.grid_gutter ?? 8
 
   const displayedPhotos = showFavoritesOnly ? photos.filter(p => favorites.has(p.id)) : photos
+
+  // Reorder photos for CSS columns so they reveal row-by-row instead of column-by-column.
+  // CSS columns fills col1 first, then col2, etc. By interleaving the array (col_i gets
+  // photos at positions i, i+cols, i+2*cols, ...) the top of each column holds photos
+  // that were originally adjacent, so they appear at the same visual row simultaneously.
+  function masonryRowOrder(arr: Photo[], numCols: number): Photo[] {
+    return Array.from({ length: numCols }, (_, col) =>
+      arr.filter((_, i) => i % numCols === col)
+    ).flat()
+  }
 
   function copyShareLink() {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -609,7 +623,7 @@ export function GalleryPage() {
               @media (max-width: 900px) { #photo-grid { columns: ${Math.min(2, cols)} !important; padding-left: 0 !important; padding-right: 0 !important; } }
               @media (max-width: 500px) { #photo-grid { columns: 2 !important; padding: 0 !important; } }
             `}</style>
-            {displayedPhotos.map((photo) => (
+            {masonryRowOrder(displayedPhotos, cols).map((photo) => (
               <div key={photo.id}
                 className="photo-reveal break-inside-avoid relative cursor-pointer overflow-hidden block group"
                 style={{ marginBottom: `${gutter}px`, backgroundColor: theme.card }}
